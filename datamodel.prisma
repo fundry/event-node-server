@@ -1,4 +1,35 @@
 type User {
   id: ID! @id
-  name: String!
+  name: String! @unique
+  email: String! @unique
+  password: String! @unique
+}
+
+type Event {
+  id: ID! @id
+  name: String! @unique
+  description: String
+  duration: Int
+  organizer: String
+  type: String!
+  venue: String!
+  date: Int!
+  supportEmail: String! @unique
+  website: String
+  password : String!
+  createdAt: DateTime! @createdAt
+  attendees: Int
+  teams: Int
+}
+
+type Attendee {
+  id: ID! @id
+  event: Event @relation( name : "EventAttendee"   )
+}
+
+type EventTeam {
+    id: ID! @id
+   name: String!   @unique
+   description: String!
+  createdAt: DateTime! @createdAt
 }

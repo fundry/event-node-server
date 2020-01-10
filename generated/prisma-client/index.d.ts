@@ -16,6 +16,9 @@ export type AtLeastOne<T, U = { [K in keyof T]: Pick<T, K> }> = Partial<T> &
 export type Maybe<T> = T | undefined | null;
 
 export interface Exists {
+  attendee: (where?: AttendeeWhereInput) => Promise<boolean>;
+  event: (where?: EventWhereInput) => Promise<boolean>;
+  eventTeam: (where?: EventTeamWhereInput) => Promise<boolean>;
   user: (where?: UserWhereInput) => Promise<boolean>;
 }
 
@@ -38,6 +41,63 @@ export interface Prisma {
    * Queries
    */
 
+  attendee: (where: AttendeeWhereUniqueInput) => AttendeeNullablePromise;
+  attendees: (args?: {
+    where?: AttendeeWhereInput;
+    orderBy?: AttendeeOrderByInput;
+    skip?: Int;
+    after?: String;
+    before?: String;
+    first?: Int;
+    last?: Int;
+  }) => FragmentableArray<Attendee>;
+  attendeesConnection: (args?: {
+    where?: AttendeeWhereInput;
+    orderBy?: AttendeeOrderByInput;
+    skip?: Int;
+    after?: String;
+    before?: String;
+    first?: Int;
+    last?: Int;
+  }) => AttendeeConnectionPromise;
+  event: (where: EventWhereUniqueInput) => EventNullablePromise;
+  events: (args?: {
+    where?: EventWhereInput;
+    orderBy?: EventOrderByInput;
+    skip?: Int;
+    after?: String;
+    before?: String;
+    first?: Int;
+    last?: Int;
+  }) => FragmentableArray<Event>;
+  eventsConnection: (args?: {
+    where?: EventWhereInput;
+    orderBy?: EventOrderByInput;
+    skip?: Int;
+    after?: String;
+    before?: String;
+    first?: Int;
+    last?: Int;
+  }) => EventConnectionPromise;
+  eventTeam: (where: EventTeamWhereUniqueInput) => EventTeamNullablePromise;
+  eventTeams: (args?: {
+    where?: EventTeamWhereInput;
+    orderBy?: EventTeamOrderByInput;
+    skip?: Int;
+    after?: String;
+    before?: String;
+    first?: Int;
+    last?: Int;
+  }) => FragmentableArray<EventTeam>;
+  eventTeamsConnection: (args?: {
+    where?: EventTeamWhereInput;
+    orderBy?: EventTeamOrderByInput;
+    skip?: Int;
+    after?: String;
+    before?: String;
+    first?: Int;
+    last?: Int;
+  }) => EventTeamConnectionPromise;
   user: (where: UserWhereUniqueInput) => UserNullablePromise;
   users: (args?: {
     where?: UserWhereInput;
@@ -63,6 +123,50 @@ export interface Prisma {
    * Mutations
    */
 
+  createAttendee: (data: AttendeeCreateInput) => AttendeePromise;
+  updateAttendee: (args: {
+    data: AttendeeUpdateInput;
+    where: AttendeeWhereUniqueInput;
+  }) => AttendeePromise;
+  upsertAttendee: (args: {
+    where: AttendeeWhereUniqueInput;
+    create: AttendeeCreateInput;
+    update: AttendeeUpdateInput;
+  }) => AttendeePromise;
+  deleteAttendee: (where: AttendeeWhereUniqueInput) => AttendeePromise;
+  deleteManyAttendees: (where?: AttendeeWhereInput) => BatchPayloadPromise;
+  createEvent: (data: EventCreateInput) => EventPromise;
+  updateEvent: (args: {
+    data: EventUpdateInput;
+    where: EventWhereUniqueInput;
+  }) => EventPromise;
+  updateManyEvents: (args: {
+    data: EventUpdateManyMutationInput;
+    where?: EventWhereInput;
+  }) => BatchPayloadPromise;
+  upsertEvent: (args: {
+    where: EventWhereUniqueInput;
+    create: EventCreateInput;
+    update: EventUpdateInput;
+  }) => EventPromise;
+  deleteEvent: (where: EventWhereUniqueInput) => EventPromise;
+  deleteManyEvents: (where?: EventWhereInput) => BatchPayloadPromise;
+  createEventTeam: (data: EventTeamCreateInput) => EventTeamPromise;
+  updateEventTeam: (args: {
+    data: EventTeamUpdateInput;
+    where: EventTeamWhereUniqueInput;
+  }) => EventTeamPromise;
+  updateManyEventTeams: (args: {
+    data: EventTeamUpdateManyMutationInput;
+    where?: EventTeamWhereInput;
+  }) => BatchPayloadPromise;
+  upsertEventTeam: (args: {
+    where: EventTeamWhereUniqueInput;
+    create: EventTeamCreateInput;
+    update: EventTeamUpdateInput;
+  }) => EventTeamPromise;
+  deleteEventTeam: (where: EventTeamWhereUniqueInput) => EventTeamPromise;
+  deleteManyEventTeams: (where?: EventTeamWhereInput) => BatchPayloadPromise;
   createUser: (data: UserCreateInput) => UserPromise;
   updateUser: (args: {
     data: UserUpdateInput;
@@ -88,6 +192,15 @@ export interface Prisma {
 }
 
 export interface Subscription {
+  attendee: (
+    where?: AttendeeSubscriptionWhereInput
+  ) => AttendeeSubscriptionPayloadSubscription;
+  event: (
+    where?: EventSubscriptionWhereInput
+  ) => EventSubscriptionPayloadSubscription;
+  eventTeam: (
+    where?: EventTeamSubscriptionWhereInput
+  ) => EventTeamSubscriptionPayloadSubscription;
   user: (
     where?: UserSubscriptionWhereInput
   ) => UserSubscriptionPayloadSubscription;
@@ -101,21 +214,449 @@ export interface ClientConstructor<T> {
  * Types
  */
 
-export type UserOrderByInput = "id_ASC" | "id_DESC" | "name_ASC" | "name_DESC";
+export type AttendeeOrderByInput = "id_ASC" | "id_DESC";
+
+export type EventOrderByInput =
+  | "id_ASC"
+  | "id_DESC"
+  | "name_ASC"
+  | "name_DESC"
+  | "description_ASC"
+  | "description_DESC"
+  | "duration_ASC"
+  | "duration_DESC"
+  | "organizer_ASC"
+  | "organizer_DESC"
+  | "type_ASC"
+  | "type_DESC"
+  | "venue_ASC"
+  | "venue_DESC"
+  | "date_ASC"
+  | "date_DESC"
+  | "supportEmail_ASC"
+  | "supportEmail_DESC"
+  | "website_ASC"
+  | "website_DESC"
+  | "password_ASC"
+  | "password_DESC"
+  | "createdAt_ASC"
+  | "createdAt_DESC"
+  | "attendees_ASC"
+  | "attendees_DESC"
+  | "teams_ASC"
+  | "teams_DESC";
 
 export type MutationType = "CREATED" | "UPDATED" | "DELETED";
 
-export interface UserCreateInput {
+export type EventTeamOrderByInput =
+  | "id_ASC"
+  | "id_DESC"
+  | "name_ASC"
+  | "name_DESC"
+  | "description_ASC"
+  | "description_DESC"
+  | "createdAt_ASC"
+  | "createdAt_DESC";
+
+export type UserOrderByInput =
+  | "id_ASC"
+  | "id_DESC"
+  | "name_ASC"
+  | "name_DESC"
+  | "email_ASC"
+  | "email_DESC"
+  | "password_ASC"
+  | "password_DESC";
+
+export interface EventTeamCreateInput {
   id?: Maybe<ID_Input>;
   name: String;
+  description: String;
 }
 
-export interface UserUpdateInput {
+export type AttendeeWhereUniqueInput = AtLeastOne<{
+  id: Maybe<ID_Input>;
+}>;
+
+export interface EventUpsertNestedInput {
+  update: EventUpdateDataInput;
+  create: EventCreateInput;
+}
+
+export interface EventWhereInput {
+  id?: Maybe<ID_Input>;
+  id_not?: Maybe<ID_Input>;
+  id_in?: Maybe<ID_Input[] | ID_Input>;
+  id_not_in?: Maybe<ID_Input[] | ID_Input>;
+  id_lt?: Maybe<ID_Input>;
+  id_lte?: Maybe<ID_Input>;
+  id_gt?: Maybe<ID_Input>;
+  id_gte?: Maybe<ID_Input>;
+  id_contains?: Maybe<ID_Input>;
+  id_not_contains?: Maybe<ID_Input>;
+  id_starts_with?: Maybe<ID_Input>;
+  id_not_starts_with?: Maybe<ID_Input>;
+  id_ends_with?: Maybe<ID_Input>;
+  id_not_ends_with?: Maybe<ID_Input>;
   name?: Maybe<String>;
+  name_not?: Maybe<String>;
+  name_in?: Maybe<String[] | String>;
+  name_not_in?: Maybe<String[] | String>;
+  name_lt?: Maybe<String>;
+  name_lte?: Maybe<String>;
+  name_gt?: Maybe<String>;
+  name_gte?: Maybe<String>;
+  name_contains?: Maybe<String>;
+  name_not_contains?: Maybe<String>;
+  name_starts_with?: Maybe<String>;
+  name_not_starts_with?: Maybe<String>;
+  name_ends_with?: Maybe<String>;
+  name_not_ends_with?: Maybe<String>;
+  description?: Maybe<String>;
+  description_not?: Maybe<String>;
+  description_in?: Maybe<String[] | String>;
+  description_not_in?: Maybe<String[] | String>;
+  description_lt?: Maybe<String>;
+  description_lte?: Maybe<String>;
+  description_gt?: Maybe<String>;
+  description_gte?: Maybe<String>;
+  description_contains?: Maybe<String>;
+  description_not_contains?: Maybe<String>;
+  description_starts_with?: Maybe<String>;
+  description_not_starts_with?: Maybe<String>;
+  description_ends_with?: Maybe<String>;
+  description_not_ends_with?: Maybe<String>;
+  duration?: Maybe<Int>;
+  duration_not?: Maybe<Int>;
+  duration_in?: Maybe<Int[] | Int>;
+  duration_not_in?: Maybe<Int[] | Int>;
+  duration_lt?: Maybe<Int>;
+  duration_lte?: Maybe<Int>;
+  duration_gt?: Maybe<Int>;
+  duration_gte?: Maybe<Int>;
+  organizer?: Maybe<String>;
+  organizer_not?: Maybe<String>;
+  organizer_in?: Maybe<String[] | String>;
+  organizer_not_in?: Maybe<String[] | String>;
+  organizer_lt?: Maybe<String>;
+  organizer_lte?: Maybe<String>;
+  organizer_gt?: Maybe<String>;
+  organizer_gte?: Maybe<String>;
+  organizer_contains?: Maybe<String>;
+  organizer_not_contains?: Maybe<String>;
+  organizer_starts_with?: Maybe<String>;
+  organizer_not_starts_with?: Maybe<String>;
+  organizer_ends_with?: Maybe<String>;
+  organizer_not_ends_with?: Maybe<String>;
+  type?: Maybe<String>;
+  type_not?: Maybe<String>;
+  type_in?: Maybe<String[] | String>;
+  type_not_in?: Maybe<String[] | String>;
+  type_lt?: Maybe<String>;
+  type_lte?: Maybe<String>;
+  type_gt?: Maybe<String>;
+  type_gte?: Maybe<String>;
+  type_contains?: Maybe<String>;
+  type_not_contains?: Maybe<String>;
+  type_starts_with?: Maybe<String>;
+  type_not_starts_with?: Maybe<String>;
+  type_ends_with?: Maybe<String>;
+  type_not_ends_with?: Maybe<String>;
+  venue?: Maybe<String>;
+  venue_not?: Maybe<String>;
+  venue_in?: Maybe<String[] | String>;
+  venue_not_in?: Maybe<String[] | String>;
+  venue_lt?: Maybe<String>;
+  venue_lte?: Maybe<String>;
+  venue_gt?: Maybe<String>;
+  venue_gte?: Maybe<String>;
+  venue_contains?: Maybe<String>;
+  venue_not_contains?: Maybe<String>;
+  venue_starts_with?: Maybe<String>;
+  venue_not_starts_with?: Maybe<String>;
+  venue_ends_with?: Maybe<String>;
+  venue_not_ends_with?: Maybe<String>;
+  date?: Maybe<Int>;
+  date_not?: Maybe<Int>;
+  date_in?: Maybe<Int[] | Int>;
+  date_not_in?: Maybe<Int[] | Int>;
+  date_lt?: Maybe<Int>;
+  date_lte?: Maybe<Int>;
+  date_gt?: Maybe<Int>;
+  date_gte?: Maybe<Int>;
+  supportEmail?: Maybe<String>;
+  supportEmail_not?: Maybe<String>;
+  supportEmail_in?: Maybe<String[] | String>;
+  supportEmail_not_in?: Maybe<String[] | String>;
+  supportEmail_lt?: Maybe<String>;
+  supportEmail_lte?: Maybe<String>;
+  supportEmail_gt?: Maybe<String>;
+  supportEmail_gte?: Maybe<String>;
+  supportEmail_contains?: Maybe<String>;
+  supportEmail_not_contains?: Maybe<String>;
+  supportEmail_starts_with?: Maybe<String>;
+  supportEmail_not_starts_with?: Maybe<String>;
+  supportEmail_ends_with?: Maybe<String>;
+  supportEmail_not_ends_with?: Maybe<String>;
+  website?: Maybe<String>;
+  website_not?: Maybe<String>;
+  website_in?: Maybe<String[] | String>;
+  website_not_in?: Maybe<String[] | String>;
+  website_lt?: Maybe<String>;
+  website_lte?: Maybe<String>;
+  website_gt?: Maybe<String>;
+  website_gte?: Maybe<String>;
+  website_contains?: Maybe<String>;
+  website_not_contains?: Maybe<String>;
+  website_starts_with?: Maybe<String>;
+  website_not_starts_with?: Maybe<String>;
+  website_ends_with?: Maybe<String>;
+  website_not_ends_with?: Maybe<String>;
+  password?: Maybe<String>;
+  password_not?: Maybe<String>;
+  password_in?: Maybe<String[] | String>;
+  password_not_in?: Maybe<String[] | String>;
+  password_lt?: Maybe<String>;
+  password_lte?: Maybe<String>;
+  password_gt?: Maybe<String>;
+  password_gte?: Maybe<String>;
+  password_contains?: Maybe<String>;
+  password_not_contains?: Maybe<String>;
+  password_starts_with?: Maybe<String>;
+  password_not_starts_with?: Maybe<String>;
+  password_ends_with?: Maybe<String>;
+  password_not_ends_with?: Maybe<String>;
+  createdAt?: Maybe<DateTimeInput>;
+  createdAt_not?: Maybe<DateTimeInput>;
+  createdAt_in?: Maybe<DateTimeInput[] | DateTimeInput>;
+  createdAt_not_in?: Maybe<DateTimeInput[] | DateTimeInput>;
+  createdAt_lt?: Maybe<DateTimeInput>;
+  createdAt_lte?: Maybe<DateTimeInput>;
+  createdAt_gt?: Maybe<DateTimeInput>;
+  createdAt_gte?: Maybe<DateTimeInput>;
+  attendees?: Maybe<Int>;
+  attendees_not?: Maybe<Int>;
+  attendees_in?: Maybe<Int[] | Int>;
+  attendees_not_in?: Maybe<Int[] | Int>;
+  attendees_lt?: Maybe<Int>;
+  attendees_lte?: Maybe<Int>;
+  attendees_gt?: Maybe<Int>;
+  attendees_gte?: Maybe<Int>;
+  teams?: Maybe<Int>;
+  teams_not?: Maybe<Int>;
+  teams_in?: Maybe<Int[] | Int>;
+  teams_not_in?: Maybe<Int[] | Int>;
+  teams_lt?: Maybe<Int>;
+  teams_lte?: Maybe<Int>;
+  teams_gt?: Maybe<Int>;
+  teams_gte?: Maybe<Int>;
+  AND?: Maybe<EventWhereInput[] | EventWhereInput>;
+  OR?: Maybe<EventWhereInput[] | EventWhereInput>;
+  NOT?: Maybe<EventWhereInput[] | EventWhereInput>;
+}
+
+export interface EventTeamWhereInput {
+  id?: Maybe<ID_Input>;
+  id_not?: Maybe<ID_Input>;
+  id_in?: Maybe<ID_Input[] | ID_Input>;
+  id_not_in?: Maybe<ID_Input[] | ID_Input>;
+  id_lt?: Maybe<ID_Input>;
+  id_lte?: Maybe<ID_Input>;
+  id_gt?: Maybe<ID_Input>;
+  id_gte?: Maybe<ID_Input>;
+  id_contains?: Maybe<ID_Input>;
+  id_not_contains?: Maybe<ID_Input>;
+  id_starts_with?: Maybe<ID_Input>;
+  id_not_starts_with?: Maybe<ID_Input>;
+  id_ends_with?: Maybe<ID_Input>;
+  id_not_ends_with?: Maybe<ID_Input>;
+  name?: Maybe<String>;
+  name_not?: Maybe<String>;
+  name_in?: Maybe<String[] | String>;
+  name_not_in?: Maybe<String[] | String>;
+  name_lt?: Maybe<String>;
+  name_lte?: Maybe<String>;
+  name_gt?: Maybe<String>;
+  name_gte?: Maybe<String>;
+  name_contains?: Maybe<String>;
+  name_not_contains?: Maybe<String>;
+  name_starts_with?: Maybe<String>;
+  name_not_starts_with?: Maybe<String>;
+  name_ends_with?: Maybe<String>;
+  name_not_ends_with?: Maybe<String>;
+  description?: Maybe<String>;
+  description_not?: Maybe<String>;
+  description_in?: Maybe<String[] | String>;
+  description_not_in?: Maybe<String[] | String>;
+  description_lt?: Maybe<String>;
+  description_lte?: Maybe<String>;
+  description_gt?: Maybe<String>;
+  description_gte?: Maybe<String>;
+  description_contains?: Maybe<String>;
+  description_not_contains?: Maybe<String>;
+  description_starts_with?: Maybe<String>;
+  description_not_starts_with?: Maybe<String>;
+  description_ends_with?: Maybe<String>;
+  description_not_ends_with?: Maybe<String>;
+  createdAt?: Maybe<DateTimeInput>;
+  createdAt_not?: Maybe<DateTimeInput>;
+  createdAt_in?: Maybe<DateTimeInput[] | DateTimeInput>;
+  createdAt_not_in?: Maybe<DateTimeInput[] | DateTimeInput>;
+  createdAt_lt?: Maybe<DateTimeInput>;
+  createdAt_lte?: Maybe<DateTimeInput>;
+  createdAt_gt?: Maybe<DateTimeInput>;
+  createdAt_gte?: Maybe<DateTimeInput>;
+  AND?: Maybe<EventTeamWhereInput[] | EventTeamWhereInput>;
+  OR?: Maybe<EventTeamWhereInput[] | EventTeamWhereInput>;
+  NOT?: Maybe<EventTeamWhereInput[] | EventTeamWhereInput>;
 }
 
 export interface UserUpdateManyMutationInput {
   name?: Maybe<String>;
+  email?: Maybe<String>;
+  password?: Maybe<String>;
+}
+
+export interface EventSubscriptionWhereInput {
+  mutation_in?: Maybe<MutationType[] | MutationType>;
+  updatedFields_contains?: Maybe<String>;
+  updatedFields_contains_every?: Maybe<String[] | String>;
+  updatedFields_contains_some?: Maybe<String[] | String>;
+  node?: Maybe<EventWhereInput>;
+  AND?: Maybe<EventSubscriptionWhereInput[] | EventSubscriptionWhereInput>;
+  OR?: Maybe<EventSubscriptionWhereInput[] | EventSubscriptionWhereInput>;
+  NOT?: Maybe<EventSubscriptionWhereInput[] | EventSubscriptionWhereInput>;
+}
+
+export interface UserCreateInput {
+  id?: Maybe<ID_Input>;
+  name: String;
+  email: String;
+  password: String;
+}
+
+export interface EventUpdateDataInput {
+  name?: Maybe<String>;
+  description?: Maybe<String>;
+  duration?: Maybe<Int>;
+  organizer?: Maybe<String>;
+  type?: Maybe<String>;
+  venue?: Maybe<String>;
+  date?: Maybe<Int>;
+  supportEmail?: Maybe<String>;
+  website?: Maybe<String>;
+  password?: Maybe<String>;
+  attendees?: Maybe<Int>;
+  teams?: Maybe<Int>;
+}
+
+export interface EventTeamUpdateInput {
+  name?: Maybe<String>;
+  description?: Maybe<String>;
+}
+
+export interface EventUpdateOneInput {
+  create?: Maybe<EventCreateInput>;
+  update?: Maybe<EventUpdateDataInput>;
+  upsert?: Maybe<EventUpsertNestedInput>;
+  delete?: Maybe<Boolean>;
+  disconnect?: Maybe<Boolean>;
+  connect?: Maybe<EventWhereUniqueInput>;
+}
+
+export interface AttendeeSubscriptionWhereInput {
+  mutation_in?: Maybe<MutationType[] | MutationType>;
+  updatedFields_contains?: Maybe<String>;
+  updatedFields_contains_every?: Maybe<String[] | String>;
+  updatedFields_contains_some?: Maybe<String[] | String>;
+  node?: Maybe<AttendeeWhereInput>;
+  AND?: Maybe<
+    AttendeeSubscriptionWhereInput[] | AttendeeSubscriptionWhereInput
+  >;
+  OR?: Maybe<AttendeeSubscriptionWhereInput[] | AttendeeSubscriptionWhereInput>;
+  NOT?: Maybe<
+    AttendeeSubscriptionWhereInput[] | AttendeeSubscriptionWhereInput
+  >;
+}
+
+export interface AttendeeUpdateInput {
+  event?: Maybe<EventUpdateOneInput>;
+}
+
+export interface EventUpdateManyMutationInput {
+  name?: Maybe<String>;
+  description?: Maybe<String>;
+  duration?: Maybe<Int>;
+  organizer?: Maybe<String>;
+  type?: Maybe<String>;
+  venue?: Maybe<String>;
+  date?: Maybe<Int>;
+  supportEmail?: Maybe<String>;
+  website?: Maybe<String>;
+  password?: Maybe<String>;
+  attendees?: Maybe<Int>;
+  teams?: Maybe<Int>;
+}
+
+export type UserWhereUniqueInput = AtLeastOne<{
+  id: Maybe<ID_Input>;
+  name?: Maybe<String>;
+  email?: Maybe<String>;
+  password?: Maybe<String>;
+}>;
+
+export type EventTeamWhereUniqueInput = AtLeastOne<{
+  id: Maybe<ID_Input>;
+  name?: Maybe<String>;
+}>;
+
+export interface EventCreateInput {
+  id?: Maybe<ID_Input>;
+  name: String;
+  description?: Maybe<String>;
+  duration?: Maybe<Int>;
+  organizer?: Maybe<String>;
+  type: String;
+  venue: String;
+  date: Int;
+  supportEmail: String;
+  website?: Maybe<String>;
+  password: String;
+  attendees?: Maybe<Int>;
+  teams?: Maybe<Int>;
+}
+
+export interface UserUpdateInput {
+  name?: Maybe<String>;
+  email?: Maybe<String>;
+  password?: Maybe<String>;
+}
+
+export interface AttendeeCreateInput {
+  id?: Maybe<ID_Input>;
+  event?: Maybe<EventCreateOneInput>;
+}
+
+export interface EventCreateOneInput {
+  create?: Maybe<EventCreateInput>;
+  connect?: Maybe<EventWhereUniqueInput>;
+}
+
+export interface EventTeamSubscriptionWhereInput {
+  mutation_in?: Maybe<MutationType[] | MutationType>;
+  updatedFields_contains?: Maybe<String>;
+  updatedFields_contains_every?: Maybe<String[] | String>;
+  updatedFields_contains_some?: Maybe<String[] | String>;
+  node?: Maybe<EventTeamWhereInput>;
+  AND?: Maybe<
+    EventTeamSubscriptionWhereInput[] | EventTeamSubscriptionWhereInput
+  >;
+  OR?: Maybe<
+    EventTeamSubscriptionWhereInput[] | EventTeamSubscriptionWhereInput
+  >;
+  NOT?: Maybe<
+    EventTeamSubscriptionWhereInput[] | EventTeamSubscriptionWhereInput
+  >;
 }
 
 export interface UserWhereInput {
@@ -147,9 +688,78 @@ export interface UserWhereInput {
   name_not_starts_with?: Maybe<String>;
   name_ends_with?: Maybe<String>;
   name_not_ends_with?: Maybe<String>;
+  email?: Maybe<String>;
+  email_not?: Maybe<String>;
+  email_in?: Maybe<String[] | String>;
+  email_not_in?: Maybe<String[] | String>;
+  email_lt?: Maybe<String>;
+  email_lte?: Maybe<String>;
+  email_gt?: Maybe<String>;
+  email_gte?: Maybe<String>;
+  email_contains?: Maybe<String>;
+  email_not_contains?: Maybe<String>;
+  email_starts_with?: Maybe<String>;
+  email_not_starts_with?: Maybe<String>;
+  email_ends_with?: Maybe<String>;
+  email_not_ends_with?: Maybe<String>;
+  password?: Maybe<String>;
+  password_not?: Maybe<String>;
+  password_in?: Maybe<String[] | String>;
+  password_not_in?: Maybe<String[] | String>;
+  password_lt?: Maybe<String>;
+  password_lte?: Maybe<String>;
+  password_gt?: Maybe<String>;
+  password_gte?: Maybe<String>;
+  password_contains?: Maybe<String>;
+  password_not_contains?: Maybe<String>;
+  password_starts_with?: Maybe<String>;
+  password_not_starts_with?: Maybe<String>;
+  password_ends_with?: Maybe<String>;
+  password_not_ends_with?: Maybe<String>;
   AND?: Maybe<UserWhereInput[] | UserWhereInput>;
   OR?: Maybe<UserWhereInput[] | UserWhereInput>;
   NOT?: Maybe<UserWhereInput[] | UserWhereInput>;
+}
+
+export interface EventTeamUpdateManyMutationInput {
+  name?: Maybe<String>;
+  description?: Maybe<String>;
+}
+
+export interface AttendeeWhereInput {
+  id?: Maybe<ID_Input>;
+  id_not?: Maybe<ID_Input>;
+  id_in?: Maybe<ID_Input[] | ID_Input>;
+  id_not_in?: Maybe<ID_Input[] | ID_Input>;
+  id_lt?: Maybe<ID_Input>;
+  id_lte?: Maybe<ID_Input>;
+  id_gt?: Maybe<ID_Input>;
+  id_gte?: Maybe<ID_Input>;
+  id_contains?: Maybe<ID_Input>;
+  id_not_contains?: Maybe<ID_Input>;
+  id_starts_with?: Maybe<ID_Input>;
+  id_not_starts_with?: Maybe<ID_Input>;
+  id_ends_with?: Maybe<ID_Input>;
+  id_not_ends_with?: Maybe<ID_Input>;
+  event?: Maybe<EventWhereInput>;
+  AND?: Maybe<AttendeeWhereInput[] | AttendeeWhereInput>;
+  OR?: Maybe<AttendeeWhereInput[] | AttendeeWhereInput>;
+  NOT?: Maybe<AttendeeWhereInput[] | AttendeeWhereInput>;
+}
+
+export interface EventUpdateInput {
+  name?: Maybe<String>;
+  description?: Maybe<String>;
+  duration?: Maybe<Int>;
+  organizer?: Maybe<String>;
+  type?: Maybe<String>;
+  venue?: Maybe<String>;
+  date?: Maybe<Int>;
+  supportEmail?: Maybe<String>;
+  website?: Maybe<String>;
+  password?: Maybe<String>;
+  attendees?: Maybe<Int>;
+  teams?: Maybe<Int>;
 }
 
 export interface UserSubscriptionWhereInput {
@@ -163,12 +773,56 @@ export interface UserSubscriptionWhereInput {
   NOT?: Maybe<UserSubscriptionWhereInput[] | UserSubscriptionWhereInput>;
 }
 
-export type UserWhereUniqueInput = AtLeastOne<{
+export type EventWhereUniqueInput = AtLeastOne<{
   id: Maybe<ID_Input>;
+  name?: Maybe<String>;
+  supportEmail?: Maybe<String>;
 }>;
 
 export interface NodeNode {
   id: ID_Output;
+}
+
+export interface UserEdge {
+  node: User;
+  cursor: String;
+}
+
+export interface UserEdgePromise extends Promise<UserEdge>, Fragmentable {
+  node: <T = UserPromise>() => T;
+  cursor: () => Promise<String>;
+}
+
+export interface UserEdgeSubscription
+  extends Promise<AsyncIterator<UserEdge>>,
+    Fragmentable {
+  node: <T = UserSubscription>() => T;
+  cursor: () => Promise<AsyncIterator<String>>;
+}
+
+export interface UserPreviousValues {
+  id: ID_Output;
+  name: String;
+  email: String;
+  password: String;
+}
+
+export interface UserPreviousValuesPromise
+  extends Promise<UserPreviousValues>,
+    Fragmentable {
+  id: () => Promise<ID_Output>;
+  name: () => Promise<String>;
+  email: () => Promise<String>;
+  password: () => Promise<String>;
+}
+
+export interface UserPreviousValuesSubscription
+  extends Promise<AsyncIterator<UserPreviousValues>>,
+    Fragmentable {
+  id: () => Promise<AsyncIterator<ID_Output>>;
+  name: () => Promise<AsyncIterator<String>>;
+  email: () => Promise<AsyncIterator<String>>;
+  password: () => Promise<AsyncIterator<String>>;
 }
 
 export interface AggregateUser {
@@ -187,56 +841,261 @@ export interface AggregateUserSubscription
   count: () => Promise<AsyncIterator<Int>>;
 }
 
-export interface BatchPayload {
-  count: Long;
+export interface PageInfo {
+  hasNextPage: Boolean;
+  hasPreviousPage: Boolean;
+  startCursor?: String;
+  endCursor?: String;
 }
 
-export interface BatchPayloadPromise
-  extends Promise<BatchPayload>,
+export interface PageInfoPromise extends Promise<PageInfo>, Fragmentable {
+  hasNextPage: () => Promise<Boolean>;
+  hasPreviousPage: () => Promise<Boolean>;
+  startCursor: () => Promise<String>;
+  endCursor: () => Promise<String>;
+}
+
+export interface PageInfoSubscription
+  extends Promise<AsyncIterator<PageInfo>>,
     Fragmentable {
-  count: () => Promise<Long>;
+  hasNextPage: () => Promise<AsyncIterator<Boolean>>;
+  hasPreviousPage: () => Promise<AsyncIterator<Boolean>>;
+  startCursor: () => Promise<AsyncIterator<String>>;
+  endCursor: () => Promise<AsyncIterator<String>>;
 }
 
-export interface BatchPayloadSubscription
-  extends Promise<AsyncIterator<BatchPayload>>,
+export interface UserConnection {
+  pageInfo: PageInfo;
+  edges: UserEdge[];
+}
+
+export interface UserConnectionPromise
+  extends Promise<UserConnection>,
     Fragmentable {
-  count: () => Promise<AsyncIterator<Long>>;
+  pageInfo: <T = PageInfoPromise>() => T;
+  edges: <T = FragmentableArray<UserEdge>>() => T;
+  aggregate: <T = AggregateUserPromise>() => T;
 }
 
-export interface UserPreviousValues {
+export interface UserConnectionSubscription
+  extends Promise<AsyncIterator<UserConnection>>,
+    Fragmentable {
+  pageInfo: <T = PageInfoSubscription>() => T;
+  edges: <T = Promise<AsyncIterator<UserEdgeSubscription>>>() => T;
+  aggregate: <T = AggregateUserSubscription>() => T;
+}
+
+export interface AttendeeConnection {
+  pageInfo: PageInfo;
+  edges: AttendeeEdge[];
+}
+
+export interface AttendeeConnectionPromise
+  extends Promise<AttendeeConnection>,
+    Fragmentable {
+  pageInfo: <T = PageInfoPromise>() => T;
+  edges: <T = FragmentableArray<AttendeeEdge>>() => T;
+  aggregate: <T = AggregateAttendeePromise>() => T;
+}
+
+export interface AttendeeConnectionSubscription
+  extends Promise<AsyncIterator<AttendeeConnection>>,
+    Fragmentable {
+  pageInfo: <T = PageInfoSubscription>() => T;
+  edges: <T = Promise<AsyncIterator<AttendeeEdgeSubscription>>>() => T;
+  aggregate: <T = AggregateAttendeeSubscription>() => T;
+}
+
+export interface AggregateEventTeam {
+  count: Int;
+}
+
+export interface AggregateEventTeamPromise
+  extends Promise<AggregateEventTeam>,
+    Fragmentable {
+  count: () => Promise<Int>;
+}
+
+export interface AggregateEventTeamSubscription
+  extends Promise<AsyncIterator<AggregateEventTeam>>,
+    Fragmentable {
+  count: () => Promise<AsyncIterator<Int>>;
+}
+
+export interface User {
   id: ID_Output;
   name: String;
+  email: String;
+  password: String;
 }
 
-export interface UserPreviousValuesPromise
-  extends Promise<UserPreviousValues>,
-    Fragmentable {
+export interface UserPromise extends Promise<User>, Fragmentable {
   id: () => Promise<ID_Output>;
   name: () => Promise<String>;
+  email: () => Promise<String>;
+  password: () => Promise<String>;
 }
 
-export interface UserPreviousValuesSubscription
-  extends Promise<AsyncIterator<UserPreviousValues>>,
+export interface UserSubscription
+  extends Promise<AsyncIterator<User>>,
     Fragmentable {
   id: () => Promise<AsyncIterator<ID_Output>>;
   name: () => Promise<AsyncIterator<String>>;
+  email: () => Promise<AsyncIterator<String>>;
+  password: () => Promise<AsyncIterator<String>>;
 }
 
-export interface UserEdge {
-  node: User;
+export interface UserNullablePromise
+  extends Promise<User | null>,
+    Fragmentable {
+  id: () => Promise<ID_Output>;
+  name: () => Promise<String>;
+  email: () => Promise<String>;
+  password: () => Promise<String>;
+}
+
+export interface Event {
+  id: ID_Output;
+  name: String;
+  description?: String;
+  duration?: Int;
+  organizer?: String;
+  type: String;
+  venue: String;
+  date: Int;
+  supportEmail: String;
+  website?: String;
+  password: String;
+  createdAt: DateTimeOutput;
+  attendees?: Int;
+  teams?: Int;
+}
+
+export interface EventPromise extends Promise<Event>, Fragmentable {
+  id: () => Promise<ID_Output>;
+  name: () => Promise<String>;
+  description: () => Promise<String>;
+  duration: () => Promise<Int>;
+  organizer: () => Promise<String>;
+  type: () => Promise<String>;
+  venue: () => Promise<String>;
+  date: () => Promise<Int>;
+  supportEmail: () => Promise<String>;
+  website: () => Promise<String>;
+  password: () => Promise<String>;
+  createdAt: () => Promise<DateTimeOutput>;
+  attendees: () => Promise<Int>;
+  teams: () => Promise<Int>;
+}
+
+export interface EventSubscription
+  extends Promise<AsyncIterator<Event>>,
+    Fragmentable {
+  id: () => Promise<AsyncIterator<ID_Output>>;
+  name: () => Promise<AsyncIterator<String>>;
+  description: () => Promise<AsyncIterator<String>>;
+  duration: () => Promise<AsyncIterator<Int>>;
+  organizer: () => Promise<AsyncIterator<String>>;
+  type: () => Promise<AsyncIterator<String>>;
+  venue: () => Promise<AsyncIterator<String>>;
+  date: () => Promise<AsyncIterator<Int>>;
+  supportEmail: () => Promise<AsyncIterator<String>>;
+  website: () => Promise<AsyncIterator<String>>;
+  password: () => Promise<AsyncIterator<String>>;
+  createdAt: () => Promise<AsyncIterator<DateTimeOutput>>;
+  attendees: () => Promise<AsyncIterator<Int>>;
+  teams: () => Promise<AsyncIterator<Int>>;
+}
+
+export interface EventNullablePromise
+  extends Promise<Event | null>,
+    Fragmentable {
+  id: () => Promise<ID_Output>;
+  name: () => Promise<String>;
+  description: () => Promise<String>;
+  duration: () => Promise<Int>;
+  organizer: () => Promise<String>;
+  type: () => Promise<String>;
+  venue: () => Promise<String>;
+  date: () => Promise<Int>;
+  supportEmail: () => Promise<String>;
+  website: () => Promise<String>;
+  password: () => Promise<String>;
+  createdAt: () => Promise<DateTimeOutput>;
+  attendees: () => Promise<Int>;
+  teams: () => Promise<Int>;
+}
+
+export interface EventTeamEdge {
+  node: EventTeam;
   cursor: String;
 }
 
-export interface UserEdgePromise extends Promise<UserEdge>, Fragmentable {
-  node: <T = UserPromise>() => T;
+export interface EventTeamEdgePromise
+  extends Promise<EventTeamEdge>,
+    Fragmentable {
+  node: <T = EventTeamPromise>() => T;
   cursor: () => Promise<String>;
 }
 
-export interface UserEdgeSubscription
-  extends Promise<AsyncIterator<UserEdge>>,
+export interface EventTeamEdgeSubscription
+  extends Promise<AsyncIterator<EventTeamEdge>>,
     Fragmentable {
-  node: <T = UserSubscription>() => T;
+  node: <T = EventTeamSubscription>() => T;
   cursor: () => Promise<AsyncIterator<String>>;
+}
+
+export interface EventTeamConnection {
+  pageInfo: PageInfo;
+  edges: EventTeamEdge[];
+}
+
+export interface EventTeamConnectionPromise
+  extends Promise<EventTeamConnection>,
+    Fragmentable {
+  pageInfo: <T = PageInfoPromise>() => T;
+  edges: <T = FragmentableArray<EventTeamEdge>>() => T;
+  aggregate: <T = AggregateEventTeamPromise>() => T;
+}
+
+export interface EventTeamConnectionSubscription
+  extends Promise<AsyncIterator<EventTeamConnection>>,
+    Fragmentable {
+  pageInfo: <T = PageInfoSubscription>() => T;
+  edges: <T = Promise<AsyncIterator<EventTeamEdgeSubscription>>>() => T;
+  aggregate: <T = AggregateEventTeamSubscription>() => T;
+}
+
+export interface EventTeam {
+  id: ID_Output;
+  name: String;
+  description: String;
+  createdAt: DateTimeOutput;
+}
+
+export interface EventTeamPromise extends Promise<EventTeam>, Fragmentable {
+  id: () => Promise<ID_Output>;
+  name: () => Promise<String>;
+  description: () => Promise<String>;
+  createdAt: () => Promise<DateTimeOutput>;
+}
+
+export interface EventTeamSubscription
+  extends Promise<AsyncIterator<EventTeam>>,
+    Fragmentable {
+  id: () => Promise<AsyncIterator<ID_Output>>;
+  name: () => Promise<AsyncIterator<String>>;
+  description: () => Promise<AsyncIterator<String>>;
+  createdAt: () => Promise<AsyncIterator<DateTimeOutput>>;
+}
+
+export interface EventTeamNullablePromise
+  extends Promise<EventTeam | null>,
+    Fragmentable {
+  id: () => Promise<ID_Output>;
+  name: () => Promise<String>;
+  description: () => Promise<String>;
+  createdAt: () => Promise<DateTimeOutput>;
 }
 
 export interface UserSubscriptionPayload {
@@ -264,78 +1123,319 @@ export interface UserSubscriptionPayloadSubscription
   previousValues: <T = UserPreviousValuesSubscription>() => T;
 }
 
-export interface User {
+export interface EventTeamPreviousValues {
   id: ID_Output;
   name: String;
+  description: String;
+  createdAt: DateTimeOutput;
 }
 
-export interface UserPromise extends Promise<User>, Fragmentable {
+export interface EventTeamPreviousValuesPromise
+  extends Promise<EventTeamPreviousValues>,
+    Fragmentable {
   id: () => Promise<ID_Output>;
   name: () => Promise<String>;
+  description: () => Promise<String>;
+  createdAt: () => Promise<DateTimeOutput>;
 }
 
-export interface UserSubscription
-  extends Promise<AsyncIterator<User>>,
+export interface EventTeamPreviousValuesSubscription
+  extends Promise<AsyncIterator<EventTeamPreviousValues>>,
     Fragmentable {
   id: () => Promise<AsyncIterator<ID_Output>>;
   name: () => Promise<AsyncIterator<String>>;
+  description: () => Promise<AsyncIterator<String>>;
+  createdAt: () => Promise<AsyncIterator<DateTimeOutput>>;
 }
 
-export interface UserNullablePromise
-  extends Promise<User | null>,
+export interface EventEdge {
+  node: Event;
+  cursor: String;
+}
+
+export interface EventEdgePromise extends Promise<EventEdge>, Fragmentable {
+  node: <T = EventPromise>() => T;
+  cursor: () => Promise<String>;
+}
+
+export interface EventEdgeSubscription
+  extends Promise<AsyncIterator<EventEdge>>,
+    Fragmentable {
+  node: <T = EventSubscription>() => T;
+  cursor: () => Promise<AsyncIterator<String>>;
+}
+
+export interface AttendeeSubscriptionPayload {
+  mutation: MutationType;
+  node: Attendee;
+  updatedFields: String[];
+  previousValues: AttendeePreviousValues;
+}
+
+export interface AttendeeSubscriptionPayloadPromise
+  extends Promise<AttendeeSubscriptionPayload>,
+    Fragmentable {
+  mutation: () => Promise<MutationType>;
+  node: <T = AttendeePromise>() => T;
+  updatedFields: () => Promise<String[]>;
+  previousValues: <T = AttendeePreviousValuesPromise>() => T;
+}
+
+export interface AttendeeSubscriptionPayloadSubscription
+  extends Promise<AsyncIterator<AttendeeSubscriptionPayload>>,
+    Fragmentable {
+  mutation: () => Promise<AsyncIterator<MutationType>>;
+  node: <T = AttendeeSubscription>() => T;
+  updatedFields: () => Promise<AsyncIterator<String[]>>;
+  previousValues: <T = AttendeePreviousValuesSubscription>() => T;
+}
+
+export interface AggregateAttendee {
+  count: Int;
+}
+
+export interface AggregateAttendeePromise
+  extends Promise<AggregateAttendee>,
+    Fragmentable {
+  count: () => Promise<Int>;
+}
+
+export interface AggregateAttendeeSubscription
+  extends Promise<AsyncIterator<AggregateAttendee>>,
+    Fragmentable {
+  count: () => Promise<AsyncIterator<Int>>;
+}
+
+export interface Attendee {
+  id: ID_Output;
+}
+
+export interface AttendeePromise extends Promise<Attendee>, Fragmentable {
+  id: () => Promise<ID_Output>;
+  event: <T = EventPromise>() => T;
+}
+
+export interface AttendeeSubscription
+  extends Promise<AsyncIterator<Attendee>>,
+    Fragmentable {
+  id: () => Promise<AsyncIterator<ID_Output>>;
+  event: <T = EventSubscription>() => T;
+}
+
+export interface AttendeeNullablePromise
+  extends Promise<Attendee | null>,
+    Fragmentable {
+  id: () => Promise<ID_Output>;
+  event: <T = EventPromise>() => T;
+}
+
+export interface EventPreviousValues {
+  id: ID_Output;
+  name: String;
+  description?: String;
+  duration?: Int;
+  organizer?: String;
+  type: String;
+  venue: String;
+  date: Int;
+  supportEmail: String;
+  website?: String;
+  password: String;
+  createdAt: DateTimeOutput;
+  attendees?: Int;
+  teams?: Int;
+}
+
+export interface EventPreviousValuesPromise
+  extends Promise<EventPreviousValues>,
     Fragmentable {
   id: () => Promise<ID_Output>;
   name: () => Promise<String>;
+  description: () => Promise<String>;
+  duration: () => Promise<Int>;
+  organizer: () => Promise<String>;
+  type: () => Promise<String>;
+  venue: () => Promise<String>;
+  date: () => Promise<Int>;
+  supportEmail: () => Promise<String>;
+  website: () => Promise<String>;
+  password: () => Promise<String>;
+  createdAt: () => Promise<DateTimeOutput>;
+  attendees: () => Promise<Int>;
+  teams: () => Promise<Int>;
 }
 
-export interface UserConnection {
+export interface EventPreviousValuesSubscription
+  extends Promise<AsyncIterator<EventPreviousValues>>,
+    Fragmentable {
+  id: () => Promise<AsyncIterator<ID_Output>>;
+  name: () => Promise<AsyncIterator<String>>;
+  description: () => Promise<AsyncIterator<String>>;
+  duration: () => Promise<AsyncIterator<Int>>;
+  organizer: () => Promise<AsyncIterator<String>>;
+  type: () => Promise<AsyncIterator<String>>;
+  venue: () => Promise<AsyncIterator<String>>;
+  date: () => Promise<AsyncIterator<Int>>;
+  supportEmail: () => Promise<AsyncIterator<String>>;
+  website: () => Promise<AsyncIterator<String>>;
+  password: () => Promise<AsyncIterator<String>>;
+  createdAt: () => Promise<AsyncIterator<DateTimeOutput>>;
+  attendees: () => Promise<AsyncIterator<Int>>;
+  teams: () => Promise<AsyncIterator<Int>>;
+}
+
+export interface EventSubscriptionPayload {
+  mutation: MutationType;
+  node: Event;
+  updatedFields: String[];
+  previousValues: EventPreviousValues;
+}
+
+export interface EventSubscriptionPayloadPromise
+  extends Promise<EventSubscriptionPayload>,
+    Fragmentable {
+  mutation: () => Promise<MutationType>;
+  node: <T = EventPromise>() => T;
+  updatedFields: () => Promise<String[]>;
+  previousValues: <T = EventPreviousValuesPromise>() => T;
+}
+
+export interface EventSubscriptionPayloadSubscription
+  extends Promise<AsyncIterator<EventSubscriptionPayload>>,
+    Fragmentable {
+  mutation: () => Promise<AsyncIterator<MutationType>>;
+  node: <T = EventSubscription>() => T;
+  updatedFields: () => Promise<AsyncIterator<String[]>>;
+  previousValues: <T = EventPreviousValuesSubscription>() => T;
+}
+
+export interface EventTeamSubscriptionPayload {
+  mutation: MutationType;
+  node: EventTeam;
+  updatedFields: String[];
+  previousValues: EventTeamPreviousValues;
+}
+
+export interface EventTeamSubscriptionPayloadPromise
+  extends Promise<EventTeamSubscriptionPayload>,
+    Fragmentable {
+  mutation: () => Promise<MutationType>;
+  node: <T = EventTeamPromise>() => T;
+  updatedFields: () => Promise<String[]>;
+  previousValues: <T = EventTeamPreviousValuesPromise>() => T;
+}
+
+export interface EventTeamSubscriptionPayloadSubscription
+  extends Promise<AsyncIterator<EventTeamSubscriptionPayload>>,
+    Fragmentable {
+  mutation: () => Promise<AsyncIterator<MutationType>>;
+  node: <T = EventTeamSubscription>() => T;
+  updatedFields: () => Promise<AsyncIterator<String[]>>;
+  previousValues: <T = EventTeamPreviousValuesSubscription>() => T;
+}
+
+export interface AttendeePreviousValues {
+  id: ID_Output;
+}
+
+export interface AttendeePreviousValuesPromise
+  extends Promise<AttendeePreviousValues>,
+    Fragmentable {
+  id: () => Promise<ID_Output>;
+}
+
+export interface AttendeePreviousValuesSubscription
+  extends Promise<AsyncIterator<AttendeePreviousValues>>,
+    Fragmentable {
+  id: () => Promise<AsyncIterator<ID_Output>>;
+}
+
+export interface BatchPayload {
+  count: Long;
+}
+
+export interface BatchPayloadPromise
+  extends Promise<BatchPayload>,
+    Fragmentable {
+  count: () => Promise<Long>;
+}
+
+export interface BatchPayloadSubscription
+  extends Promise<AsyncIterator<BatchPayload>>,
+    Fragmentable {
+  count: () => Promise<AsyncIterator<Long>>;
+}
+
+export interface AttendeeEdge {
+  node: Attendee;
+  cursor: String;
+}
+
+export interface AttendeeEdgePromise
+  extends Promise<AttendeeEdge>,
+    Fragmentable {
+  node: <T = AttendeePromise>() => T;
+  cursor: () => Promise<String>;
+}
+
+export interface AttendeeEdgeSubscription
+  extends Promise<AsyncIterator<AttendeeEdge>>,
+    Fragmentable {
+  node: <T = AttendeeSubscription>() => T;
+  cursor: () => Promise<AsyncIterator<String>>;
+}
+
+export interface EventConnection {
   pageInfo: PageInfo;
-  edges: UserEdge[];
+  edges: EventEdge[];
 }
 
-export interface UserConnectionPromise
-  extends Promise<UserConnection>,
+export interface EventConnectionPromise
+  extends Promise<EventConnection>,
     Fragmentable {
   pageInfo: <T = PageInfoPromise>() => T;
-  edges: <T = FragmentableArray<UserEdge>>() => T;
-  aggregate: <T = AggregateUserPromise>() => T;
+  edges: <T = FragmentableArray<EventEdge>>() => T;
+  aggregate: <T = AggregateEventPromise>() => T;
 }
 
-export interface UserConnectionSubscription
-  extends Promise<AsyncIterator<UserConnection>>,
+export interface EventConnectionSubscription
+  extends Promise<AsyncIterator<EventConnection>>,
     Fragmentable {
   pageInfo: <T = PageInfoSubscription>() => T;
-  edges: <T = Promise<AsyncIterator<UserEdgeSubscription>>>() => T;
-  aggregate: <T = AggregateUserSubscription>() => T;
+  edges: <T = Promise<AsyncIterator<EventEdgeSubscription>>>() => T;
+  aggregate: <T = AggregateEventSubscription>() => T;
 }
 
-export interface PageInfo {
-  hasNextPage: Boolean;
-  hasPreviousPage: Boolean;
-  startCursor?: String;
-  endCursor?: String;
+export interface AggregateEvent {
+  count: Int;
 }
 
-export interface PageInfoPromise extends Promise<PageInfo>, Fragmentable {
-  hasNextPage: () => Promise<Boolean>;
-  hasPreviousPage: () => Promise<Boolean>;
-  startCursor: () => Promise<String>;
-  endCursor: () => Promise<String>;
-}
-
-export interface PageInfoSubscription
-  extends Promise<AsyncIterator<PageInfo>>,
+export interface AggregateEventPromise
+  extends Promise<AggregateEvent>,
     Fragmentable {
-  hasNextPage: () => Promise<AsyncIterator<Boolean>>;
-  hasPreviousPage: () => Promise<AsyncIterator<Boolean>>;
-  startCursor: () => Promise<AsyncIterator<String>>;
-  endCursor: () => Promise<AsyncIterator<String>>;
+  count: () => Promise<Int>;
+}
+
+export interface AggregateEventSubscription
+  extends Promise<AsyncIterator<AggregateEvent>>,
+    Fragmentable {
+  count: () => Promise<AsyncIterator<Int>>;
 }
 
 /*
-The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.
+DateTime scalar input type, allowing Date
 */
-export type String = string;
+export type DateTimeInput = Date | string;
+
+/*
+DateTime scalar output type, which is always a string
+*/
+export type DateTimeOutput = string;
+
+/*
+The `Boolean` scalar type represents `true` or `false`.
+*/
+export type Boolean = boolean;
 
 export type Long = string;
 
@@ -351,9 +1451,9 @@ The `Int` scalar type represents non-fractional signed whole numeric values. Int
 export type Int = number;
 
 /*
-The `Boolean` scalar type represents `true` or `false`.
+The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.
 */
-export type Boolean = boolean;
+export type String = string;
 
 /**
  * Model Metadata
@@ -362,6 +1462,18 @@ export type Boolean = boolean;
 export const models: Model[] = [
   {
     name: "User",
+    embedded: false
+  },
+  {
+    name: "Event",
+    embedded: false
+  },
+  {
+    name: "Attendee",
+    embedded: false
+  },
+  {
+    name: "EventTeam",
     embedded: false
   }
 ];

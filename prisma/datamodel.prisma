@@ -1,0 +1,71 @@
+type Team { 
+  id: ID! @id
+  name : String! @unique
+  members : Int  
+  description: String
+  active : Boolean 
+  lead : [Staff!]!
+  createdAt: DateTime! @createdAt
+} 
+
+type Group {
+   id: ID! @id
+  name: String! @unique
+  description: String
+  members: [Staff!]
+  email: String @unique
+}
+
+type Organization { 
+   id: ID! @id
+  createdAt: DateTime! @createdAt
+  name : String! @unique
+  Teams  : Int
+  leads : Int
+  type: String
+  description: String
+  country : String
+  state: String  @unique
+  email : String @unique
+  password: String
+  staffs :  Int 
+  staff :  [Staff!]! @relation( name : "OrganizationStaff"   , onDelete: CASCADE  )  
+ department: [Department!]!
+}
+ 
+type Department {
+  id: ID!  @id
+  leads: [Lead!]!
+  name: String! @unique
+  teams: [Team!]!  
+  createdAt: DateTime! @createdAt
+}
+
+type Testers {
+  id: ID! @id
+  name: String @unique
+  email: String @unique
+  department: String
+}
+
+type Lead { 
+  id: ID! @id
+  staff: [Staff!]!
+  team: [Team!]!
+}
+
+type Staff  {
+  id: ID! @id
+  firstname: String!
+  lastname: String
+  organization :  Organization @relation( name : "OrganizationStaff"  )  
+  team : [Team!]!
+  isLead: Boolean
+  role : String
+  country: String
+  state: String
+  email: String  @unique
+  joinedAt : DateTime! @createdAt
+}
+
+

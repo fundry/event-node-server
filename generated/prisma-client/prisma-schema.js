@@ -3,17 +3,608 @@ module.exports = {
   // Please don't change this file manually but run `prisma generate` to update it.
   // For more information, please read the docs: https://www.prisma.io/docs/prisma-client/
 
-/* GraphQL */ `type AggregateUser {
+/* GraphQL */ `type AggregateAttendee {
   count: Int!
+}
+
+type AggregateEvent {
+  count: Int!
+}
+
+type AggregateEventTeam {
+  count: Int!
+}
+
+type AggregateUser {
+  count: Int!
+}
+
+type Attendee {
+  id: ID!
+  event: Event
+}
+
+type AttendeeConnection {
+  pageInfo: PageInfo!
+  edges: [AttendeeEdge]!
+  aggregate: AggregateAttendee!
+}
+
+input AttendeeCreateInput {
+  id: ID
+  event: EventCreateOneInput
+}
+
+type AttendeeEdge {
+  node: Attendee!
+  cursor: String!
+}
+
+enum AttendeeOrderByInput {
+  id_ASC
+  id_DESC
+}
+
+type AttendeePreviousValues {
+  id: ID!
+}
+
+type AttendeeSubscriptionPayload {
+  mutation: MutationType!
+  node: Attendee
+  updatedFields: [String!]
+  previousValues: AttendeePreviousValues
+}
+
+input AttendeeSubscriptionWhereInput {
+  mutation_in: [MutationType!]
+  updatedFields_contains: String
+  updatedFields_contains_every: [String!]
+  updatedFields_contains_some: [String!]
+  node: AttendeeWhereInput
+  AND: [AttendeeSubscriptionWhereInput!]
+  OR: [AttendeeSubscriptionWhereInput!]
+  NOT: [AttendeeSubscriptionWhereInput!]
+}
+
+input AttendeeUpdateInput {
+  event: EventUpdateOneInput
+}
+
+input AttendeeWhereInput {
+  id: ID
+  id_not: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_gt: ID
+  id_gte: ID
+  id_contains: ID
+  id_not_contains: ID
+  id_starts_with: ID
+  id_not_starts_with: ID
+  id_ends_with: ID
+  id_not_ends_with: ID
+  event: EventWhereInput
+  AND: [AttendeeWhereInput!]
+  OR: [AttendeeWhereInput!]
+  NOT: [AttendeeWhereInput!]
+}
+
+input AttendeeWhereUniqueInput {
+  id: ID
 }
 
 type BatchPayload {
   count: Long!
 }
 
+scalar DateTime
+
+type Event {
+  id: ID!
+  name: String!
+  description: String
+  duration: Int
+  organizer: String
+  type: String!
+  venue: String!
+  date: Int!
+  supportEmail: String!
+  website: String
+  password: String!
+  createdAt: DateTime!
+  attendees: Int
+  teams: Int
+}
+
+type EventConnection {
+  pageInfo: PageInfo!
+  edges: [EventEdge]!
+  aggregate: AggregateEvent!
+}
+
+input EventCreateInput {
+  id: ID
+  name: String!
+  description: String
+  duration: Int
+  organizer: String
+  type: String!
+  venue: String!
+  date: Int!
+  supportEmail: String!
+  website: String
+  password: String!
+  attendees: Int
+  teams: Int
+}
+
+input EventCreateOneInput {
+  create: EventCreateInput
+  connect: EventWhereUniqueInput
+}
+
+type EventEdge {
+  node: Event!
+  cursor: String!
+}
+
+enum EventOrderByInput {
+  id_ASC
+  id_DESC
+  name_ASC
+  name_DESC
+  description_ASC
+  description_DESC
+  duration_ASC
+  duration_DESC
+  organizer_ASC
+  organizer_DESC
+  type_ASC
+  type_DESC
+  venue_ASC
+  venue_DESC
+  date_ASC
+  date_DESC
+  supportEmail_ASC
+  supportEmail_DESC
+  website_ASC
+  website_DESC
+  password_ASC
+  password_DESC
+  createdAt_ASC
+  createdAt_DESC
+  attendees_ASC
+  attendees_DESC
+  teams_ASC
+  teams_DESC
+}
+
+type EventPreviousValues {
+  id: ID!
+  name: String!
+  description: String
+  duration: Int
+  organizer: String
+  type: String!
+  venue: String!
+  date: Int!
+  supportEmail: String!
+  website: String
+  password: String!
+  createdAt: DateTime!
+  attendees: Int
+  teams: Int
+}
+
+type EventSubscriptionPayload {
+  mutation: MutationType!
+  node: Event
+  updatedFields: [String!]
+  previousValues: EventPreviousValues
+}
+
+input EventSubscriptionWhereInput {
+  mutation_in: [MutationType!]
+  updatedFields_contains: String
+  updatedFields_contains_every: [String!]
+  updatedFields_contains_some: [String!]
+  node: EventWhereInput
+  AND: [EventSubscriptionWhereInput!]
+  OR: [EventSubscriptionWhereInput!]
+  NOT: [EventSubscriptionWhereInput!]
+}
+
+type EventTeam {
+  id: ID!
+  name: String!
+  description: String!
+  createdAt: DateTime!
+}
+
+type EventTeamConnection {
+  pageInfo: PageInfo!
+  edges: [EventTeamEdge]!
+  aggregate: AggregateEventTeam!
+}
+
+input EventTeamCreateInput {
+  id: ID
+  name: String!
+  description: String!
+}
+
+type EventTeamEdge {
+  node: EventTeam!
+  cursor: String!
+}
+
+enum EventTeamOrderByInput {
+  id_ASC
+  id_DESC
+  name_ASC
+  name_DESC
+  description_ASC
+  description_DESC
+  createdAt_ASC
+  createdAt_DESC
+}
+
+type EventTeamPreviousValues {
+  id: ID!
+  name: String!
+  description: String!
+  createdAt: DateTime!
+}
+
+type EventTeamSubscriptionPayload {
+  mutation: MutationType!
+  node: EventTeam
+  updatedFields: [String!]
+  previousValues: EventTeamPreviousValues
+}
+
+input EventTeamSubscriptionWhereInput {
+  mutation_in: [MutationType!]
+  updatedFields_contains: String
+  updatedFields_contains_every: [String!]
+  updatedFields_contains_some: [String!]
+  node: EventTeamWhereInput
+  AND: [EventTeamSubscriptionWhereInput!]
+  OR: [EventTeamSubscriptionWhereInput!]
+  NOT: [EventTeamSubscriptionWhereInput!]
+}
+
+input EventTeamUpdateInput {
+  name: String
+  description: String
+}
+
+input EventTeamUpdateManyMutationInput {
+  name: String
+  description: String
+}
+
+input EventTeamWhereInput {
+  id: ID
+  id_not: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_gt: ID
+  id_gte: ID
+  id_contains: ID
+  id_not_contains: ID
+  id_starts_with: ID
+  id_not_starts_with: ID
+  id_ends_with: ID
+  id_not_ends_with: ID
+  name: String
+  name_not: String
+  name_in: [String!]
+  name_not_in: [String!]
+  name_lt: String
+  name_lte: String
+  name_gt: String
+  name_gte: String
+  name_contains: String
+  name_not_contains: String
+  name_starts_with: String
+  name_not_starts_with: String
+  name_ends_with: String
+  name_not_ends_with: String
+  description: String
+  description_not: String
+  description_in: [String!]
+  description_not_in: [String!]
+  description_lt: String
+  description_lte: String
+  description_gt: String
+  description_gte: String
+  description_contains: String
+  description_not_contains: String
+  description_starts_with: String
+  description_not_starts_with: String
+  description_ends_with: String
+  description_not_ends_with: String
+  createdAt: DateTime
+  createdAt_not: DateTime
+  createdAt_in: [DateTime!]
+  createdAt_not_in: [DateTime!]
+  createdAt_lt: DateTime
+  createdAt_lte: DateTime
+  createdAt_gt: DateTime
+  createdAt_gte: DateTime
+  AND: [EventTeamWhereInput!]
+  OR: [EventTeamWhereInput!]
+  NOT: [EventTeamWhereInput!]
+}
+
+input EventTeamWhereUniqueInput {
+  id: ID
+  name: String
+}
+
+input EventUpdateDataInput {
+  name: String
+  description: String
+  duration: Int
+  organizer: String
+  type: String
+  venue: String
+  date: Int
+  supportEmail: String
+  website: String
+  password: String
+  attendees: Int
+  teams: Int
+}
+
+input EventUpdateInput {
+  name: String
+  description: String
+  duration: Int
+  organizer: String
+  type: String
+  venue: String
+  date: Int
+  supportEmail: String
+  website: String
+  password: String
+  attendees: Int
+  teams: Int
+}
+
+input EventUpdateManyMutationInput {
+  name: String
+  description: String
+  duration: Int
+  organizer: String
+  type: String
+  venue: String
+  date: Int
+  supportEmail: String
+  website: String
+  password: String
+  attendees: Int
+  teams: Int
+}
+
+input EventUpdateOneInput {
+  create: EventCreateInput
+  update: EventUpdateDataInput
+  upsert: EventUpsertNestedInput
+  delete: Boolean
+  disconnect: Boolean
+  connect: EventWhereUniqueInput
+}
+
+input EventUpsertNestedInput {
+  update: EventUpdateDataInput!
+  create: EventCreateInput!
+}
+
+input EventWhereInput {
+  id: ID
+  id_not: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_gt: ID
+  id_gte: ID
+  id_contains: ID
+  id_not_contains: ID
+  id_starts_with: ID
+  id_not_starts_with: ID
+  id_ends_with: ID
+  id_not_ends_with: ID
+  name: String
+  name_not: String
+  name_in: [String!]
+  name_not_in: [String!]
+  name_lt: String
+  name_lte: String
+  name_gt: String
+  name_gte: String
+  name_contains: String
+  name_not_contains: String
+  name_starts_with: String
+  name_not_starts_with: String
+  name_ends_with: String
+  name_not_ends_with: String
+  description: String
+  description_not: String
+  description_in: [String!]
+  description_not_in: [String!]
+  description_lt: String
+  description_lte: String
+  description_gt: String
+  description_gte: String
+  description_contains: String
+  description_not_contains: String
+  description_starts_with: String
+  description_not_starts_with: String
+  description_ends_with: String
+  description_not_ends_with: String
+  duration: Int
+  duration_not: Int
+  duration_in: [Int!]
+  duration_not_in: [Int!]
+  duration_lt: Int
+  duration_lte: Int
+  duration_gt: Int
+  duration_gte: Int
+  organizer: String
+  organizer_not: String
+  organizer_in: [String!]
+  organizer_not_in: [String!]
+  organizer_lt: String
+  organizer_lte: String
+  organizer_gt: String
+  organizer_gte: String
+  organizer_contains: String
+  organizer_not_contains: String
+  organizer_starts_with: String
+  organizer_not_starts_with: String
+  organizer_ends_with: String
+  organizer_not_ends_with: String
+  type: String
+  type_not: String
+  type_in: [String!]
+  type_not_in: [String!]
+  type_lt: String
+  type_lte: String
+  type_gt: String
+  type_gte: String
+  type_contains: String
+  type_not_contains: String
+  type_starts_with: String
+  type_not_starts_with: String
+  type_ends_with: String
+  type_not_ends_with: String
+  venue: String
+  venue_not: String
+  venue_in: [String!]
+  venue_not_in: [String!]
+  venue_lt: String
+  venue_lte: String
+  venue_gt: String
+  venue_gte: String
+  venue_contains: String
+  venue_not_contains: String
+  venue_starts_with: String
+  venue_not_starts_with: String
+  venue_ends_with: String
+  venue_not_ends_with: String
+  date: Int
+  date_not: Int
+  date_in: [Int!]
+  date_not_in: [Int!]
+  date_lt: Int
+  date_lte: Int
+  date_gt: Int
+  date_gte: Int
+  supportEmail: String
+  supportEmail_not: String
+  supportEmail_in: [String!]
+  supportEmail_not_in: [String!]
+  supportEmail_lt: String
+  supportEmail_lte: String
+  supportEmail_gt: String
+  supportEmail_gte: String
+  supportEmail_contains: String
+  supportEmail_not_contains: String
+  supportEmail_starts_with: String
+  supportEmail_not_starts_with: String
+  supportEmail_ends_with: String
+  supportEmail_not_ends_with: String
+  website: String
+  website_not: String
+  website_in: [String!]
+  website_not_in: [String!]
+  website_lt: String
+  website_lte: String
+  website_gt: String
+  website_gte: String
+  website_contains: String
+  website_not_contains: String
+  website_starts_with: String
+  website_not_starts_with: String
+  website_ends_with: String
+  website_not_ends_with: String
+  password: String
+  password_not: String
+  password_in: [String!]
+  password_not_in: [String!]
+  password_lt: String
+  password_lte: String
+  password_gt: String
+  password_gte: String
+  password_contains: String
+  password_not_contains: String
+  password_starts_with: String
+  password_not_starts_with: String
+  password_ends_with: String
+  password_not_ends_with: String
+  createdAt: DateTime
+  createdAt_not: DateTime
+  createdAt_in: [DateTime!]
+  createdAt_not_in: [DateTime!]
+  createdAt_lt: DateTime
+  createdAt_lte: DateTime
+  createdAt_gt: DateTime
+  createdAt_gte: DateTime
+  attendees: Int
+  attendees_not: Int
+  attendees_in: [Int!]
+  attendees_not_in: [Int!]
+  attendees_lt: Int
+  attendees_lte: Int
+  attendees_gt: Int
+  attendees_gte: Int
+  teams: Int
+  teams_not: Int
+  teams_in: [Int!]
+  teams_not_in: [Int!]
+  teams_lt: Int
+  teams_lte: Int
+  teams_gt: Int
+  teams_gte: Int
+  AND: [EventWhereInput!]
+  OR: [EventWhereInput!]
+  NOT: [EventWhereInput!]
+}
+
+input EventWhereUniqueInput {
+  id: ID
+  name: String
+  supportEmail: String
+}
+
 scalar Long
 
 type Mutation {
+  createAttendee(data: AttendeeCreateInput!): Attendee!
+  updateAttendee(data: AttendeeUpdateInput!, where: AttendeeWhereUniqueInput!): Attendee
+  upsertAttendee(where: AttendeeWhereUniqueInput!, create: AttendeeCreateInput!, update: AttendeeUpdateInput!): Attendee!
+  deleteAttendee(where: AttendeeWhereUniqueInput!): Attendee
+  deleteManyAttendees(where: AttendeeWhereInput): BatchPayload!
+  createEvent(data: EventCreateInput!): Event!
+  updateEvent(data: EventUpdateInput!, where: EventWhereUniqueInput!): Event
+  updateManyEvents(data: EventUpdateManyMutationInput!, where: EventWhereInput): BatchPayload!
+  upsertEvent(where: EventWhereUniqueInput!, create: EventCreateInput!, update: EventUpdateInput!): Event!
+  deleteEvent(where: EventWhereUniqueInput!): Event
+  deleteManyEvents(where: EventWhereInput): BatchPayload!
+  createEventTeam(data: EventTeamCreateInput!): EventTeam!
+  updateEventTeam(data: EventTeamUpdateInput!, where: EventTeamWhereUniqueInput!): EventTeam
+  updateManyEventTeams(data: EventTeamUpdateManyMutationInput!, where: EventTeamWhereInput): BatchPayload!
+  upsertEventTeam(where: EventTeamWhereUniqueInput!, create: EventTeamCreateInput!, update: EventTeamUpdateInput!): EventTeam!
+  deleteEventTeam(where: EventTeamWhereUniqueInput!): EventTeam
+  deleteManyEventTeams(where: EventTeamWhereInput): BatchPayload!
   createUser(data: UserCreateInput!): User!
   updateUser(data: UserUpdateInput!, where: UserWhereUniqueInput!): User
   updateManyUsers(data: UserUpdateManyMutationInput!, where: UserWhereInput): BatchPayload!
@@ -40,6 +631,15 @@ type PageInfo {
 }
 
 type Query {
+  attendee(where: AttendeeWhereUniqueInput!): Attendee
+  attendees(where: AttendeeWhereInput, orderBy: AttendeeOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Attendee]!
+  attendeesConnection(where: AttendeeWhereInput, orderBy: AttendeeOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): AttendeeConnection!
+  event(where: EventWhereUniqueInput!): Event
+  events(where: EventWhereInput, orderBy: EventOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Event]!
+  eventsConnection(where: EventWhereInput, orderBy: EventOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): EventConnection!
+  eventTeam(where: EventTeamWhereUniqueInput!): EventTeam
+  eventTeams(where: EventTeamWhereInput, orderBy: EventTeamOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [EventTeam]!
+  eventTeamsConnection(where: EventTeamWhereInput, orderBy: EventTeamOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): EventTeamConnection!
   user(where: UserWhereUniqueInput!): User
   users(where: UserWhereInput, orderBy: UserOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [User]!
   usersConnection(where: UserWhereInput, orderBy: UserOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): UserConnection!
@@ -47,12 +647,17 @@ type Query {
 }
 
 type Subscription {
+  attendee(where: AttendeeSubscriptionWhereInput): AttendeeSubscriptionPayload
+  event(where: EventSubscriptionWhereInput): EventSubscriptionPayload
+  eventTeam(where: EventTeamSubscriptionWhereInput): EventTeamSubscriptionPayload
   user(where: UserSubscriptionWhereInput): UserSubscriptionPayload
 }
 
 type User {
   id: ID!
   name: String!
+  email: String!
+  password: String!
 }
 
 type UserConnection {
@@ -64,6 +669,8 @@ type UserConnection {
 input UserCreateInput {
   id: ID
   name: String!
+  email: String!
+  password: String!
 }
 
 type UserEdge {
@@ -76,11 +683,17 @@ enum UserOrderByInput {
   id_DESC
   name_ASC
   name_DESC
+  email_ASC
+  email_DESC
+  password_ASC
+  password_DESC
 }
 
 type UserPreviousValues {
   id: ID!
   name: String!
+  email: String!
+  password: String!
 }
 
 type UserSubscriptionPayload {
@@ -103,10 +716,14 @@ input UserSubscriptionWhereInput {
 
 input UserUpdateInput {
   name: String
+  email: String
+  password: String
 }
 
 input UserUpdateManyMutationInput {
   name: String
+  email: String
+  password: String
 }
 
 input UserWhereInput {
@@ -138,6 +755,34 @@ input UserWhereInput {
   name_not_starts_with: String
   name_ends_with: String
   name_not_ends_with: String
+  email: String
+  email_not: String
+  email_in: [String!]
+  email_not_in: [String!]
+  email_lt: String
+  email_lte: String
+  email_gt: String
+  email_gte: String
+  email_contains: String
+  email_not_contains: String
+  email_starts_with: String
+  email_not_starts_with: String
+  email_ends_with: String
+  email_not_ends_with: String
+  password: String
+  password_not: String
+  password_in: [String!]
+  password_not_in: [String!]
+  password_lt: String
+  password_lte: String
+  password_gt: String
+  password_gte: String
+  password_contains: String
+  password_not_contains: String
+  password_starts_with: String
+  password_not_starts_with: String
+  password_ends_with: String
+  password_not_ends_with: String
   AND: [UserWhereInput!]
   OR: [UserWhereInput!]
   NOT: [UserWhereInput!]
@@ -145,6 +790,9 @@ input UserWhereInput {
 
 input UserWhereUniqueInput {
   id: ID
+  name: String
+  email: String
+  password: String
 }
 `
       }

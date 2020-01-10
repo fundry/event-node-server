@@ -1,0 +1,63 @@
+# import Event from "../prisma/prisma.graphql"
+# import User from "../prisma/prisma.graphql"
+
+type Query {
+  info: String
+
+  # single queries
+  event(where: EventWhereUniqueInput): Event
+  user(where: UserWhereUniqueInput): User
+
+  # multiple queries
+  allEvent: [Event!]
+  allUser: [User!]
+  node(id: ID!): Node
+}
+
+type Mutation {
+  # Event Mutations ===========>
+  createUser(name: String!, email: String!, password: String!): User
+
+  createEvent(
+    where: UniqueInput
+    name: String!
+    description: String
+    duration: Int
+    organizer: String
+    type: String!
+    venue: String!
+    date: Int
+    supportEmail: String!
+    website: String
+    password: String!
+    createdAt: Int!
+    attendees: Int
+    teams: Int
+  ): Event
+
+  #  =======================>>
+
+  # authentication ================>
+  loginUser(where: UniqueInput!, name: String!, password: String!): AuthPayload
+
+  loginEvent(where: UniqueInput!, name: String!, password: String!): AuthPayload
+
+  loginEventMember(
+    where: UniqueInput!
+    name: String!
+    password: String!
+  ): AuthPayload
+
+  # cloud functions resolvers here
+  sendEmail(email: String): Event
+}
+
+type AuthPayload {
+  token: String
+  user: User
+}
+
+input UniqueInput {
+  id: ID
+  email: String
+}
