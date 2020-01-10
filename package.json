@@ -1,0 +1,54 @@
+{
+  "name": "remotify-backend",
+  "version": "1.0.0",
+  "description": "api for remotify",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon  ./index.js dev "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fundry/Remotify-Api.git"
+  },
+  "keywords": [
+    "graphql",
+    "prisma",
+    "postgres",
+    "docker",
+    "apollo"
+  ],
+  "author": "Nwani Victory",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fundry/Remotify-Api/issues"
+  },
+  "homepage": "https://github.com/fundry/Remotify-Api#readme",
+  "dependencies": {
+    "@apollo/federation": "^0.9.0",
+    "@apollo/gateway": "^0.10.0",
+    "apollo-server": "^2.7.2",
+    "apollo-server-express": "^2.7.2",
+    "axios": "^0.19.0",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.0.0",
+    "dotenv-cli": "^3.0.0",
+    "esm": "^3.2.25",
+    "graphql": "^14.4.2",
+    "graphql-import": "^0.7.1",
+    "graphql-tools": "^4.0.5",
+    "graphqlgen": "^0.6.0-rc9",
+    "jsonwebtoken": "^8.5.1",
+    "momentjs": "^2.0.0",
+    "prisma-binding": "^2.3.15",
+    "sequelize": "^5.11.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.5.5",
+    "@babel/core": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "nodemon": "^1.19.1"
+  }
+}
