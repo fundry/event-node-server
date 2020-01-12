@@ -23,6 +23,7 @@ type Mutation {
   # deleteManyUsers(where: UserWhereInput): BatchPayload!
 
   # authentication
+  createGoogleUser(data: GoogleUserCreateInput!): User!
 }
 
 enum MutationType {
@@ -45,24 +46,12 @@ interface Node {
 Information about pagination in a connection.
 """
 type PageInfo {
-  """
-  When paginating forwards, are there more items?
-  """
   hasNextPage: Boolean!
 
-  """
-  When paginating backwards, are there more items?
-  """
   hasPreviousPage: Boolean!
 
-  """
-  When paginating backwards, the cursor to continue.
-  """
   startCursor: String
 
-  """
-  When paginating forwards, the cursor to continue.
-  """
   endCursor: String
 }
 
@@ -110,6 +99,7 @@ type User implements Node {
   name: String
   email: String
   password: String
+  bucketLink: String
 }
 
 type Event implements Node {
@@ -120,13 +110,14 @@ type Event implements Node {
   organizer: String
   type: String!
   venue: String!
-  date: Int!
+  date: Int
   supportEmail: String!
   website: String
   password: String!
   createdAt: Int
   attendees: Int
   teams: Int
+  bucketLink: String
 }
 
 """
@@ -146,20 +137,20 @@ type UserConnection {
 }
 
 input EventCreateInput {
-  id: ID!
+  id: ID
   name: String!
   description: String
   duration: Int
   organizer: String
   type: String!
   venue: String!
-  date: Int!
+  date: Int
   supportEmail: String!
   website: String
   password: String!
-  createdAt: Int!
   attendees: Int
   teams: Int
+  bucketLink: String
 }
 
 input UserCreateInput {
@@ -167,6 +158,12 @@ input UserCreateInput {
   name: String!
   email: String!
   password: String!
+}
+
+input GoogleUserCreateInput {
+  id: ID!
+  name: String
+  email: String!
 }
 
 """

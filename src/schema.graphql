@@ -16,13 +16,20 @@ type Query {
 
 type Mutation {
   # Event Mutations ===========>
-  createUser(name: String!, email: String!, password: String!): User
+  createUser(
+    name: String!
+    email: String!
+    password: String!
+    bucketLink: String
+  ): User
+  createGoogleUser(name: String!, email: String!, password: String!): User
 
   createEvent(
     where: UniqueInput
     name: String!
     description: String
     duration: Int
+    email: String
     organizer: String
     type: String!
     venue: String!
@@ -30,9 +37,9 @@ type Mutation {
     supportEmail: String!
     website: String
     password: String!
-    createdAt: Int!
     attendees: Int
     teams: Int
+    bucketLink: String
   ): Event
 
   #  =======================>>

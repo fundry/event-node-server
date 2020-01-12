@@ -110,13 +110,14 @@ type Event {
   organizer: String
   type: String!
   venue: String!
-  date: Int!
+  date: Int
   supportEmail: String!
   website: String
   password: String!
   createdAt: DateTime!
   attendees: Int
   teams: Int
+  bucketLink: String
 }
 
 type EventConnection {
@@ -133,12 +134,13 @@ input EventCreateInput {
   organizer: String
   type: String!
   venue: String!
-  date: Int!
+  date: Int
   supportEmail: String!
   website: String
   password: String!
   attendees: Int
   teams: Int
+  bucketLink: String
 }
 
 input EventCreateOneInput {
@@ -180,6 +182,8 @@ enum EventOrderByInput {
   attendees_DESC
   teams_ASC
   teams_DESC
+  bucketLink_ASC
+  bucketLink_DESC
 }
 
 type EventPreviousValues {
@@ -190,13 +194,14 @@ type EventPreviousValues {
   organizer: String
   type: String!
   venue: String!
-  date: Int!
+  date: Int
   supportEmail: String!
   website: String
   password: String!
   createdAt: DateTime!
   attendees: Int
   teams: Int
+  bucketLink: String
 }
 
 type EventSubscriptionPayload {
@@ -361,6 +366,7 @@ input EventUpdateDataInput {
   password: String
   attendees: Int
   teams: Int
+  bucketLink: String
 }
 
 input EventUpdateInput {
@@ -376,6 +382,7 @@ input EventUpdateInput {
   password: String
   attendees: Int
   teams: Int
+  bucketLink: String
 }
 
 input EventUpdateManyMutationInput {
@@ -391,6 +398,7 @@ input EventUpdateManyMutationInput {
   password: String
   attendees: Int
   teams: Int
+  bucketLink: String
 }
 
 input EventUpdateOneInput {
@@ -574,6 +582,20 @@ input EventWhereInput {
   teams_lte: Int
   teams_gt: Int
   teams_gte: Int
+  bucketLink: String
+  bucketLink_not: String
+  bucketLink_in: [String!]
+  bucketLink_not_in: [String!]
+  bucketLink_lt: String
+  bucketLink_lte: String
+  bucketLink_gt: String
+  bucketLink_gte: String
+  bucketLink_contains: String
+  bucketLink_not_contains: String
+  bucketLink_starts_with: String
+  bucketLink_not_starts_with: String
+  bucketLink_ends_with: String
+  bucketLink_not_ends_with: String
   AND: [EventWhereInput!]
   OR: [EventWhereInput!]
   NOT: [EventWhereInput!]
@@ -658,6 +680,7 @@ type User {
   name: String!
   email: String!
   password: String!
+  bucketLink: String
 }
 
 type UserConnection {
@@ -671,6 +694,7 @@ input UserCreateInput {
   name: String!
   email: String!
   password: String!
+  bucketLink: String
 }
 
 type UserEdge {
@@ -687,6 +711,8 @@ enum UserOrderByInput {
   email_DESC
   password_ASC
   password_DESC
+  bucketLink_ASC
+  bucketLink_DESC
 }
 
 type UserPreviousValues {
@@ -694,6 +720,7 @@ type UserPreviousValues {
   name: String!
   email: String!
   password: String!
+  bucketLink: String
 }
 
 type UserSubscriptionPayload {
@@ -718,12 +745,14 @@ input UserUpdateInput {
   name: String
   email: String
   password: String
+  bucketLink: String
 }
 
 input UserUpdateManyMutationInput {
   name: String
   email: String
   password: String
+  bucketLink: String
 }
 
 input UserWhereInput {
@@ -783,6 +812,20 @@ input UserWhereInput {
   password_not_starts_with: String
   password_ends_with: String
   password_not_ends_with: String
+  bucketLink: String
+  bucketLink_not: String
+  bucketLink_in: [String!]
+  bucketLink_not_in: [String!]
+  bucketLink_lt: String
+  bucketLink_lte: String
+  bucketLink_gt: String
+  bucketLink_gte: String
+  bucketLink_contains: String
+  bucketLink_not_contains: String
+  bucketLink_starts_with: String
+  bucketLink_not_starts_with: String
+  bucketLink_ends_with: String
+  bucketLink_not_ends_with: String
   AND: [UserWhereInput!]
   OR: [UserWhereInput!]
   NOT: [UserWhereInput!]

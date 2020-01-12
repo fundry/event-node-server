@@ -2,43 +2,29 @@ require("dotenv").config(); //dotenv should be topmost so it loads all  env data
 import Axios from "axios";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { Storage } from "@google-cloud/storage";
+import passport from "passport";
+var GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
+// import GoogleStrategy from "passport-google-oauth";
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.CLIENT_ID,
+      clientSecret: process.env.CLIENT_SECRET,
+      callbackURL: "http://www.example.com/auth/google/callback"
+    },
+    function(accessToken, refreshToken, profile, done) {
+      User.findOrCreate({ googleId: profile.id }, function(err, user) {
+        return done(err, user);
+      });
+    }
+  )
+);
 
 const resolver = {
-  // Subscription: {
-  //   eventMessageSubscribe: {
-  //     subscribe: (parent, args, ctx, info) => {
-  //       console.log(ctx, "ctx");
-  //       console.log(info, "info");
-  //       return ctx.db.subscription.eventMessageSubscribe(
-  //         {
-  //           where: {
-  //             mutation_in: ["CREATED", "UPDATED"]
-  //           }
-  //         },
-  //         info
-  //       );
-  //     }
-  //   }
-  // },
-
   Query: {
     info: () => `This is the API of a Hackernews Clone`,
-
-    // organization: async (_, ctx, prisma, info) => {
-    // //   // logic to  create protected field ===========-->>
-    // //
-    // //   // if (!name) {
-    // //   //   throw new Error('Invalid Login');
-    // //   // }
-    // //   const id = ctx.where.id;
-    // //   const email = ctx.where.email;
-    // //   return prisma.db.query.organization({
-    // //     where: {
-    // //       email
-    // //     },
-    // //     info
-    // //   });
-    // // },
 
     event: (_, ctx, prisma, info) => {
       const email = ctx.where.email;
@@ -84,9 +70,14 @@ const resolver = {
           // createdAt: new Date(),
           // use moment.js for createdAt
           type: args.type,
-          email: args.email,
-          country: args.country,
-          state: args.state,
+          venue: args.venue,
+          duration: 11,
+          organizer: args.organizer,
+          website: args.website,
+          bucketLink: args.bucketLink,
+          supportEmail: args.supportEmail,
+          teams: args.teams,
+          attendees: args.attendees,
           password: hashedPassword
         }
       });
@@ -119,56 +110,9 @@ const resolver = {
       });
     },
 
-    // updateGroup: async (_, args, context, info) => {
-    //   const email = args.where.email;
-    //   console.log(args.where.email);
-    //
-    //   return context.db.mutation.updateGroup({
-    //     where: {
-    //       email
-    //     },
-    //     data: {
-    //       name: args.where.name,
-    //       description: args.where.description,
-    //       email: args.where.email,
-    //       website: args.where.website,
-    //       teams: args.where.teams,
-    //       leads: args.where.leads
-    //     }
-    //   });
-    // },
-
     //
     //  AUTH RESOLVERS ========>
     //
-
-    loginEvent: async (_, { password, where }, ctx, info) => {
-      const email = where.email;
-      const user = await ctx.db.query.organization({
-        where: {
-          email: email
-        }
-      });
-
-      if (!user) {
-        throw new Error("Invalid Login");
-      }
-      const passwordMatch = await bcrypt.compare(password, user.password);
-
-      if (!passwordMatch) {
-        throw new Error("Invalid Login");
-      }
-      const token = jwt.sign(
-        {
-          username: email
-        },
-        process.env.APP_SECRET,
-        {
-          expiresIn: "30d"
-        }
-      );
-      return { token, user };
-    },
 
     loginUser: async (_, { password, where }, ctx, info) => {
       const email = where.email;
@@ -196,6 +140,19 @@ const resolver = {
         }
       );
       return { token, user };
+    },
+
+    createGoogleUser: async (_, { email, where }, ctx, info) => {
+      try {
+        passport.authenticate("google", { scope: ["profile"] });
+
+        console.log(passport);
+      } catch (e) {
+        console.log(e);
+      }
+      console.log(email);
+      // return { user };
+      return email;
     },
 
     // Cloud Functions resolvers here ============>>>>

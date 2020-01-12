@@ -244,7 +244,9 @@ export type EventOrderByInput =
   | "attendees_ASC"
   | "attendees_DESC"
   | "teams_ASC"
-  | "teams_DESC";
+  | "teams_DESC"
+  | "bucketLink_ASC"
+  | "bucketLink_DESC";
 
 export type MutationType = "CREATED" | "UPDATED" | "DELETED";
 
@@ -266,7 +268,9 @@ export type UserOrderByInput =
   | "email_ASC"
   | "email_DESC"
   | "password_ASC"
-  | "password_DESC";
+  | "password_DESC"
+  | "bucketLink_ASC"
+  | "bucketLink_DESC";
 
 export interface EventTeamCreateInput {
   id?: Maybe<ID_Input>;
@@ -450,6 +454,20 @@ export interface EventWhereInput {
   teams_lte?: Maybe<Int>;
   teams_gt?: Maybe<Int>;
   teams_gte?: Maybe<Int>;
+  bucketLink?: Maybe<String>;
+  bucketLink_not?: Maybe<String>;
+  bucketLink_in?: Maybe<String[] | String>;
+  bucketLink_not_in?: Maybe<String[] | String>;
+  bucketLink_lt?: Maybe<String>;
+  bucketLink_lte?: Maybe<String>;
+  bucketLink_gt?: Maybe<String>;
+  bucketLink_gte?: Maybe<String>;
+  bucketLink_contains?: Maybe<String>;
+  bucketLink_not_contains?: Maybe<String>;
+  bucketLink_starts_with?: Maybe<String>;
+  bucketLink_not_starts_with?: Maybe<String>;
+  bucketLink_ends_with?: Maybe<String>;
+  bucketLink_not_ends_with?: Maybe<String>;
   AND?: Maybe<EventWhereInput[] | EventWhereInput>;
   OR?: Maybe<EventWhereInput[] | EventWhereInput>;
   NOT?: Maybe<EventWhereInput[] | EventWhereInput>;
@@ -515,6 +533,7 @@ export interface UserUpdateManyMutationInput {
   name?: Maybe<String>;
   email?: Maybe<String>;
   password?: Maybe<String>;
+  bucketLink?: Maybe<String>;
 }
 
 export interface EventSubscriptionWhereInput {
@@ -533,6 +552,7 @@ export interface UserCreateInput {
   name: String;
   email: String;
   password: String;
+  bucketLink?: Maybe<String>;
 }
 
 export interface EventUpdateDataInput {
@@ -548,6 +568,7 @@ export interface EventUpdateDataInput {
   password?: Maybe<String>;
   attendees?: Maybe<Int>;
   teams?: Maybe<Int>;
+  bucketLink?: Maybe<String>;
 }
 
 export interface EventTeamUpdateInput {
@@ -596,6 +617,7 @@ export interface EventUpdateManyMutationInput {
   password?: Maybe<String>;
   attendees?: Maybe<Int>;
   teams?: Maybe<Int>;
+  bucketLink?: Maybe<String>;
 }
 
 export type UserWhereUniqueInput = AtLeastOne<{
@@ -618,18 +640,20 @@ export interface EventCreateInput {
   organizer?: Maybe<String>;
   type: String;
   venue: String;
-  date: Int;
+  date?: Maybe<Int>;
   supportEmail: String;
   website?: Maybe<String>;
   password: String;
   attendees?: Maybe<Int>;
   teams?: Maybe<Int>;
+  bucketLink?: Maybe<String>;
 }
 
 export interface UserUpdateInput {
   name?: Maybe<String>;
   email?: Maybe<String>;
   password?: Maybe<String>;
+  bucketLink?: Maybe<String>;
 }
 
 export interface AttendeeCreateInput {
@@ -716,6 +740,20 @@ export interface UserWhereInput {
   password_not_starts_with?: Maybe<String>;
   password_ends_with?: Maybe<String>;
   password_not_ends_with?: Maybe<String>;
+  bucketLink?: Maybe<String>;
+  bucketLink_not?: Maybe<String>;
+  bucketLink_in?: Maybe<String[] | String>;
+  bucketLink_not_in?: Maybe<String[] | String>;
+  bucketLink_lt?: Maybe<String>;
+  bucketLink_lte?: Maybe<String>;
+  bucketLink_gt?: Maybe<String>;
+  bucketLink_gte?: Maybe<String>;
+  bucketLink_contains?: Maybe<String>;
+  bucketLink_not_contains?: Maybe<String>;
+  bucketLink_starts_with?: Maybe<String>;
+  bucketLink_not_starts_with?: Maybe<String>;
+  bucketLink_ends_with?: Maybe<String>;
+  bucketLink_not_ends_with?: Maybe<String>;
   AND?: Maybe<UserWhereInput[] | UserWhereInput>;
   OR?: Maybe<UserWhereInput[] | UserWhereInput>;
   NOT?: Maybe<UserWhereInput[] | UserWhereInput>;
@@ -760,6 +798,7 @@ export interface EventUpdateInput {
   password?: Maybe<String>;
   attendees?: Maybe<Int>;
   teams?: Maybe<Int>;
+  bucketLink?: Maybe<String>;
 }
 
 export interface UserSubscriptionWhereInput {
@@ -805,6 +844,7 @@ export interface UserPreviousValues {
   name: String;
   email: String;
   password: String;
+  bucketLink?: String;
 }
 
 export interface UserPreviousValuesPromise
@@ -814,6 +854,7 @@ export interface UserPreviousValuesPromise
   name: () => Promise<String>;
   email: () => Promise<String>;
   password: () => Promise<String>;
+  bucketLink: () => Promise<String>;
 }
 
 export interface UserPreviousValuesSubscription
@@ -823,6 +864,7 @@ export interface UserPreviousValuesSubscription
   name: () => Promise<AsyncIterator<String>>;
   email: () => Promise<AsyncIterator<String>>;
   password: () => Promise<AsyncIterator<String>>;
+  bucketLink: () => Promise<AsyncIterator<String>>;
 }
 
 export interface AggregateUser {
@@ -927,6 +969,7 @@ export interface User {
   name: String;
   email: String;
   password: String;
+  bucketLink?: String;
 }
 
 export interface UserPromise extends Promise<User>, Fragmentable {
@@ -934,6 +977,7 @@ export interface UserPromise extends Promise<User>, Fragmentable {
   name: () => Promise<String>;
   email: () => Promise<String>;
   password: () => Promise<String>;
+  bucketLink: () => Promise<String>;
 }
 
 export interface UserSubscription
@@ -943,6 +987,7 @@ export interface UserSubscription
   name: () => Promise<AsyncIterator<String>>;
   email: () => Promise<AsyncIterator<String>>;
   password: () => Promise<AsyncIterator<String>>;
+  bucketLink: () => Promise<AsyncIterator<String>>;
 }
 
 export interface UserNullablePromise
@@ -952,6 +997,7 @@ export interface UserNullablePromise
   name: () => Promise<String>;
   email: () => Promise<String>;
   password: () => Promise<String>;
+  bucketLink: () => Promise<String>;
 }
 
 export interface Event {
@@ -962,13 +1008,14 @@ export interface Event {
   organizer?: String;
   type: String;
   venue: String;
-  date: Int;
+  date?: Int;
   supportEmail: String;
   website?: String;
   password: String;
   createdAt: DateTimeOutput;
   attendees?: Int;
   teams?: Int;
+  bucketLink?: String;
 }
 
 export interface EventPromise extends Promise<Event>, Fragmentable {
@@ -986,6 +1033,7 @@ export interface EventPromise extends Promise<Event>, Fragmentable {
   createdAt: () => Promise<DateTimeOutput>;
   attendees: () => Promise<Int>;
   teams: () => Promise<Int>;
+  bucketLink: () => Promise<String>;
 }
 
 export interface EventSubscription
@@ -1005,6 +1053,7 @@ export interface EventSubscription
   createdAt: () => Promise<AsyncIterator<DateTimeOutput>>;
   attendees: () => Promise<AsyncIterator<Int>>;
   teams: () => Promise<AsyncIterator<Int>>;
+  bucketLink: () => Promise<AsyncIterator<String>>;
 }
 
 export interface EventNullablePromise
@@ -1024,6 +1073,7 @@ export interface EventNullablePromise
   createdAt: () => Promise<DateTimeOutput>;
   attendees: () => Promise<Int>;
   teams: () => Promise<Int>;
+  bucketLink: () => Promise<String>;
 }
 
 export interface EventTeamEdge {
@@ -1237,13 +1287,14 @@ export interface EventPreviousValues {
   organizer?: String;
   type: String;
   venue: String;
-  date: Int;
+  date?: Int;
   supportEmail: String;
   website?: String;
   password: String;
   createdAt: DateTimeOutput;
   attendees?: Int;
   teams?: Int;
+  bucketLink?: String;
 }
 
 export interface EventPreviousValuesPromise
@@ -1263,6 +1314,7 @@ export interface EventPreviousValuesPromise
   createdAt: () => Promise<DateTimeOutput>;
   attendees: () => Promise<Int>;
   teams: () => Promise<Int>;
+  bucketLink: () => Promise<String>;
 }
 
 export interface EventPreviousValuesSubscription
@@ -1282,6 +1334,7 @@ export interface EventPreviousValuesSubscription
   createdAt: () => Promise<AsyncIterator<DateTimeOutput>>;
   attendees: () => Promise<AsyncIterator<Int>>;
   teams: () => Promise<AsyncIterator<Int>>;
+  bucketLink: () => Promise<AsyncIterator<String>>;
 }
 
 export interface EventSubscriptionPayload {

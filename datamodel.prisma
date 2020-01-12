@@ -3,6 +3,7 @@ type User {
   name: String! @unique
   email: String! @unique
   password: String! @unique
+  bucketLink: String
 }
 
 type Event {
@@ -13,13 +14,14 @@ type Event {
   organizer: String
   type: String!
   venue: String!
-  date: Int!
+  date: Int 
   supportEmail: String! @unique
   website: String
   password : String!
   createdAt: DateTime! @createdAt
   attendees: Int
   teams: Int
+  bucketLink: String
 }
 
 type Attendee {
