@@ -26,13 +26,57 @@ passport.use(
 );
 
 const storage = new Storage({
-  keyFilename: path.join(__dirname, '../Remotify-service-key.json'),
-  projectId: 'remotify-250023',
+  keyFilename: path.join(__dirname, process.env.SERVICE_KEY_PATH),
+  projectId: process.env.GOOGLE_PROJECT_ID,
 });
+
+const createBucket = async () => {
+  // generate random names for d buckets
+  const chance = new Chance();
+  const random = chance.string();
+  const Random = random.toLowerCase();
+
+  //      await storage.createBucket(Random);
+  console.log(`Bucket ${Random} created.`);
+
+  const [details] = await storage.bucket(Random).getMetadata();
+  // console.log([details.name, details.selfLink]);
+
+  return details;
+};
+
+const sendEmail = (Email, type) => {
+  switch (type) {
+    case 'Event':
+      try {
+        // for local testing using Functions framework == 'http://localhost:8080/'
+        const link = process.env.EMAIL_FUNCTION;
+        Axios.post(`${link}/?email=${args.email}`, {
+          email: Email,
+          type: 'Event',
+        });
+      } catch (error) {
+        console.log(error);
+      }
+      break;
+    case 'User':
+      try {
+        // for local testing using Functions framework == 'http://localhost:8080/'
+        const link = process.env.EMAIL_FUNCTION;
+        Axios.post(`${link}/?email=${args.email}`, {
+          email: Email,
+          type: 'User',
+        });
+      } catch (error) {
+        console.log(error);
+      }
+      break;
+  }
+};
 
 const resolver = {
   Query: {
-    info: () => `This is the API of a Hackernews Clone`,
+    info: () => `Info info. Testing graphql server`,
 
     event: (_, ctx, prisma, info) => {
       const email = ctx.where.email;
@@ -40,6 +84,7 @@ const resolver = {
       return prisma.db.query.event({
         where: {
           email,
+          id,
         },
         info,
       });
@@ -60,30 +105,11 @@ const resolver = {
     // ===================>
     createEvent: async (root, args, context, info) => {
       const hashedPassword = await bcrypt.hash(args.password, 10);
-
-      // generate random names for d buckets
-      const chance = new Chance();
-      const random = chance.string();
-      const Random = random.toLowerCase();
-      // ===========================================>
-
-      // cloud function here
       const Email = args.email;
-      try {
-        // for local testing == 'http://localhost:8080/'
-        const link = process.env.EMAIL_FUNCTION;
-        Axios.post(`${link}/?email=${args.email}`, {
-          email: Email,
-        });
-      } catch (error) {
-        console.log(error);
-      }
 
-      await storage.createBucket(Random);
-      console.log(`Bucket ${Random} created.`);
+      sendEmail(Email, 'Event');
 
-      const [details] = await storage.bucket(Random).getMetadata();
-      // console.log([details.name, details.selfLink]);
+      createBucket();
 
       return await context.db.mutation.createEvent({
         data: {
@@ -96,7 +122,7 @@ const resolver = {
           duration: 11,
           organizer: args.organizer,
           website: args.website,
-          bucketLink: details.selfLink,
+          bucketLink: 'details.selfLink',
           supportEmail: args.supportEmail,
           teams: args.teams,
           attendees: args.attendees,
@@ -110,23 +136,15 @@ const resolver = {
 
       // cloud function here
       const Email = args.email;
-      try {
-        Axios.post('http://localhost:8080/', {
-          email: Email,
-        });
-      } catch (error) {
-        console.log(error);
-      }
+      sendEmail(Email, 'User');
 
-      return context.db.mutation.createStaff({
+      createBucket();
+
+      return context.db.mutation.createUser({
         data: {
-          firstname: args.firstname,
-          lastname: args.lastname,
-          role: args.role,
-          isLead: args.isLead,
+          name: args.name,
           email: args.email,
-          country: args.country,
-          state: args.state,
+          bucketLink: args.bucketLink,
           password: hashedPassword,
         },
       });

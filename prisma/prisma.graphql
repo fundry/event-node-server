@@ -154,16 +154,18 @@ input EventCreateInput {
 }
 
 input UserCreateInput {
-  id: ID!
+  id: ID 
   name: String!
   email: String!
   password: String!
+  bucketLink: String! 
 }
 
 input GoogleUserCreateInput {
-  id: ID!
+  id: ID 
   name: String
   email: String!
+  bucketLink: String! 
 }
 
 """

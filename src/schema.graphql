@@ -17,11 +17,13 @@ type Query {
 type Mutation {
   # Event Mutations ===========>
   createUser(
+    where: UniqueInput
     name: String!
     email: String!
     password: String!
     bucketLink: String
   ): User
+  
   createGoogleUser(name: String!, email: String!, password: String!): User
 
   createEvent(
