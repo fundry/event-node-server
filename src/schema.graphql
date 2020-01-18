@@ -44,6 +44,13 @@ type Mutation {
     bucketLink: String
   ): Event
 
+  uploadFile(
+    where: UniqueInput
+    EventName: String 
+    email: String 
+    bucketLink: String!
+  ): UploadPayload
+
   #  =======================>>
 
   # authentication ================>
@@ -64,6 +71,10 @@ type Mutation {
 type AuthPayload {
   token: String
   user: User
+}
+
+type UploadPayload { 
+  bucketLink: uri
 }
 
 input UniqueInput {
