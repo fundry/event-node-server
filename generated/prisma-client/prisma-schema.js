@@ -15,6 +15,10 @@ type AggregateEventTeam {
   count: Int!
 }
 
+type AggregateFile {
+  count: Int!
+}
+
 type AggregateUser {
   count: Int!
 }
@@ -607,6 +611,203 @@ input EventWhereUniqueInput {
   supportEmail: String
 }
 
+type File {
+  id: ID!
+  filename: String
+  mimetype: String
+  size: String
+  uri: String
+  encoding: String
+  timestamp: Int
+}
+
+type FileConnection {
+  pageInfo: PageInfo!
+  edges: [FileEdge]!
+  aggregate: AggregateFile!
+}
+
+input FileCreateInput {
+  id: ID
+  filename: String
+  mimetype: String
+  size: String
+  uri: String
+  encoding: String
+  timestamp: Int
+}
+
+type FileEdge {
+  node: File!
+  cursor: String!
+}
+
+enum FileOrderByInput {
+  id_ASC
+  id_DESC
+  filename_ASC
+  filename_DESC
+  mimetype_ASC
+  mimetype_DESC
+  size_ASC
+  size_DESC
+  uri_ASC
+  uri_DESC
+  encoding_ASC
+  encoding_DESC
+  timestamp_ASC
+  timestamp_DESC
+}
+
+type FilePreviousValues {
+  id: ID!
+  filename: String
+  mimetype: String
+  size: String
+  uri: String
+  encoding: String
+  timestamp: Int
+}
+
+type FileSubscriptionPayload {
+  mutation: MutationType!
+  node: File
+  updatedFields: [String!]
+  previousValues: FilePreviousValues
+}
+
+input FileSubscriptionWhereInput {
+  mutation_in: [MutationType!]
+  updatedFields_contains: String
+  updatedFields_contains_every: [String!]
+  updatedFields_contains_some: [String!]
+  node: FileWhereInput
+  AND: [FileSubscriptionWhereInput!]
+  OR: [FileSubscriptionWhereInput!]
+  NOT: [FileSubscriptionWhereInput!]
+}
+
+input FileUpdateInput {
+  filename: String
+  mimetype: String
+  size: String
+  uri: String
+  encoding: String
+  timestamp: Int
+}
+
+input FileUpdateManyMutationInput {
+  filename: String
+  mimetype: String
+  size: String
+  uri: String
+  encoding: String
+  timestamp: Int
+}
+
+input FileWhereInput {
+  id: ID
+  id_not: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_gt: ID
+  id_gte: ID
+  id_contains: ID
+  id_not_contains: ID
+  id_starts_with: ID
+  id_not_starts_with: ID
+  id_ends_with: ID
+  id_not_ends_with: ID
+  filename: String
+  filename_not: String
+  filename_in: [String!]
+  filename_not_in: [String!]
+  filename_lt: String
+  filename_lte: String
+  filename_gt: String
+  filename_gte: String
+  filename_contains: String
+  filename_not_contains: String
+  filename_starts_with: String
+  filename_not_starts_with: String
+  filename_ends_with: String
+  filename_not_ends_with: String
+  mimetype: String
+  mimetype_not: String
+  mimetype_in: [String!]
+  mimetype_not_in: [String!]
+  mimetype_lt: String
+  mimetype_lte: String
+  mimetype_gt: String
+  mimetype_gte: String
+  mimetype_contains: String
+  mimetype_not_contains: String
+  mimetype_starts_with: String
+  mimetype_not_starts_with: String
+  mimetype_ends_with: String
+  mimetype_not_ends_with: String
+  size: String
+  size_not: String
+  size_in: [String!]
+  size_not_in: [String!]
+  size_lt: String
+  size_lte: String
+  size_gt: String
+  size_gte: String
+  size_contains: String
+  size_not_contains: String
+  size_starts_with: String
+  size_not_starts_with: String
+  size_ends_with: String
+  size_not_ends_with: String
+  uri: String
+  uri_not: String
+  uri_in: [String!]
+  uri_not_in: [String!]
+  uri_lt: String
+  uri_lte: String
+  uri_gt: String
+  uri_gte: String
+  uri_contains: String
+  uri_not_contains: String
+  uri_starts_with: String
+  uri_not_starts_with: String
+  uri_ends_with: String
+  uri_not_ends_with: String
+  encoding: String
+  encoding_not: String
+  encoding_in: [String!]
+  encoding_not_in: [String!]
+  encoding_lt: String
+  encoding_lte: String
+  encoding_gt: String
+  encoding_gte: String
+  encoding_contains: String
+  encoding_not_contains: String
+  encoding_starts_with: String
+  encoding_not_starts_with: String
+  encoding_ends_with: String
+  encoding_not_ends_with: String
+  timestamp: Int
+  timestamp_not: Int
+  timestamp_in: [Int!]
+  timestamp_not_in: [Int!]
+  timestamp_lt: Int
+  timestamp_lte: Int
+  timestamp_gt: Int
+  timestamp_gte: Int
+  AND: [FileWhereInput!]
+  OR: [FileWhereInput!]
+  NOT: [FileWhereInput!]
+}
+
+input FileWhereUniqueInput {
+  id: ID
+  uri: String
+}
+
 scalar Long
 
 type Mutation {
@@ -627,6 +828,12 @@ type Mutation {
   upsertEventTeam(where: EventTeamWhereUniqueInput!, create: EventTeamCreateInput!, update: EventTeamUpdateInput!): EventTeam!
   deleteEventTeam(where: EventTeamWhereUniqueInput!): EventTeam
   deleteManyEventTeams(where: EventTeamWhereInput): BatchPayload!
+  createFile(data: FileCreateInput!): File!
+  updateFile(data: FileUpdateInput!, where: FileWhereUniqueInput!): File
+  updateManyFiles(data: FileUpdateManyMutationInput!, where: FileWhereInput): BatchPayload!
+  upsertFile(where: FileWhereUniqueInput!, create: FileCreateInput!, update: FileUpdateInput!): File!
+  deleteFile(where: FileWhereUniqueInput!): File
+  deleteManyFiles(where: FileWhereInput): BatchPayload!
   createUser(data: UserCreateInput!): User!
   updateUser(data: UserUpdateInput!, where: UserWhereUniqueInput!): User
   updateManyUsers(data: UserUpdateManyMutationInput!, where: UserWhereInput): BatchPayload!
@@ -662,6 +869,9 @@ type Query {
   eventTeam(where: EventTeamWhereUniqueInput!): EventTeam
   eventTeams(where: EventTeamWhereInput, orderBy: EventTeamOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [EventTeam]!
   eventTeamsConnection(where: EventTeamWhereInput, orderBy: EventTeamOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): EventTeamConnection!
+  file(where: FileWhereUniqueInput!): File
+  files(where: FileWhereInput, orderBy: FileOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [File]!
+  filesConnection(where: FileWhereInput, orderBy: FileOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): FileConnection!
   user(where: UserWhereUniqueInput!): User
   users(where: UserWhereInput, orderBy: UserOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [User]!
   usersConnection(where: UserWhereInput, orderBy: UserOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): UserConnection!
@@ -672,6 +882,7 @@ type Subscription {
   attendee(where: AttendeeSubscriptionWhereInput): AttendeeSubscriptionPayload
   event(where: EventSubscriptionWhereInput): EventSubscriptionPayload
   eventTeam(where: EventTeamSubscriptionWhereInput): EventTeamSubscriptionPayload
+  file(where: FileSubscriptionWhereInput): FileSubscriptionPayload
   user(where: UserSubscriptionWhereInput): UserSubscriptionPayload
 }
 

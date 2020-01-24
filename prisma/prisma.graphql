@@ -16,6 +16,8 @@ type Mutation {
   createEvent(data: EventCreateInput!): Event!
   createUser(data: UserCreateInput!): User!
 
+   createFile(data: FileCreateInput!): File!
+
   # updateUser(data: UserUpdateInput!, where: UserWhereUniqueInput!): User
   # deleteUser(where: UserWhereUniqueInput!): User
   upsertUser(where: UserWhereUniqueInput, update: UserUpdateInput!): User!
@@ -83,6 +85,9 @@ type Query {
   event(where: EventWhereUniqueInput!): Event!
   upsertEvent(where: EventWhereUniqueInput!, create: EventCreateInput!): Event!
 
+  upload(where: FileWhereUniqueInput!): File!
+  upsertUpload(where: FileWhereUniqueInput!, create: FileCreateInput!): File!
+
   node(id: ID!): Node
 }
 
@@ -119,6 +124,15 @@ type Event implements Node {
   teams: Int
   bucketLink: String
 }
+
+ type File implements Node{
+  id: ID!
+  filename: String
+  mimetype: String
+  size: String
+  uri: String
+  encoding: String
+  }
 
 """
 A connection to a list of items.
@@ -167,6 +181,16 @@ input GoogleUserCreateInput {
   email: String!
   bucketLink: String! 
 }
+
+input FileCreateInput { 
+  id: ID
+  filename: String!
+  mimetype: String!
+  size: String!
+  uri: String!
+  encoding: String!
+}
+
 
 """
 An edge in a connection.
@@ -670,3 +694,9 @@ input EventWhereUniqueInput {
   id: ID
   email: String
 }
+
+input FileWhereUniqueInput {
+  id: ID
+}
+
+

@@ -1,71 +1,47 @@
-type Team { 
+type User {
   id: ID! @id
-  name : String! @unique
-  members : Int  
-  description: String
-  active : Boolean 
-  lead : [Staff!]!
-  createdAt: DateTime! @createdAt
-} 
+  name: String! @unique
+  email: String! @unique
+  password: String! @unique
+  bucketLink: String
+}
 
-type Group {
-   id: ID! @id
+type Event {
+  id: ID! @id
   name: String! @unique
   description: String
-  members: [Staff!]
-  email: String @unique
+  duration: Int
+  organizer: String
+  type: String!
+  venue: String!
+  date: Int 
+  supportEmail: String! @unique
+  website: String
+  password : String!
+  createdAt: DateTime! @createdAt
+  attendees: Int
+  teams: Int
+  bucketLink: String
 }
 
-type Organization { 
-   id: ID! @id
-  createdAt: DateTime! @createdAt
-  name : String! @unique
-  Teams  : Int
-  leads : Int
-  type: String
-  description: String
-  country : String
-  state: String  @unique
-  email : String @unique
-  password: String
-  staffs :  Int 
-  staff :  [Staff!]! @relation( name : "OrganizationStaff"   , onDelete: CASCADE  )  
- department: [Department!]!
+type Attendee {
+  id: ID! @id
+  event: Event @relation( name : "EventAttendee"   )
 }
- 
-type Department {
-  id: ID!  @id
-  leads: [Lead!]!
-  name: String! @unique
-  teams: [Team!]!  
+
+type EventTeam {
+    id: ID! @id
+   name: String!   @unique
+   description: String!
   createdAt: DateTime! @createdAt
 }
 
-type Testers {
-  id: ID! @id
-  name: String @unique
-  email: String @unique
-  department: String
+type File {
+    id: ID! @id
+  filename: String
+  mimetype: String
+  size: String
+  uri: String @unique
+  encoding: String
+  timestamp: Int
 }
-
-type Lead { 
-  id: ID! @id
-  staff: [Staff!]!
-  team: [Team!]!
-}
-
-type Staff  {
-  id: ID! @id
-  firstname: String!
-  lastname: String
-  organization :  Organization @relation( name : "OrganizationStaff"  )  
-  team : [Team!]!
-  isLead: Boolean
-  role : String
-  country: String
-  state: String
-  email: String  @unique
-  joinedAt : DateTime! @createdAt
-}
-
-

@@ -3914,7 +3914,7 @@ pretty-format@^24.7.0:
     ansi-styles "^3.2.0"
     react-is "^16.8.4"
 
-prisma-binding@^2.3.15:
+prisma-binding@^2.3.16:
   version "2.3.16"
   resolved "https://registry.yarnpkg.com/prisma-binding/-/prisma-binding-2.3.16.tgz#c798d48e3220d2949e0e380ad4fe838f78c1c0e2"
   integrity sha512-ke8FOEdM9JQD4MsUPL7zwpck7cQjGtPJfqJknEA7HWXH1bvocyvWoBEVDB2I/GCu4tl4EVuJR+I4eAI9sFUOwg==

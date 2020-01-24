@@ -10,7 +10,7 @@ const path = require('path');
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 // import GoogleStrategy from "passport-google-oauth";
 
-    passport.use(
+passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.CLIENT_ID,
@@ -131,13 +131,14 @@ const resolver = {
       });
     },
 
-    uploadFile: async (_, args, context, info) => {
-      return context.db.mutation.createUser({
+    createFile: async (_, args, context, info) => {
+      return context.db.mutation.createFile({
         data: {
-          email: args.email,
-          name: args.name,
-          EventName: args.EventName,
-          bucketLink: args.bucketLink,
+          filename: args.filename,
+          mimetype: args.mimetype,
+          size: args.size,
+          uri: args.uri,
+          encoding: args.encoding,
         },
       });
     },

@@ -19,6 +19,7 @@ export interface Exists {
   attendee: (where?: AttendeeWhereInput) => Promise<boolean>;
   event: (where?: EventWhereInput) => Promise<boolean>;
   eventTeam: (where?: EventTeamWhereInput) => Promise<boolean>;
+  file: (where?: FileWhereInput) => Promise<boolean>;
   user: (where?: UserWhereInput) => Promise<boolean>;
 }
 
@@ -98,6 +99,25 @@ export interface Prisma {
     first?: Int;
     last?: Int;
   }) => EventTeamConnectionPromise;
+  file: (where: FileWhereUniqueInput) => FileNullablePromise;
+  files: (args?: {
+    where?: FileWhereInput;
+    orderBy?: FileOrderByInput;
+    skip?: Int;
+    after?: String;
+    before?: String;
+    first?: Int;
+    last?: Int;
+  }) => FragmentableArray<File>;
+  filesConnection: (args?: {
+    where?: FileWhereInput;
+    orderBy?: FileOrderByInput;
+    skip?: Int;
+    after?: String;
+    before?: String;
+    first?: Int;
+    last?: Int;
+  }) => FileConnectionPromise;
   user: (where: UserWhereUniqueInput) => UserNullablePromise;
   users: (args?: {
     where?: UserWhereInput;
@@ -167,6 +187,22 @@ export interface Prisma {
   }) => EventTeamPromise;
   deleteEventTeam: (where: EventTeamWhereUniqueInput) => EventTeamPromise;
   deleteManyEventTeams: (where?: EventTeamWhereInput) => BatchPayloadPromise;
+  createFile: (data: FileCreateInput) => FilePromise;
+  updateFile: (args: {
+    data: FileUpdateInput;
+    where: FileWhereUniqueInput;
+  }) => FilePromise;
+  updateManyFiles: (args: {
+    data: FileUpdateManyMutationInput;
+    where?: FileWhereInput;
+  }) => BatchPayloadPromise;
+  upsertFile: (args: {
+    where: FileWhereUniqueInput;
+    create: FileCreateInput;
+    update: FileUpdateInput;
+  }) => FilePromise;
+  deleteFile: (where: FileWhereUniqueInput) => FilePromise;
+  deleteManyFiles: (where?: FileWhereInput) => BatchPayloadPromise;
   createUser: (data: UserCreateInput) => UserPromise;
   updateUser: (args: {
     data: UserUpdateInput;
@@ -201,6 +237,9 @@ export interface Subscription {
   eventTeam: (
     where?: EventTeamSubscriptionWhereInput
   ) => EventTeamSubscriptionPayloadSubscription;
+  file: (
+    where?: FileSubscriptionWhereInput
+  ) => FileSubscriptionPayloadSubscription;
   user: (
     where?: UserSubscriptionWhereInput
   ) => UserSubscriptionPayloadSubscription;
@@ -260,6 +299,22 @@ export type EventTeamOrderByInput =
   | "createdAt_ASC"
   | "createdAt_DESC";
 
+export type FileOrderByInput =
+  | "id_ASC"
+  | "id_DESC"
+  | "filename_ASC"
+  | "filename_DESC"
+  | "mimetype_ASC"
+  | "mimetype_DESC"
+  | "size_ASC"
+  | "size_DESC"
+  | "uri_ASC"
+  | "uri_DESC"
+  | "encoding_ASC"
+  | "encoding_DESC"
+  | "timestamp_ASC"
+  | "timestamp_DESC";
+
 export type UserOrderByInput =
   | "id_ASC"
   | "id_DESC"
@@ -272,19 +327,29 @@ export type UserOrderByInput =
   | "bucketLink_ASC"
   | "bucketLink_DESC";
 
-export interface EventTeamCreateInput {
-  id?: Maybe<ID_Input>;
-  name: String;
-  description: String;
+export interface EventTeamUpdateInput {
+  name?: Maybe<String>;
+  description?: Maybe<String>;
 }
 
 export type AttendeeWhereUniqueInput = AtLeastOne<{
   id: Maybe<ID_Input>;
 }>;
 
-export interface EventUpsertNestedInput {
-  update: EventUpdateDataInput;
-  create: EventCreateInput;
+export interface EventUpdateManyMutationInput {
+  name?: Maybe<String>;
+  description?: Maybe<String>;
+  duration?: Maybe<Int>;
+  organizer?: Maybe<String>;
+  type?: Maybe<String>;
+  venue?: Maybe<String>;
+  date?: Maybe<Int>;
+  supportEmail?: Maybe<String>;
+  website?: Maybe<String>;
+  password?: Maybe<String>;
+  attendees?: Maybe<Int>;
+  teams?: Maybe<Int>;
+  bucketLink?: Maybe<String>;
 }
 
 export interface EventWhereInput {
@@ -473,7 +538,54 @@ export interface EventWhereInput {
   NOT?: Maybe<EventWhereInput[] | EventWhereInput>;
 }
 
-export interface EventTeamWhereInput {
+export interface EventUpdateInput {
+  name?: Maybe<String>;
+  description?: Maybe<String>;
+  duration?: Maybe<Int>;
+  organizer?: Maybe<String>;
+  type?: Maybe<String>;
+  venue?: Maybe<String>;
+  date?: Maybe<Int>;
+  supportEmail?: Maybe<String>;
+  website?: Maybe<String>;
+  password?: Maybe<String>;
+  attendees?: Maybe<Int>;
+  teams?: Maybe<Int>;
+  bucketLink?: Maybe<String>;
+}
+
+export interface UserUpdateManyMutationInput {
+  name?: Maybe<String>;
+  email?: Maybe<String>;
+  password?: Maybe<String>;
+  bucketLink?: Maybe<String>;
+}
+
+export type FileWhereUniqueInput = AtLeastOne<{
+  id: Maybe<ID_Input>;
+  uri?: Maybe<String>;
+}>;
+
+export interface UserCreateInput {
+  id?: Maybe<ID_Input>;
+  name: String;
+  email: String;
+  password: String;
+  bucketLink?: Maybe<String>;
+}
+
+export interface EventUpsertNestedInput {
+  update: EventUpdateDataInput;
+  create: EventCreateInput;
+}
+
+export type EventWhereUniqueInput = AtLeastOne<{
+  id: Maybe<ID_Input>;
+  name?: Maybe<String>;
+  supportEmail?: Maybe<String>;
+}>;
+
+export interface FileWhereInput {
   id?: Maybe<ID_Input>;
   id_not?: Maybe<ID_Input>;
   id_in?: Maybe<ID_Input[] | ID_Input>;
@@ -488,71 +600,118 @@ export interface EventTeamWhereInput {
   id_not_starts_with?: Maybe<ID_Input>;
   id_ends_with?: Maybe<ID_Input>;
   id_not_ends_with?: Maybe<ID_Input>;
-  name?: Maybe<String>;
-  name_not?: Maybe<String>;
-  name_in?: Maybe<String[] | String>;
-  name_not_in?: Maybe<String[] | String>;
-  name_lt?: Maybe<String>;
-  name_lte?: Maybe<String>;
-  name_gt?: Maybe<String>;
-  name_gte?: Maybe<String>;
-  name_contains?: Maybe<String>;
-  name_not_contains?: Maybe<String>;
-  name_starts_with?: Maybe<String>;
-  name_not_starts_with?: Maybe<String>;
-  name_ends_with?: Maybe<String>;
-  name_not_ends_with?: Maybe<String>;
-  description?: Maybe<String>;
-  description_not?: Maybe<String>;
-  description_in?: Maybe<String[] | String>;
-  description_not_in?: Maybe<String[] | String>;
-  description_lt?: Maybe<String>;
-  description_lte?: Maybe<String>;
-  description_gt?: Maybe<String>;
-  description_gte?: Maybe<String>;
-  description_contains?: Maybe<String>;
-  description_not_contains?: Maybe<String>;
-  description_starts_with?: Maybe<String>;
-  description_not_starts_with?: Maybe<String>;
-  description_ends_with?: Maybe<String>;
-  description_not_ends_with?: Maybe<String>;
-  createdAt?: Maybe<DateTimeInput>;
-  createdAt_not?: Maybe<DateTimeInput>;
-  createdAt_in?: Maybe<DateTimeInput[] | DateTimeInput>;
-  createdAt_not_in?: Maybe<DateTimeInput[] | DateTimeInput>;
-  createdAt_lt?: Maybe<DateTimeInput>;
-  createdAt_lte?: Maybe<DateTimeInput>;
-  createdAt_gt?: Maybe<DateTimeInput>;
-  createdAt_gte?: Maybe<DateTimeInput>;
-  AND?: Maybe<EventTeamWhereInput[] | EventTeamWhereInput>;
-  OR?: Maybe<EventTeamWhereInput[] | EventTeamWhereInput>;
-  NOT?: Maybe<EventTeamWhereInput[] | EventTeamWhereInput>;
+  filename?: Maybe<String>;
+  filename_not?: Maybe<String>;
+  filename_in?: Maybe<String[] | String>;
+  filename_not_in?: Maybe<String[] | String>;
+  filename_lt?: Maybe<String>;
+  filename_lte?: Maybe<String>;
+  filename_gt?: Maybe<String>;
+  filename_gte?: Maybe<String>;
+  filename_contains?: Maybe<String>;
+  filename_not_contains?: Maybe<String>;
+  filename_starts_with?: Maybe<String>;
+  filename_not_starts_with?: Maybe<String>;
+  filename_ends_with?: Maybe<String>;
+  filename_not_ends_with?: Maybe<String>;
+  mimetype?: Maybe<String>;
+  mimetype_not?: Maybe<String>;
+  mimetype_in?: Maybe<String[] | String>;
+  mimetype_not_in?: Maybe<String[] | String>;
+  mimetype_lt?: Maybe<String>;
+  mimetype_lte?: Maybe<String>;
+  mimetype_gt?: Maybe<String>;
+  mimetype_gte?: Maybe<String>;
+  mimetype_contains?: Maybe<String>;
+  mimetype_not_contains?: Maybe<String>;
+  mimetype_starts_with?: Maybe<String>;
+  mimetype_not_starts_with?: Maybe<String>;
+  mimetype_ends_with?: Maybe<String>;
+  mimetype_not_ends_with?: Maybe<String>;
+  size?: Maybe<String>;
+  size_not?: Maybe<String>;
+  size_in?: Maybe<String[] | String>;
+  size_not_in?: Maybe<String[] | String>;
+  size_lt?: Maybe<String>;
+  size_lte?: Maybe<String>;
+  size_gt?: Maybe<String>;
+  size_gte?: Maybe<String>;
+  size_contains?: Maybe<String>;
+  size_not_contains?: Maybe<String>;
+  size_starts_with?: Maybe<String>;
+  size_not_starts_with?: Maybe<String>;
+  size_ends_with?: Maybe<String>;
+  size_not_ends_with?: Maybe<String>;
+  uri?: Maybe<String>;
+  uri_not?: Maybe<String>;
+  uri_in?: Maybe<String[] | String>;
+  uri_not_in?: Maybe<String[] | String>;
+  uri_lt?: Maybe<String>;
+  uri_lte?: Maybe<String>;
+  uri_gt?: Maybe<String>;
+  uri_gte?: Maybe<String>;
+  uri_contains?: Maybe<String>;
+  uri_not_contains?: Maybe<String>;
+  uri_starts_with?: Maybe<String>;
+  uri_not_starts_with?: Maybe<String>;
+  uri_ends_with?: Maybe<String>;
+  uri_not_ends_with?: Maybe<String>;
+  encoding?: Maybe<String>;
+  encoding_not?: Maybe<String>;
+  encoding_in?: Maybe<String[] | String>;
+  encoding_not_in?: Maybe<String[] | String>;
+  encoding_lt?: Maybe<String>;
+  encoding_lte?: Maybe<String>;
+  encoding_gt?: Maybe<String>;
+  encoding_gte?: Maybe<String>;
+  encoding_contains?: Maybe<String>;
+  encoding_not_contains?: Maybe<String>;
+  encoding_starts_with?: Maybe<String>;
+  encoding_not_starts_with?: Maybe<String>;
+  encoding_ends_with?: Maybe<String>;
+  encoding_not_ends_with?: Maybe<String>;
+  timestamp?: Maybe<Int>;
+  timestamp_not?: Maybe<Int>;
+  timestamp_in?: Maybe<Int[] | Int>;
+  timestamp_not_in?: Maybe<Int[] | Int>;
+  timestamp_lt?: Maybe<Int>;
+  timestamp_lte?: Maybe<Int>;
+  timestamp_gt?: Maybe<Int>;
+  timestamp_gte?: Maybe<Int>;
+  AND?: Maybe<FileWhereInput[] | FileWhereInput>;
+  OR?: Maybe<FileWhereInput[] | FileWhereInput>;
+  NOT?: Maybe<FileWhereInput[] | FileWhereInput>;
 }
 
-export interface UserUpdateManyMutationInput {
-  name?: Maybe<String>;
-  email?: Maybe<String>;
-  password?: Maybe<String>;
-  bucketLink?: Maybe<String>;
+export interface FileUpdateInput {
+  filename?: Maybe<String>;
+  mimetype?: Maybe<String>;
+  size?: Maybe<String>;
+  uri?: Maybe<String>;
+  encoding?: Maybe<String>;
+  timestamp?: Maybe<Int>;
 }
 
-export interface EventSubscriptionWhereInput {
+export interface EventTeamSubscriptionWhereInput {
   mutation_in?: Maybe<MutationType[] | MutationType>;
   updatedFields_contains?: Maybe<String>;
   updatedFields_contains_every?: Maybe<String[] | String>;
   updatedFields_contains_some?: Maybe<String[] | String>;
-  node?: Maybe<EventWhereInput>;
-  AND?: Maybe<EventSubscriptionWhereInput[] | EventSubscriptionWhereInput>;
-  OR?: Maybe<EventSubscriptionWhereInput[] | EventSubscriptionWhereInput>;
-  NOT?: Maybe<EventSubscriptionWhereInput[] | EventSubscriptionWhereInput>;
+  node?: Maybe<EventTeamWhereInput>;
+  AND?: Maybe<
+    EventTeamSubscriptionWhereInput[] | EventTeamSubscriptionWhereInput
+  >;
+  OR?: Maybe<
+    EventTeamSubscriptionWhereInput[] | EventTeamSubscriptionWhereInput
+  >;
+  NOT?: Maybe<
+    EventTeamSubscriptionWhereInput[] | EventTeamSubscriptionWhereInput
+  >;
 }
 
-export interface UserCreateInput {
-  id?: Maybe<ID_Input>;
-  name: String;
-  email: String;
-  password: String;
-  bucketLink?: Maybe<String>;
+export interface EventTeamUpdateManyMutationInput {
+  name?: Maybe<String>;
+  description?: Maybe<String>;
 }
 
 export interface EventUpdateDataInput {
@@ -571,9 +730,15 @@ export interface EventUpdateDataInput {
   bucketLink?: Maybe<String>;
 }
 
-export interface EventTeamUpdateInput {
-  name?: Maybe<String>;
-  description?: Maybe<String>;
+export interface UserSubscriptionWhereInput {
+  mutation_in?: Maybe<MutationType[] | MutationType>;
+  updatedFields_contains?: Maybe<String>;
+  updatedFields_contains_every?: Maybe<String[] | String>;
+  updatedFields_contains_some?: Maybe<String[] | String>;
+  node?: Maybe<UserWhereInput>;
+  AND?: Maybe<UserSubscriptionWhereInput[] | UserSubscriptionWhereInput>;
+  OR?: Maybe<UserSubscriptionWhereInput[] | UserSubscriptionWhereInput>;
+  NOT?: Maybe<UserSubscriptionWhereInput[] | UserSubscriptionWhereInput>;
 }
 
 export interface EventUpdateOneInput {
@@ -583,6 +748,21 @@ export interface EventUpdateOneInput {
   delete?: Maybe<Boolean>;
   disconnect?: Maybe<Boolean>;
   connect?: Maybe<EventWhereUniqueInput>;
+}
+
+export interface EventSubscriptionWhereInput {
+  mutation_in?: Maybe<MutationType[] | MutationType>;
+  updatedFields_contains?: Maybe<String>;
+  updatedFields_contains_every?: Maybe<String[] | String>;
+  updatedFields_contains_some?: Maybe<String[] | String>;
+  node?: Maybe<EventWhereInput>;
+  AND?: Maybe<EventSubscriptionWhereInput[] | EventSubscriptionWhereInput>;
+  OR?: Maybe<EventSubscriptionWhereInput[] | EventSubscriptionWhereInput>;
+  NOT?: Maybe<EventSubscriptionWhereInput[] | EventSubscriptionWhereInput>;
+}
+
+export interface AttendeeUpdateInput {
+  event?: Maybe<EventUpdateOneInput>;
 }
 
 export interface AttendeeSubscriptionWhereInput {
@@ -600,26 +780,6 @@ export interface AttendeeSubscriptionWhereInput {
   >;
 }
 
-export interface AttendeeUpdateInput {
-  event?: Maybe<EventUpdateOneInput>;
-}
-
-export interface EventUpdateManyMutationInput {
-  name?: Maybe<String>;
-  description?: Maybe<String>;
-  duration?: Maybe<Int>;
-  organizer?: Maybe<String>;
-  type?: Maybe<String>;
-  venue?: Maybe<String>;
-  date?: Maybe<Int>;
-  supportEmail?: Maybe<String>;
-  website?: Maybe<String>;
-  password?: Maybe<String>;
-  attendees?: Maybe<Int>;
-  teams?: Maybe<Int>;
-  bucketLink?: Maybe<String>;
-}
-
 export type UserWhereUniqueInput = AtLeastOne<{
   id: Maybe<ID_Input>;
   name?: Maybe<String>;
@@ -627,10 +787,14 @@ export type UserWhereUniqueInput = AtLeastOne<{
   password?: Maybe<String>;
 }>;
 
-export type EventTeamWhereUniqueInput = AtLeastOne<{
-  id: Maybe<ID_Input>;
-  name?: Maybe<String>;
-}>;
+export interface FileUpdateManyMutationInput {
+  filename?: Maybe<String>;
+  mimetype?: Maybe<String>;
+  size?: Maybe<String>;
+  uri?: Maybe<String>;
+  encoding?: Maybe<String>;
+  timestamp?: Maybe<Int>;
+}
 
 export interface EventCreateInput {
   id?: Maybe<ID_Input>;
@@ -649,11 +813,14 @@ export interface EventCreateInput {
   bucketLink?: Maybe<String>;
 }
 
-export interface UserUpdateInput {
-  name?: Maybe<String>;
-  email?: Maybe<String>;
-  password?: Maybe<String>;
-  bucketLink?: Maybe<String>;
+export interface FileCreateInput {
+  id?: Maybe<ID_Input>;
+  filename?: Maybe<String>;
+  mimetype?: Maybe<String>;
+  size?: Maybe<String>;
+  uri?: Maybe<String>;
+  encoding?: Maybe<String>;
+  timestamp?: Maybe<Int>;
 }
 
 export interface AttendeeCreateInput {
@@ -666,21 +833,15 @@ export interface EventCreateOneInput {
   connect?: Maybe<EventWhereUniqueInput>;
 }
 
-export interface EventTeamSubscriptionWhereInput {
+export interface FileSubscriptionWhereInput {
   mutation_in?: Maybe<MutationType[] | MutationType>;
   updatedFields_contains?: Maybe<String>;
   updatedFields_contains_every?: Maybe<String[] | String>;
   updatedFields_contains_some?: Maybe<String[] | String>;
-  node?: Maybe<EventTeamWhereInput>;
-  AND?: Maybe<
-    EventTeamSubscriptionWhereInput[] | EventTeamSubscriptionWhereInput
-  >;
-  OR?: Maybe<
-    EventTeamSubscriptionWhereInput[] | EventTeamSubscriptionWhereInput
-  >;
-  NOT?: Maybe<
-    EventTeamSubscriptionWhereInput[] | EventTeamSubscriptionWhereInput
-  >;
+  node?: Maybe<FileWhereInput>;
+  AND?: Maybe<FileSubscriptionWhereInput[] | FileSubscriptionWhereInput>;
+  OR?: Maybe<FileSubscriptionWhereInput[] | FileSubscriptionWhereInput>;
+  NOT?: Maybe<FileSubscriptionWhereInput[] | FileSubscriptionWhereInput>;
 }
 
 export interface UserWhereInput {
@@ -759,10 +920,10 @@ export interface UserWhereInput {
   NOT?: Maybe<UserWhereInput[] | UserWhereInput>;
 }
 
-export interface EventTeamUpdateManyMutationInput {
+export type EventTeamWhereUniqueInput = AtLeastOne<{
+  id: Maybe<ID_Input>;
   name?: Maybe<String>;
-  description?: Maybe<String>;
-}
+}>;
 
 export interface AttendeeWhereInput {
   id?: Maybe<ID_Input>;
@@ -785,38 +946,74 @@ export interface AttendeeWhereInput {
   NOT?: Maybe<AttendeeWhereInput[] | AttendeeWhereInput>;
 }
 
-export interface EventUpdateInput {
+export interface UserUpdateInput {
   name?: Maybe<String>;
-  description?: Maybe<String>;
-  duration?: Maybe<Int>;
-  organizer?: Maybe<String>;
-  type?: Maybe<String>;
-  venue?: Maybe<String>;
-  date?: Maybe<Int>;
-  supportEmail?: Maybe<String>;
-  website?: Maybe<String>;
+  email?: Maybe<String>;
   password?: Maybe<String>;
-  attendees?: Maybe<Int>;
-  teams?: Maybe<Int>;
   bucketLink?: Maybe<String>;
 }
 
-export interface UserSubscriptionWhereInput {
-  mutation_in?: Maybe<MutationType[] | MutationType>;
-  updatedFields_contains?: Maybe<String>;
-  updatedFields_contains_every?: Maybe<String[] | String>;
-  updatedFields_contains_some?: Maybe<String[] | String>;
-  node?: Maybe<UserWhereInput>;
-  AND?: Maybe<UserSubscriptionWhereInput[] | UserSubscriptionWhereInput>;
-  OR?: Maybe<UserSubscriptionWhereInput[] | UserSubscriptionWhereInput>;
-  NOT?: Maybe<UserSubscriptionWhereInput[] | UserSubscriptionWhereInput>;
+export interface EventTeamCreateInput {
+  id?: Maybe<ID_Input>;
+  name: String;
+  description: String;
 }
 
-export type EventWhereUniqueInput = AtLeastOne<{
-  id: Maybe<ID_Input>;
+export interface EventTeamWhereInput {
+  id?: Maybe<ID_Input>;
+  id_not?: Maybe<ID_Input>;
+  id_in?: Maybe<ID_Input[] | ID_Input>;
+  id_not_in?: Maybe<ID_Input[] | ID_Input>;
+  id_lt?: Maybe<ID_Input>;
+  id_lte?: Maybe<ID_Input>;
+  id_gt?: Maybe<ID_Input>;
+  id_gte?: Maybe<ID_Input>;
+  id_contains?: Maybe<ID_Input>;
+  id_not_contains?: Maybe<ID_Input>;
+  id_starts_with?: Maybe<ID_Input>;
+  id_not_starts_with?: Maybe<ID_Input>;
+  id_ends_with?: Maybe<ID_Input>;
+  id_not_ends_with?: Maybe<ID_Input>;
   name?: Maybe<String>;
-  supportEmail?: Maybe<String>;
-}>;
+  name_not?: Maybe<String>;
+  name_in?: Maybe<String[] | String>;
+  name_not_in?: Maybe<String[] | String>;
+  name_lt?: Maybe<String>;
+  name_lte?: Maybe<String>;
+  name_gt?: Maybe<String>;
+  name_gte?: Maybe<String>;
+  name_contains?: Maybe<String>;
+  name_not_contains?: Maybe<String>;
+  name_starts_with?: Maybe<String>;
+  name_not_starts_with?: Maybe<String>;
+  name_ends_with?: Maybe<String>;
+  name_not_ends_with?: Maybe<String>;
+  description?: Maybe<String>;
+  description_not?: Maybe<String>;
+  description_in?: Maybe<String[] | String>;
+  description_not_in?: Maybe<String[] | String>;
+  description_lt?: Maybe<String>;
+  description_lte?: Maybe<String>;
+  description_gt?: Maybe<String>;
+  description_gte?: Maybe<String>;
+  description_contains?: Maybe<String>;
+  description_not_contains?: Maybe<String>;
+  description_starts_with?: Maybe<String>;
+  description_not_starts_with?: Maybe<String>;
+  description_ends_with?: Maybe<String>;
+  description_not_ends_with?: Maybe<String>;
+  createdAt?: Maybe<DateTimeInput>;
+  createdAt_not?: Maybe<DateTimeInput>;
+  createdAt_in?: Maybe<DateTimeInput[] | DateTimeInput>;
+  createdAt_not_in?: Maybe<DateTimeInput[] | DateTimeInput>;
+  createdAt_lt?: Maybe<DateTimeInput>;
+  createdAt_lte?: Maybe<DateTimeInput>;
+  createdAt_gt?: Maybe<DateTimeInput>;
+  createdAt_gte?: Maybe<DateTimeInput>;
+  AND?: Maybe<EventTeamWhereInput[] | EventTeamWhereInput>;
+  OR?: Maybe<EventTeamWhereInput[] | EventTeamWhereInput>;
+  NOT?: Maybe<EventTeamWhereInput[] | EventTeamWhereInput>;
+}
 
 export interface NodeNode {
   id: ID_Output;
@@ -836,6 +1033,25 @@ export interface UserEdgeSubscription
   extends Promise<AsyncIterator<UserEdge>>,
     Fragmentable {
   node: <T = UserSubscription>() => T;
+  cursor: () => Promise<AsyncIterator<String>>;
+}
+
+export interface AttendeeEdge {
+  node: Attendee;
+  cursor: String;
+}
+
+export interface AttendeeEdgePromise
+  extends Promise<AttendeeEdge>,
+    Fragmentable {
+  node: <T = AttendeePromise>() => T;
+  cursor: () => Promise<String>;
+}
+
+export interface AttendeeEdgeSubscription
+  extends Promise<AsyncIterator<AttendeeEdge>>,
+    Fragmentable {
+  node: <T = AttendeeSubscription>() => T;
   cursor: () => Promise<AsyncIterator<String>>;
 }
 
@@ -883,6 +1099,27 @@ export interface AggregateUserSubscription
   count: () => Promise<AsyncIterator<Int>>;
 }
 
+export interface UserConnection {
+  pageInfo: PageInfo;
+  edges: UserEdge[];
+}
+
+export interface UserConnectionPromise
+  extends Promise<UserConnection>,
+    Fragmentable {
+  pageInfo: <T = PageInfoPromise>() => T;
+  edges: <T = FragmentableArray<UserEdge>>() => T;
+  aggregate: <T = AggregateUserPromise>() => T;
+}
+
+export interface UserConnectionSubscription
+  extends Promise<AsyncIterator<UserConnection>>,
+    Fragmentable {
+  pageInfo: <T = PageInfoSubscription>() => T;
+  edges: <T = Promise<AsyncIterator<UserEdgeSubscription>>>() => T;
+  aggregate: <T = AggregateUserSubscription>() => T;
+}
+
 export interface PageInfo {
   hasNextPage: Boolean;
   hasPreviousPage: Boolean;
@@ -906,25 +1143,20 @@ export interface PageInfoSubscription
   endCursor: () => Promise<AsyncIterator<String>>;
 }
 
-export interface UserConnection {
-  pageInfo: PageInfo;
-  edges: UserEdge[];
+export interface AggregateFile {
+  count: Int;
 }
 
-export interface UserConnectionPromise
-  extends Promise<UserConnection>,
+export interface AggregateFilePromise
+  extends Promise<AggregateFile>,
     Fragmentable {
-  pageInfo: <T = PageInfoPromise>() => T;
-  edges: <T = FragmentableArray<UserEdge>>() => T;
-  aggregate: <T = AggregateUserPromise>() => T;
+  count: () => Promise<Int>;
 }
 
-export interface UserConnectionSubscription
-  extends Promise<AsyncIterator<UserConnection>>,
+export interface AggregateFileSubscription
+  extends Promise<AsyncIterator<AggregateFile>>,
     Fragmentable {
-  pageInfo: <T = PageInfoSubscription>() => T;
-  edges: <T = Promise<AsyncIterator<UserEdgeSubscription>>>() => T;
-  aggregate: <T = AggregateUserSubscription>() => T;
+  count: () => Promise<AsyncIterator<Int>>;
 }
 
 export interface AttendeeConnection {
@@ -948,56 +1180,42 @@ export interface AttendeeConnectionSubscription
   aggregate: <T = AggregateAttendeeSubscription>() => T;
 }
 
-export interface AggregateEventTeam {
-  count: Int;
+export interface FileConnection {
+  pageInfo: PageInfo;
+  edges: FileEdge[];
 }
 
-export interface AggregateEventTeamPromise
-  extends Promise<AggregateEventTeam>,
+export interface FileConnectionPromise
+  extends Promise<FileConnection>,
     Fragmentable {
-  count: () => Promise<Int>;
+  pageInfo: <T = PageInfoPromise>() => T;
+  edges: <T = FragmentableArray<FileEdge>>() => T;
+  aggregate: <T = AggregateFilePromise>() => T;
 }
 
-export interface AggregateEventTeamSubscription
-  extends Promise<AsyncIterator<AggregateEventTeam>>,
+export interface FileConnectionSubscription
+  extends Promise<AsyncIterator<FileConnection>>,
     Fragmentable {
-  count: () => Promise<AsyncIterator<Int>>;
+  pageInfo: <T = PageInfoSubscription>() => T;
+  edges: <T = Promise<AsyncIterator<FileEdgeSubscription>>>() => T;
+  aggregate: <T = AggregateFileSubscription>() => T;
 }
 
-export interface User {
-  id: ID_Output;
-  name: String;
-  email: String;
-  password: String;
-  bucketLink?: String;
+export interface FileEdge {
+  node: File;
+  cursor: String;
 }
 
-export interface UserPromise extends Promise<User>, Fragmentable {
-  id: () => Promise<ID_Output>;
-  name: () => Promise<String>;
-  email: () => Promise<String>;
-  password: () => Promise<String>;
-  bucketLink: () => Promise<String>;
+export interface FileEdgePromise extends Promise<FileEdge>, Fragmentable {
+  node: <T = FilePromise>() => T;
+  cursor: () => Promise<String>;
 }
 
-export interface UserSubscription
-  extends Promise<AsyncIterator<User>>,
+export interface FileEdgeSubscription
+  extends Promise<AsyncIterator<FileEdge>>,
     Fragmentable {
-  id: () => Promise<AsyncIterator<ID_Output>>;
-  name: () => Promise<AsyncIterator<String>>;
-  email: () => Promise<AsyncIterator<String>>;
-  password: () => Promise<AsyncIterator<String>>;
-  bucketLink: () => Promise<AsyncIterator<String>>;
-}
-
-export interface UserNullablePromise
-  extends Promise<User | null>,
-    Fragmentable {
-  id: () => Promise<ID_Output>;
-  name: () => Promise<String>;
-  email: () => Promise<String>;
-  password: () => Promise<String>;
-  bucketLink: () => Promise<String>;
+  node: <T = FileSubscription>() => T;
+  cursor: () => Promise<AsyncIterator<String>>;
 }
 
 export interface Event {
@@ -1076,6 +1294,89 @@ export interface EventNullablePromise
   bucketLink: () => Promise<String>;
 }
 
+export interface File {
+  id: ID_Output;
+  filename?: String;
+  mimetype?: String;
+  size?: String;
+  uri?: String;
+  encoding?: String;
+  timestamp?: Int;
+}
+
+export interface FilePromise extends Promise<File>, Fragmentable {
+  id: () => Promise<ID_Output>;
+  filename: () => Promise<String>;
+  mimetype: () => Promise<String>;
+  size: () => Promise<String>;
+  uri: () => Promise<String>;
+  encoding: () => Promise<String>;
+  timestamp: () => Promise<Int>;
+}
+
+export interface FileSubscription
+  extends Promise<AsyncIterator<File>>,
+    Fragmentable {
+  id: () => Promise<AsyncIterator<ID_Output>>;
+  filename: () => Promise<AsyncIterator<String>>;
+  mimetype: () => Promise<AsyncIterator<String>>;
+  size: () => Promise<AsyncIterator<String>>;
+  uri: () => Promise<AsyncIterator<String>>;
+  encoding: () => Promise<AsyncIterator<String>>;
+  timestamp: () => Promise<AsyncIterator<Int>>;
+}
+
+export interface FileNullablePromise
+  extends Promise<File | null>,
+    Fragmentable {
+  id: () => Promise<ID_Output>;
+  filename: () => Promise<String>;
+  mimetype: () => Promise<String>;
+  size: () => Promise<String>;
+  uri: () => Promise<String>;
+  encoding: () => Promise<String>;
+  timestamp: () => Promise<Int>;
+}
+
+export interface BatchPayload {
+  count: Long;
+}
+
+export interface BatchPayloadPromise
+  extends Promise<BatchPayload>,
+    Fragmentable {
+  count: () => Promise<Long>;
+}
+
+export interface BatchPayloadSubscription
+  extends Promise<AsyncIterator<BatchPayload>>,
+    Fragmentable {
+  count: () => Promise<AsyncIterator<Long>>;
+}
+
+export interface Attendee {
+  id: ID_Output;
+}
+
+export interface AttendeePromise extends Promise<Attendee>, Fragmentable {
+  id: () => Promise<ID_Output>;
+  event: <T = EventPromise>() => T;
+}
+
+export interface AttendeeSubscription
+  extends Promise<AsyncIterator<Attendee>>,
+    Fragmentable {
+  id: () => Promise<AsyncIterator<ID_Output>>;
+  event: <T = EventSubscription>() => T;
+}
+
+export interface AttendeeNullablePromise
+  extends Promise<Attendee | null>,
+    Fragmentable {
+  id: () => Promise<ID_Output>;
+  event: <T = EventPromise>() => T;
+}
+
 export interface EventTeamEdge {
   node: EventTeam;
   cursor: String;
@@ -1095,25 +1396,29 @@ export interface EventTeamEdgeSubscription
   cursor: () => Promise<AsyncIterator<String>>;
 }
 
-export interface EventTeamConnection {
-  pageInfo: PageInfo;
-  edges: EventTeamEdge[];
+export interface AttendeeSubscriptionPayload {
+  mutation: MutationType;
+  node: Attendee;
+  updatedFields: String[];
+  previousValues: AttendeePreviousValues;
 }
 
-export interface EventTeamConnectionPromise
-  extends Promise<EventTeamConnection>,
+export interface AttendeeSubscriptionPayloadPromise
+  extends Promise<AttendeeSubscriptionPayload>,
     Fragmentable {
-  pageInfo: <T = PageInfoPromise>() => T;
-  edges: <T = FragmentableArray<EventTeamEdge>>() => T;
-  aggregate: <T = AggregateEventTeamPromise>() => T;
+  mutation: () => Promise<MutationType>;
+  node: <T = AttendeePromise>() => T;
+  updatedFields: () => Promise<String[]>;
+  previousValues: <T = AttendeePreviousValuesPromise>() => T;
 }
 
-export interface EventTeamConnectionSubscription
-  extends Promise<AsyncIterator<EventTeamConnection>>,
+export interface AttendeeSubscriptionPayloadSubscription
+  extends Promise<AsyncIterator<AttendeeSubscriptionPayload>>,
     Fragmentable {
-  pageInfo: <T = PageInfoSubscription>() => T;
-  edges: <T = Promise<AsyncIterator<EventTeamEdgeSubscription>>>() => T;
-  aggregate: <T = AggregateEventTeamSubscription>() => T;
+  mutation: () => Promise<AsyncIterator<MutationType>>;
+  node: <T = AttendeeSubscription>() => T;
+  updatedFields: () => Promise<AsyncIterator<String[]>>;
+  previousValues: <T = AttendeePreviousValuesSubscription>() => T;
 }
 
 export interface EventTeam {
@@ -1148,29 +1453,169 @@ export interface EventTeamNullablePromise
   createdAt: () => Promise<DateTimeOutput>;
 }
 
-export interface UserSubscriptionPayload {
-  mutation: MutationType;
-  node: User;
-  updatedFields: String[];
-  previousValues: UserPreviousValues;
+export interface AttendeePreviousValues {
+  id: ID_Output;
 }
 
-export interface UserSubscriptionPayloadPromise
-  extends Promise<UserSubscriptionPayload>,
+export interface AttendeePreviousValuesPromise
+  extends Promise<AttendeePreviousValues>,
+    Fragmentable {
+  id: () => Promise<ID_Output>;
+}
+
+export interface AttendeePreviousValuesSubscription
+  extends Promise<AsyncIterator<AttendeePreviousValues>>,
+    Fragmentable {
+  id: () => Promise<AsyncIterator<ID_Output>>;
+}
+
+export interface EventEdge {
+  node: Event;
+  cursor: String;
+}
+
+export interface EventEdgePromise extends Promise<EventEdge>, Fragmentable {
+  node: <T = EventPromise>() => T;
+  cursor: () => Promise<String>;
+}
+
+export interface EventEdgeSubscription
+  extends Promise<AsyncIterator<EventEdge>>,
+    Fragmentable {
+  node: <T = EventSubscription>() => T;
+  cursor: () => Promise<AsyncIterator<String>>;
+}
+
+export interface FilePreviousValues {
+  id: ID_Output;
+  filename?: String;
+  mimetype?: String;
+  size?: String;
+  uri?: String;
+  encoding?: String;
+  timestamp?: Int;
+}
+
+export interface FilePreviousValuesPromise
+  extends Promise<FilePreviousValues>,
+    Fragmentable {
+  id: () => Promise<ID_Output>;
+  filename: () => Promise<String>;
+  mimetype: () => Promise<String>;
+  size: () => Promise<String>;
+  uri: () => Promise<String>;
+  encoding: () => Promise<String>;
+  timestamp: () => Promise<Int>;
+}
+
+export interface FilePreviousValuesSubscription
+  extends Promise<AsyncIterator<FilePreviousValues>>,
+    Fragmentable {
+  id: () => Promise<AsyncIterator<ID_Output>>;
+  filename: () => Promise<AsyncIterator<String>>;
+  mimetype: () => Promise<AsyncIterator<String>>;
+  size: () => Promise<AsyncIterator<String>>;
+  uri: () => Promise<AsyncIterator<String>>;
+  encoding: () => Promise<AsyncIterator<String>>;
+  timestamp: () => Promise<AsyncIterator<Int>>;
+}
+
+export interface AggregateAttendee {
+  count: Int;
+}
+
+export interface AggregateAttendeePromise
+  extends Promise<AggregateAttendee>,
+    Fragmentable {
+  count: () => Promise<Int>;
+}
+
+export interface AggregateAttendeeSubscription
+  extends Promise<AsyncIterator<AggregateAttendee>>,
+    Fragmentable {
+  count: () => Promise<AsyncIterator<Int>>;
+}
+
+export interface EventSubscriptionPayload {
+  mutation: MutationType;
+  node: Event;
+  updatedFields: String[];
+  previousValues: EventPreviousValues;
+}
+
+export interface EventSubscriptionPayloadPromise
+  extends Promise<EventSubscriptionPayload>,
     Fragmentable {
   mutation: () => Promise<MutationType>;
-  node: <T = UserPromise>() => T;
+  node: <T = EventPromise>() => T;
   updatedFields: () => Promise<String[]>;
-  previousValues: <T = UserPreviousValuesPromise>() => T;
+  previousValues: <T = EventPreviousValuesPromise>() => T;
 }
 
-export interface UserSubscriptionPayloadSubscription
-  extends Promise<AsyncIterator<UserSubscriptionPayload>>,
+export interface EventSubscriptionPayloadSubscription
+  extends Promise<AsyncIterator<EventSubscriptionPayload>>,
     Fragmentable {
   mutation: () => Promise<AsyncIterator<MutationType>>;
-  node: <T = UserSubscription>() => T;
+  node: <T = EventSubscription>() => T;
   updatedFields: () => Promise<AsyncIterator<String[]>>;
-  previousValues: <T = UserPreviousValuesSubscription>() => T;
+  previousValues: <T = EventPreviousValuesSubscription>() => T;
+}
+
+export interface User {
+  id: ID_Output;
+  name: String;
+  email: String;
+  password: String;
+  bucketLink?: String;
+}
+
+export interface UserPromise extends Promise<User>, Fragmentable {
+  id: () => Promise<ID_Output>;
+  name: () => Promise<String>;
+  email: () => Promise<String>;
+  password: () => Promise<String>;
+  bucketLink: () => Promise<String>;
+}
+
+export interface UserSubscription
+  extends Promise<AsyncIterator<User>>,
+    Fragmentable {
+  id: () => Promise<AsyncIterator<ID_Output>>;
+  name: () => Promise<AsyncIterator<String>>;
+  email: () => Promise<AsyncIterator<String>>;
+  password: () => Promise<AsyncIterator<String>>;
+  bucketLink: () => Promise<AsyncIterator<String>>;
+}
+
+export interface UserNullablePromise
+  extends Promise<User | null>,
+    Fragmentable {
+  id: () => Promise<ID_Output>;
+  name: () => Promise<String>;
+  email: () => Promise<String>;
+  password: () => Promise<String>;
+  bucketLink: () => Promise<String>;
+}
+
+export interface EventTeamConnection {
+  pageInfo: PageInfo;
+  edges: EventTeamEdge[];
+}
+
+export interface EventTeamConnectionPromise
+  extends Promise<EventTeamConnection>,
+    Fragmentable {
+  pageInfo: <T = PageInfoPromise>() => T;
+  edges: <T = FragmentableArray<EventTeamEdge>>() => T;
+  aggregate: <T = AggregateEventTeamPromise>() => T;
+}
+
+export interface EventTeamConnectionSubscription
+  extends Promise<AsyncIterator<EventTeamConnection>>,
+    Fragmentable {
+  pageInfo: <T = PageInfoSubscription>() => T;
+  edges: <T = Promise<AsyncIterator<EventTeamEdgeSubscription>>>() => T;
+  aggregate: <T = AggregateEventTeamSubscription>() => T;
 }
 
 export interface EventTeamPreviousValues {
@@ -1198,85 +1643,54 @@ export interface EventTeamPreviousValuesSubscription
   createdAt: () => Promise<AsyncIterator<DateTimeOutput>>;
 }
 
-export interface EventEdge {
-  node: Event;
-  cursor: String;
-}
-
-export interface EventEdgePromise extends Promise<EventEdge>, Fragmentable {
-  node: <T = EventPromise>() => T;
-  cursor: () => Promise<String>;
-}
-
-export interface EventEdgeSubscription
-  extends Promise<AsyncIterator<EventEdge>>,
-    Fragmentable {
-  node: <T = EventSubscription>() => T;
-  cursor: () => Promise<AsyncIterator<String>>;
-}
-
-export interface AttendeeSubscriptionPayload {
+export interface EventTeamSubscriptionPayload {
   mutation: MutationType;
-  node: Attendee;
+  node: EventTeam;
   updatedFields: String[];
-  previousValues: AttendeePreviousValues;
+  previousValues: EventTeamPreviousValues;
 }
 
-export interface AttendeeSubscriptionPayloadPromise
-  extends Promise<AttendeeSubscriptionPayload>,
+export interface EventTeamSubscriptionPayloadPromise
+  extends Promise<EventTeamSubscriptionPayload>,
     Fragmentable {
   mutation: () => Promise<MutationType>;
-  node: <T = AttendeePromise>() => T;
+  node: <T = EventTeamPromise>() => T;
   updatedFields: () => Promise<String[]>;
-  previousValues: <T = AttendeePreviousValuesPromise>() => T;
+  previousValues: <T = EventTeamPreviousValuesPromise>() => T;
 }
 
-export interface AttendeeSubscriptionPayloadSubscription
-  extends Promise<AsyncIterator<AttendeeSubscriptionPayload>>,
+export interface EventTeamSubscriptionPayloadSubscription
+  extends Promise<AsyncIterator<EventTeamSubscriptionPayload>>,
     Fragmentable {
   mutation: () => Promise<AsyncIterator<MutationType>>;
-  node: <T = AttendeeSubscription>() => T;
+  node: <T = EventTeamSubscription>() => T;
   updatedFields: () => Promise<AsyncIterator<String[]>>;
-  previousValues: <T = AttendeePreviousValuesSubscription>() => T;
+  previousValues: <T = EventTeamPreviousValuesSubscription>() => T;
 }
 
-export interface AggregateAttendee {
-  count: Int;
+export interface FileSubscriptionPayload {
+  mutation: MutationType;
+  node: File;
+  updatedFields: String[];
+  previousValues: FilePreviousValues;
 }
 
-export interface AggregateAttendeePromise
-  extends Promise<AggregateAttendee>,
+export interface FileSubscriptionPayloadPromise
+  extends Promise<FileSubscriptionPayload>,
     Fragmentable {
-  count: () => Promise<Int>;
+  mutation: () => Promise<MutationType>;
+  node: <T = FilePromise>() => T;
+  updatedFields: () => Promise<String[]>;
+  previousValues: <T = FilePreviousValuesPromise>() => T;
 }
 
-export interface AggregateAttendeeSubscription
-  extends Promise<AsyncIterator<AggregateAttendee>>,
+export interface FileSubscriptionPayloadSubscription
+  extends Promise<AsyncIterator<FileSubscriptionPayload>>,
     Fragmentable {
-  count: () => Promise<AsyncIterator<Int>>;
-}
-
-export interface Attendee {
-  id: ID_Output;
-}
-
-export interface AttendeePromise extends Promise<Attendee>, Fragmentable {
-  id: () => Promise<ID_Output>;
-  event: <T = EventPromise>() => T;
-}
-
-export interface AttendeeSubscription
-  extends Promise<AsyncIterator<Attendee>>,
-    Fragmentable {
-  id: () => Promise<AsyncIterator<ID_Output>>;
-  event: <T = EventSubscription>() => T;
-}
-
-export interface AttendeeNullablePromise
-  extends Promise<Attendee | null>,
-    Fragmentable {
-  id: () => Promise<ID_Output>;
-  event: <T = EventPromise>() => T;
+  mutation: () => Promise<AsyncIterator<MutationType>>;
+  node: <T = FileSubscription>() => T;
+  updatedFields: () => Promise<AsyncIterator<String[]>>;
+  previousValues: <T = FilePreviousValuesSubscription>() => T;
 }
 
 export interface EventPreviousValues {
@@ -1337,105 +1751,61 @@ export interface EventPreviousValuesSubscription
   bucketLink: () => Promise<AsyncIterator<String>>;
 }
 
-export interface EventSubscriptionPayload {
-  mutation: MutationType;
-  node: Event;
-  updatedFields: String[];
-  previousValues: EventPreviousValues;
+export interface AggregateEvent {
+  count: Int;
 }
 
-export interface EventSubscriptionPayloadPromise
-  extends Promise<EventSubscriptionPayload>,
+export interface AggregateEventPromise
+  extends Promise<AggregateEvent>,
+    Fragmentable {
+  count: () => Promise<Int>;
+}
+
+export interface AggregateEventSubscription
+  extends Promise<AsyncIterator<AggregateEvent>>,
+    Fragmentable {
+  count: () => Promise<AsyncIterator<Int>>;
+}
+
+export interface AggregateEventTeam {
+  count: Int;
+}
+
+export interface AggregateEventTeamPromise
+  extends Promise<AggregateEventTeam>,
+    Fragmentable {
+  count: () => Promise<Int>;
+}
+
+export interface AggregateEventTeamSubscription
+  extends Promise<AsyncIterator<AggregateEventTeam>>,
+    Fragmentable {
+  count: () => Promise<AsyncIterator<Int>>;
+}
+
+export interface UserSubscriptionPayload {
+  mutation: MutationType;
+  node: User;
+  updatedFields: String[];
+  previousValues: UserPreviousValues;
+}
+
+export interface UserSubscriptionPayloadPromise
+  extends Promise<UserSubscriptionPayload>,
     Fragmentable {
   mutation: () => Promise<MutationType>;
-  node: <T = EventPromise>() => T;
+  node: <T = UserPromise>() => T;
   updatedFields: () => Promise<String[]>;
-  previousValues: <T = EventPreviousValuesPromise>() => T;
+  previousValues: <T = UserPreviousValuesPromise>() => T;
 }
 
-export interface EventSubscriptionPayloadSubscription
-  extends Promise<AsyncIterator<EventSubscriptionPayload>>,
+export interface UserSubscriptionPayloadSubscription
+  extends Promise<AsyncIterator<UserSubscriptionPayload>>,
     Fragmentable {
   mutation: () => Promise<AsyncIterator<MutationType>>;
-  node: <T = EventSubscription>() => T;
+  node: <T = UserSubscription>() => T;
   updatedFields: () => Promise<AsyncIterator<String[]>>;
-  previousValues: <T = EventPreviousValuesSubscription>() => T;
-}
-
-export interface EventTeamSubscriptionPayload {
-  mutation: MutationType;
-  node: EventTeam;
-  updatedFields: String[];
-  previousValues: EventTeamPreviousValues;
-}
-
-export interface EventTeamSubscriptionPayloadPromise
-  extends Promise<EventTeamSubscriptionPayload>,
-    Fragmentable {
-  mutation: () => Promise<MutationType>;
-  node: <T = EventTeamPromise>() => T;
-  updatedFields: () => Promise<String[]>;
-  previousValues: <T = EventTeamPreviousValuesPromise>() => T;
-}
-
-export interface EventTeamSubscriptionPayloadSubscription
-  extends Promise<AsyncIterator<EventTeamSubscriptionPayload>>,
-    Fragmentable {
-  mutation: () => Promise<AsyncIterator<MutationType>>;
-  node: <T = EventTeamSubscription>() => T;
-  updatedFields: () => Promise<AsyncIterator<String[]>>;
-  previousValues: <T = EventTeamPreviousValuesSubscription>() => T;
-}
-
-export interface AttendeePreviousValues {
-  id: ID_Output;
-}
-
-export interface AttendeePreviousValuesPromise
-  extends Promise<AttendeePreviousValues>,
-    Fragmentable {
-  id: () => Promise<ID_Output>;
-}
-
-export interface AttendeePreviousValuesSubscription
-  extends Promise<AsyncIterator<AttendeePreviousValues>>,
-    Fragmentable {
-  id: () => Promise<AsyncIterator<ID_Output>>;
-}
-
-export interface BatchPayload {
-  count: Long;
-}
-
-export interface BatchPayloadPromise
-  extends Promise<BatchPayload>,
-    Fragmentable {
-  count: () => Promise<Long>;
-}
-
-export interface BatchPayloadSubscription
-  extends Promise<AsyncIterator<BatchPayload>>,
-    Fragmentable {
-  count: () => Promise<AsyncIterator<Long>>;
-}
-
-export interface AttendeeEdge {
-  node: Attendee;
-  cursor: String;
-}
-
-export interface AttendeeEdgePromise
-  extends Promise<AttendeeEdge>,
-    Fragmentable {
-  node: <T = AttendeePromise>() => T;
-  cursor: () => Promise<String>;
-}
-
-export interface AttendeeEdgeSubscription
-  extends Promise<AsyncIterator<AttendeeEdge>>,
-    Fragmentable {
-  node: <T = AttendeeSubscription>() => T;
-  cursor: () => Promise<AsyncIterator<String>>;
+  previousValues: <T = UserPreviousValuesSubscription>() => T;
 }
 
 export interface EventConnection {
@@ -1459,22 +1829,6 @@ export interface EventConnectionSubscription
   aggregate: <T = AggregateEventSubscription>() => T;
 }
 
-export interface AggregateEvent {
-  count: Int;
-}
-
-export interface AggregateEventPromise
-  extends Promise<AggregateEvent>,
-    Fragmentable {
-  count: () => Promise<Int>;
-}
-
-export interface AggregateEventSubscription
-  extends Promise<AsyncIterator<AggregateEvent>>,
-    Fragmentable {
-  count: () => Promise<AsyncIterator<Int>>;
-}
-
 /*
 DateTime scalar input type, allowing Date
 */
@@ -1490,13 +1844,13 @@ The `Boolean` scalar type represents `true` or `false`.
 */
 export type Boolean = boolean;
 
-export type Long = string;
-
 /*
 The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `"4"`) or integer (such as `4`) input value will be accepted as an ID.
 */
 export type ID_Input = string | number;
 export type ID_Output = string;
+
+export type Long = string;
 
 /*
 The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.
@@ -1527,6 +1881,10 @@ export const models: Model[] = [
   },
   {
     name: "EventTeam",
+    embedded: false
+  },
+  {
+    name: "File",
     embedded: false
   }
 ];

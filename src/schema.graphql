@@ -1,5 +1,6 @@
 # import Event from "../prisma/prisma.graphql"
 # import User from "../prisma/prisma.graphql"
+# import File from "../prisma/prisma.graphql"
 
 type Query {
   info: String
@@ -25,7 +26,7 @@ type Mutation {
   ): User
   
   createGoogleUser(name: String!, email: String!, password: String!): User
-
+  
   createEvent(
     where: UniqueInput
     name: String!
@@ -44,12 +45,14 @@ type Mutation {
     bucketLink: String
   ): Event
 
-  uploadFile(
-    where: UniqueInput
-    EventName: String 
-    email: String 
-    bucketLink: String!
-  ): UploadPayload
+  createFile(
+    id: ID
+    filename: String
+    mimetype: String
+    size: String
+    uri: String
+    encoding: String
+  ): File
 
   #  =======================>>
 
@@ -72,9 +75,9 @@ type AuthPayload {
   token: String
   user: User
 }
-
+ 
 type UploadPayload { 
-  bucketLink: uri
+  bucketLink: String
 }
 
 input UniqueInput {
