@@ -4,7 +4,8 @@ type User {
     role: String
     email: String!
     events: [Event]!
-    createdAt: String!
+    createdAt: Time!
+    updatedAt: Time!
 }
 
 input CreateUser {
@@ -19,4 +20,5 @@ input UpdateUser {
     role: String
     email: String!
     events: [CreateEvent]!
+    updatedAt: Time!
 }

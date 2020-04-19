@@ -2,10 +2,15 @@
 
 package model
 
+import (
+	"time"
+)
+
 type CreateEvent struct {
 	Name        string        `json:"name"`
 	Description string        `json:"description"`
 	Website     string        `json:"website"`
+	Email       string        `json:"Email"`
 	CreatedBy   *CreateUser   `json:"createdBy"`
 	Attendees   []*CreateUser `json:"attendees"`
 	Venue       string        `json:"venue"`
@@ -26,51 +31,60 @@ type CreateUser struct {
 }
 
 type Event struct {
-	ID          int     `json:"id"`
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Website     string  `json:"website"`
-	CreatedBy   *User   `json:"createdBy"`
-	CreatedAt   string  `json:"createdAt"`
-	Attendees   []*User `json:"attendees"`
-	Venue       string  `json:"venue"`
-	Date        int     `json:"Date"`
+	ID          int       `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Email       string    `json:"Email"`
+	Website     string    `json:"website"`
+	CreatedBy   *User     `json:"createdBy"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+	Attendees   []*User   `json:"attendees"`
+	Venue       string    `json:"venue"`
+	Date        int       `json:"Date"`
 }
 
 type Preference struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Color string `json:"color"`
-	Event *Event `json:"Event"`
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	Color     string    `json:"color"`
+	Event     *Event    `json:"Event"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type UpdateEvent struct {
 	Name        string        `json:"name"`
 	Description string        `json:"description"`
+	Email       string        `json:"Email"`
 	Website     string        `json:"website"`
+	UpdatedAt   time.Time     `json:"updatedAt"`
 	Attendees   []*CreateUser `json:"attendees"`
 	Venue       string        `json:"venue"`
 	Date        int           `json:"Date"`
 }
 
 type UpdatePreference struct {
-	Name  string       `json:"name"`
-	Color string       `json:"color"`
-	Event *CreateEvent `json:"Event"`
+	Name      string       `json:"name"`
+	Color     string       `json:"color"`
+	Event     *CreateEvent `json:"Event"`
+	UpdatedAt time.Time    `json:"updatedAt"`
 }
 
 type UpdateUser struct {
-	Name   string         `json:"name"`
-	Role   *string        `json:"role"`
-	Email  string         `json:"email"`
-	Events []*CreateEvent `json:"events"`
+	Name      string         `json:"name"`
+	Role      *string        `json:"role"`
+	Email     string         `json:"email"`
+	Events    []*CreateEvent `json:"events"`
+	UpdatedAt time.Time      `json:"updatedAt"`
 }
 
 type User struct {
-	ID        int      `json:"id"`
-	Name      string   `json:"name"`
-	Role      *string  `json:"role"`
-	Email     string   `json:"email"`
-	Events    []*Event `json:"events"`
-	CreatedAt string   `json:"createdAt"`
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	Role      *string   `json:"role"`
+	Email     string    `json:"email"`
+	Events    []*Event  `json:"events"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }

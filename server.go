@@ -6,9 +6,9 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 
-	"github.com/vickywane/event-server/graph"
 	"github.com/vickywane/event-server/graph/db"
 	"github.com/vickywane/event-server/graph/generated"
+	Resolver "github.com/vickywane/event-server/graph/resolvers"
 	// InternalMiddleware "github.com/vickywane/event-server/graph/middlewares"
 )
 
@@ -19,11 +19,15 @@ func graphqlHandler() gin.HandlerFunc {
 	Database.AddQueryHook(db.Logs{})
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{
-		Resolvers: &graph.Resolver{
+		Resolvers: &Resolver.Resolver{
 			DB: Database,
 		}}))
-
-	// h.Use()
+	// Todo Find how to use Cors with GIN
+	// h.Use(cors.New(cors.Options{
+	// 	AllowedOrigins:         []string{"http://localhost:4040"},
+	// 	AllowCredentials:       true,
+	// 	Debug:                  true,
+	// }))
 
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
@@ -42,6 +46,7 @@ func playgroundHandler() gin.HandlerFunc {
 func main() {
 	// Setting up Gin
 	r := gin.Default()
+
 	r.POST("/query", graphqlHandler())
 	r.GET("/", playgroundHandler())
 	r.Run()

@@ -2,9 +2,11 @@ type Event {
     id : ID!
     name: String!
     description: String!
+    Email: String!
     website: String!
     createdBy : User!
-    createdAt: String!
+    createdAt: Time!
+    updatedAt: Time!
     attendees: [User]!
     venue: String!
     Date: Int!
@@ -14,6 +16,7 @@ input CreateEvent {
     name: String!
     description: String!
     website: String!
+    Email: String!
     createdBy: CreateUser!
     attendees: [CreateUser]!
     venue: String!
@@ -23,7 +26,9 @@ input CreateEvent {
 input UpdateEvent {
     name: String!
     description: String!
+    Email: String!
     website: String!
+    updatedAt: Time!
     attendees: [CreateUser]!
     venue: String!
     Date: Int!

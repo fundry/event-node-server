@@ -3,6 +3,8 @@ type Preference {
     name: String!
     color: String!
     Event: Event!
+    createdAt: Time!
+    updatedAt: Time!
 }
 
 input CreatePreference {
@@ -15,4 +17,5 @@ input UpdatePreference {
     name: String!
     color: String!
     Event: CreateEvent!
+    updatedAt: Time!
 }
