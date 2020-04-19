@@ -6,13 +6,16 @@ type CreateEvent struct {
 	Name        string        `json:"name"`
 	Description string        `json:"description"`
 	Website     string        `json:"website"`
+	CreatedBy   *CreateUser   `json:"createdBy"`
 	Attendees   []*CreateUser `json:"attendees"`
 	Venue       string        `json:"venue"`
 	Date        int           `json:"Date"`
 }
 
 type CreatePreference struct {
-	ID int `json:"id"`
+	Name  string       `json:"name"`
+	Color string       `json:"color"`
+	Event *CreateEvent `json:"Event"`
 }
 
 type CreateUser struct {
@@ -27,7 +30,7 @@ type Event struct {
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Website     string  `json:"website"`
-	CreatedBy   string  `json:"createdBy"`
+	CreatedBy   *User   `json:"createdBy"`
 	CreatedAt   string  `json:"createdAt"`
 	Attendees   []*User `json:"attendees"`
 	Venue       string  `json:"venue"`
@@ -35,7 +38,10 @@ type Event struct {
 }
 
 type Preference struct {
-	ID int `json:"id"`
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Color string `json:"color"`
+	Event *Event `json:"Event"`
 }
 
 type UpdateEvent struct {
@@ -48,7 +54,9 @@ type UpdateEvent struct {
 }
 
 type UpdatePreference struct {
-	ID int `json:"id"`
+	Name  string       `json:"name"`
+	Color string       `json:"color"`
+	Event *CreateEvent `json:"Event"`
 }
 
 type UpdateUser struct {
