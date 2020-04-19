@@ -1,11 +1,18 @@
 type Preference {
     id : ID!
+    name: String!
+    color: String!
+    Event: Event!
 }
 
 input CreatePreference {
-    id : ID!
+    name: String!
+    color: String!
+    Event: CreateEvent!
 }
 
 input UpdatePreference {
-    id : ID!
+    name: String!
+    color: String!
+    Event: CreateEvent!
 }

@@ -1,8 +1,6 @@
-# Where are all the schema files located? globs are supported eg  src/**/*.graphqls
 schema:
-  - graph/schema/types/*.graphqls
+  - graph/schema/**/*.graphqls
 
-# Where should the generated server code go?
 exec:
   filename: graph/generated/generated.go
   package: generated
@@ -14,13 +12,14 @@ exec:
 
 # Where should any generated models go?
 model:
-  filename: graph/model/models_gen.go
+  filename: graph/model/models.go
   package: model
 
 # Where should the resolver implementations go?
 resolver:
   layout: follow-schema
   dir: graph/resolvers
+  filename: graph/resolvers/resolvers.go
   package: resolvers
 
 # Optional: turn on to use []Thing instead of []*Thing
@@ -29,14 +28,9 @@ resolver:
 # Optional: set to speed up generation time by not performing a final validation pass.
 # skip_validation: true
 
-# gqlgen will search for any type names in the schema in these go packages
-# if they match it will use them, otherwise it will generate them.
 autobind:
   - "github.com/vickywane/event-server/graph/model"
 
-# The first line in each type will be used as defaults for resolver arguments and
-# modelgen, the others will be allowed when binding to fields. Configure them to
-# your liking
 models:
   ID:
     model:
@@ -50,3 +44,19 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+
+  Event:
+    fields:
+      createdBy:
+        resolver: true
+      attendees:
+        resolver: true
+  User:
+    fields:
+      events:
+        resolver: true
+  Preference:
+    fields:
+      event:
+        resolver: true
+

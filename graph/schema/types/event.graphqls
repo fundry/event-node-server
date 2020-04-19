@@ -3,7 +3,7 @@ type Event {
     name: String!
     description: String!
     website: String!
-    createdBy : String!
+    createdBy : User!
     createdAt: String!
     attendees: [User]!
     venue: String!
@@ -14,6 +14,7 @@ input CreateEvent {
     name: String!
     description: String!
     website: String!
+    createdBy: CreateUser!
     attendees: [CreateUser]!
     venue: String!
     Date: Int!

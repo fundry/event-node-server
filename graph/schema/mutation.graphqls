@@ -1,0 +1,10 @@
+type Mutation {
+    createEvent(input: CreateEvent!): Event!
+    updateEvent(id: ID, input: UpdateEvent): Event!
+
+    createUser(input: CreateUser!): User!
+    updateUser(id: ID, input: UpdateUser): User!
+
+    createPreference(input: CreatePreference!): Preference!
+    updatePreference(id: ID, input: UpdatePreference): Preference!
+}

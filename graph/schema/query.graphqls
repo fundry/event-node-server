@@ -1,0 +1,10 @@
+type Query {
+    event(id: Int!) : Event!
+    events: [Event]!
+
+    user(id: Int!) : User!
+    users : [User]!
+
+    preference(id: Int!) : Preference!
+    preferences : [Preference]!
+}

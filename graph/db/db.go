@@ -13,8 +13,7 @@ import (
 
 func createSchema(db *pg.DB) error {
 	for _, models := range []interface{}{(*model.User)(nil),
-		(*model.Usecase)(nil), (*model.Case)(nil), (*model.Jotter)(nil),
-		(*model.Organization)(nil)} {
+		(*model.User)(nil), (*model.Event)(nil), (*model.Preference)(nil)} {
 		err := db.CreateTable(models, &orm.CreateTableOptions{
 			IfNotExists: true,
 		})
@@ -34,8 +33,8 @@ func Connect() *pg.DB {
 		User:            "postgres",
 		Password:        "postgres",
 		Addr:            "localhost:5432",
-		Database:        "usecase-database",
-		ApplicationName: "Usecase-server",
+		Database:        "event-database",
+		ApplicationName: "event-server",
 	})
 
 	if db != nil {
