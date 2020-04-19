@@ -2,19 +2,67 @@
 
 package model
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+type CreateEvent struct {
+	Name        string        `json:"name"`
+	Description string        `json:"description"`
+	Website     string        `json:"website"`
+	Attendees   []*CreateUser `json:"attendees"`
+	Venue       string        `json:"venue"`
+	Date        int           `json:"Date"`
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
+type CreatePreference struct {
+	ID int `json:"id"`
+}
+
+type CreateUser struct {
+	Name   string         `json:"name"`
+	Role   *string        `json:"role"`
+	Email  string         `json:"email"`
+	Events []*CreateEvent `json:"events"`
+}
+
+type Event struct {
+	ID          int     `json:"id"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Website     string  `json:"website"`
+	CreatedBy   string  `json:"createdBy"`
+	CreatedAt   string  `json:"createdAt"`
+	Attendees   []*User `json:"attendees"`
+	Venue       string  `json:"venue"`
+	Date        int     `json:"Date"`
+}
+
+type Preference struct {
+	ID int `json:"id"`
+}
+
+type UpdateEvent struct {
+	Name        string        `json:"name"`
+	Description string        `json:"description"`
+	Website     string        `json:"website"`
+	Attendees   []*CreateUser `json:"attendees"`
+	Venue       string        `json:"venue"`
+	Date        int           `json:"Date"`
+}
+
+type UpdatePreference struct {
+	ID int `json:"id"`
+}
+
+type UpdateUser struct {
+	Name   string         `json:"name"`
+	Role   *string        `json:"role"`
+	Email  string         `json:"email"`
+	Events []*CreateEvent `json:"events"`
 }
 
 type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID        int      `json:"id"`
+	Name      string   `json:"name"`
+	Role      *string  `json:"role"`
+	Email     string   `json:"email"`
+	Events    []*Event `json:"events"`
+	CreatedAt string   `json:"createdAt"`
 }

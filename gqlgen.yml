@@ -1,6 +1,6 @@
 # Where are all the schema files located? globs are supported eg  src/**/*.graphqls
 schema:
-  - graph/*.graphqls
+  - graph/schema/types/*.graphqls
 
 # Where should the generated server code go?
 exec:
@@ -20,11 +20,8 @@ model:
 # Where should the resolver implementations go?
 resolver:
   layout: follow-schema
-  dir: graph
-  package: graph
-
-# Optional: turn on use `gqlgen:"fieldName"` tags in your models
-# struct_tag: json
+  dir: graph/resolvers
+  package: resolvers
 
 # Optional: turn on to use []Thing instead of []*Thing
 # omit_slice_element_pointers: false
@@ -37,14 +34,13 @@ resolver:
 autobind:
   - "github.com/vickywane/event-server/graph/model"
 
-# This section declares type mapping between the GraphQL and go type systems
-#
 # The first line in each type will be used as defaults for resolver arguments and
 # modelgen, the others will be allowed when binding to fields. Configure them to
 # your liking
 models:
   ID:
     model:
+      - github.com/99designs/gqlgen/graphql.IntID #added by me
       - github.com/99designs/gqlgen/graphql.ID
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64

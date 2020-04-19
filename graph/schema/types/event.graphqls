@@ -1,0 +1,29 @@
+type Event {
+    id : ID!
+    name: String!
+    description: String!
+    website: String!
+    createdBy : String!
+    createdAt: String!
+    attendees: [User]!
+    venue: String!
+    Date: Int!
+}
+
+input CreateEvent {
+    name: String!
+    description: String!
+    website: String!
+    attendees: [CreateUser]!
+    venue: String!
+    Date: Int!
+}
+
+input UpdateEvent {
+    name: String!
+    description: String!
+    website: String!
+    attendees: [CreateUser]!
+    venue: String!
+    Date: Int!
+}

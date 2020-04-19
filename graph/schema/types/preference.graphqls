@@ -1,0 +1,11 @@
+type Preference {
+    id : ID!
+}
+
+input CreatePreference {
+    id : ID!
+}
+
+input UpdatePreference {
+    id : ID!
+}
