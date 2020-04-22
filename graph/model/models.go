@@ -11,6 +11,10 @@ type CreateEvent struct {
 	Description string        `json:"description"`
 	Website     string        `json:"website"`
 	Email       string        `json:"Email"`
+	EventType   string        `json:"eventType"`
+	IsArchived  *bool         `json:"isArchived"`
+	IsLocked    *bool         `json:"isLocked"`
+	BucketLink  string        `json:"bucketLink"`
 	CreatedBy   *CreateUser   `json:"createdBy"`
 	Attendees   []*CreateUser `json:"attendees"`
 	Venue       string        `json:"venue"`
@@ -24,10 +28,12 @@ type CreatePreference struct {
 }
 
 type CreateUser struct {
-	Name   string         `json:"name"`
-	Role   *string        `json:"role"`
-	Email  string         `json:"email"`
-	Events []*CreateEvent `json:"events"`
+	Name       string         `json:"name"`
+	Role       *string        `json:"role"`
+	Email      string         `json:"email"`
+	Password   string         `json:"password"`
+	BucketLink string         `json:"bucketLink"`
+	Events     []*CreateEvent `json:"events"`
 }
 
 type Event struct {
@@ -36,12 +42,16 @@ type Event struct {
 	Description string    `json:"description"`
 	Email       string    `json:"Email"`
 	Website     string    `json:"website"`
-	CreatedBy   *User     `json:"createdBy"`
+	BucketLink  string    `json:"bucketLink"`
+	Venue       string    `json:"venue"`
+	EventType   string    `json:"eventType"`
+	Date        int       `json:"Date"`
+	IsArchived  *bool     `json:"isArchived"`
+	IsLocked    *bool     `json:"isLocked"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 	Attendees   []*User   `json:"attendees"`
-	Venue       string    `json:"venue"`
-	Date        int       `json:"Date"`
+	CreatedBy   *User     `json:"createdBy"`
 }
 
 type Preference struct {
@@ -53,9 +63,20 @@ type Preference struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
+type Sponsor struct {
+	ID             int    `json:"id"`
+	Name           string `json:"name"`
+	IsOrganization *bool  `json:"isOrganization"`
+}
+
 type UpdateEvent struct {
 	Name        string        `json:"name"`
+	Type        string        `json:"type"`
+	BucketLink  string        `json:"bucketLink"`
 	Description string        `json:"description"`
+	EventType   string        `json:"eventType"`
+	IsArchived  *bool         `json:"isArchived"`
+	IsLocked    *bool         `json:"isLocked"`
 	Email       string        `json:"Email"`
 	Website     string        `json:"website"`
 	UpdatedAt   time.Time     `json:"updatedAt"`
@@ -72,19 +93,23 @@ type UpdatePreference struct {
 }
 
 type UpdateUser struct {
-	Name      string         `json:"name"`
-	Role      *string        `json:"role"`
-	Email     string         `json:"email"`
-	Events    []*CreateEvent `json:"events"`
-	UpdatedAt time.Time      `json:"updatedAt"`
+	Name       string         `json:"name"`
+	Role       *string        `json:"role"`
+	Email      string         `json:"email"`
+	Password   string         `json:"password"`
+	BucketLink string         `json:"bucketLink"`
+	Events     []*CreateEvent `json:"events"`
+	UpdatedAt  time.Time      `json:"updatedAt"`
 }
 
 type User struct {
-	ID        int       `json:"id"`
-	Name      string    `json:"name"`
-	Role      *string   `json:"role"`
-	Email     string    `json:"email"`
-	Events    []*Event  `json:"events"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	ID         int       `json:"id"`
+	Name       string    `json:"name"`
+	Role       *string   `json:"role"`
+	Email      string    `json:"email"`
+	Password   string    `json:"password"`
+	BucketLink string    `json:"bucketLink"`
+	Events     []*Event  `json:"events"`
+	CreatedAt  time.Time `json:"createdAt"`
+	UpdatedAt  time.Time `json:"updatedAt"`
 }

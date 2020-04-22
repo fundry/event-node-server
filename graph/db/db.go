@@ -28,6 +28,12 @@ func createSchema(db *pg.DB) error {
 
 func Connect() *pg.DB {
 	log.Println("Db connection is starting")
+	// APP_NAME := os.Getenv("APPLICATION_NAME" )
+	// DB_USER := os.Getenv("POSTGRES_USER" )
+	// DB_PASSWORD := os.Getenv("POSTGRES_DB_PASSWORD" )
+	// DB_ADDRESS := os.Getenv("POSTGRES_DB_ADDRESS" )
+	// DB_DATABASE := os.Getenv("POSTGRES_DB" )
+
 
 	db := pg.Connect(&pg.Options{
 		User:            "postgres",

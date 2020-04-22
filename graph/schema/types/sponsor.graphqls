@@ -1,0 +1,5 @@
+type Sponsor {
+    id : ID!
+    name : String!
+    isOrganization : Boolean @default(value: false)
+}

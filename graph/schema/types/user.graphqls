@@ -3,7 +3,9 @@ type User {
     name: String!
     role: String
     email: String!
-    events: [Event]!
+    password: String!
+    bucketLink: String!
+    events: [Event]
     createdAt: Time!
     updatedAt: Time!
 }
@@ -12,13 +14,17 @@ input CreateUser {
     name: String!
     role: String
     email: String!
-    events: [CreateEvent]!
+    password: String!
+    bucketLink: String!
+    events: [CreateEvent]
 }
 
 input UpdateUser {
     name: String!
     role: String
     email: String!
+    password: String!
+    bucketLink: String!
     events: [CreateEvent]!
     updatedAt: Time!
 }

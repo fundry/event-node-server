@@ -4,12 +4,16 @@ type Event {
     description: String!
     Email: String!
     website: String!
-    createdBy : User!
+    bucketLink : String!
+    venue: String!
+    eventType: String!
+    Date: Int!
+    isArchived: Boolean @default(value: false)
+    isLocked: Boolean @default(value: false)
     createdAt: Time!
     updatedAt: Time!
-    attendees: [User]!
-    venue: String!
-    Date: Int!
+    attendees: [User]
+    createdBy : User
 }
 
 input CreateEvent {
@@ -17,15 +21,24 @@ input CreateEvent {
     description: String!
     website: String!
     Email: String!
-    createdBy: CreateUser!
-    attendees: [CreateUser]!
+    eventType: String!
+    isArchived: Boolean
+    isLocked: Boolean
+    bucketLink : String!
+    createdBy: CreateUser
+    attendees: [CreateUser]
     venue: String!
     Date: Int!
 }
 
 input UpdateEvent {
     name: String!
+    type: String!
+    bucketLink : String!
     description: String!
+    eventType: String!
+    isArchived: Boolean
+    isLocked: Boolean
     Email: String!
     website: String!
     updatedAt: Time!

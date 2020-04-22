@@ -5,6 +5,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/gin-contrib/cors"
 
 	"github.com/vickywane/event-server/graph/db"
 	"github.com/vickywane/event-server/graph/generated"
@@ -46,6 +47,11 @@ func playgroundHandler() gin.HandlerFunc {
 func main() {
 	// Setting up Gin
 	r := gin.Default()
+
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"https://http://localhost:8080"},
+		AllowMethods:     []string{"GET", "PUT", "POST" , "DELETE"},
+	}))
 
 	r.POST("/query", graphqlHandler())
 	r.GET("/", playgroundHandler())

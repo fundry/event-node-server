@@ -11,11 +11,11 @@ import (
 	"github.com/vickywane/event-server/graph/model"
 )
 
-func (r *eventResolver) CreatedBy(ctx context.Context, obj *model.Event) (*model.User, error) {
+func (r *eventResolver) Attendees(ctx context.Context, obj *model.Event) ([]*model.User, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *eventResolver) Attendees(ctx context.Context, obj *model.Event) ([]*model.User, error) {
+func (r *eventResolver) CreatedBy(ctx context.Context, obj *model.Event) (*model.User, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
