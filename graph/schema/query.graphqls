@@ -1,10 +1,16 @@
 type Query {
-    event(id: Int!) : Event!
-    events: [Event]!
+    event(id: Int name: String!) : Event!
+    events: [Event!]!
 
-    user(id: Int!) : User!
-    users : [User]!
+    user(id: Int name: String!) : User!
+    users : [User!]!
 
-    preference(id: Int!) : Preference!
-    preferences : [Preference]!
+    preference(id: Int name: String!) : Preference!
+    preferences : [Preference!]!
+
+    file(id: Int name: String!) : File!
+    files: [File!]!
+
+    team(id: Int name: String!): Team!
+    teams: [Team!]!
 }

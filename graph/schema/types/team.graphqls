@@ -1,0 +1,23 @@
+type Team {
+    id : ID!
+    name : String!
+    members: [User]
+    goal: String!
+    createdBy: User
+    createdAt: Time!
+    updatedAt: Time!
+}
+
+input CreateTeam {
+    name : String!
+    members: [CreateUser]
+    goal: String!
+    createdBy: CreateUser
+}
+
+input UpdateTeam {
+    name : String!
+    members: [CreateUser]
+    goal: String!
+    createdBy: CreateUser
+}

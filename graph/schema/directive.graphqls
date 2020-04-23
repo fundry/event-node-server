@@ -16,9 +16,9 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
     | UNION
 
 #havent found a way to implement this yet.
-directive @unique(value: Boolean) on FIELD_DEFINITION
-    | INPUT_OBJECT
-    | SCALAR
-    | ENUM
-    | INTERFACE
-    | UNION
+#directive @unique(value: Boolean) on FIELD_DEFINITION
+#    | INPUT_OBJECT
+#    | SCALAR
+#    | ENUM
+#    | INTERFACE
+#    | UNION

@@ -1,0 +1,24 @@
+type File {
+    id: ID!
+    filename: String!
+    mimetype: String!
+    size: String!
+    uri: String!
+    encoding: String!
+    timestamp: Time!
+}
+
+input CreateFile {
+    id: ID!
+    filename: String!
+    mimetype: String!
+    size: String!
+    uri: String!
+    encoding: String!
+    timestamp: Time!
+}
+
+input DeleteFile {
+    id: ID!
+    uri: String
+}

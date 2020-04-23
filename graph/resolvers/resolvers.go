@@ -6,6 +6,6 @@ import "github.com/go-pg/pg/v9"
 //
 // It serves as dependency injection for your app, add any dependencies you require here.
 
-type Resolver struct{
-    DB *pg.DB
+type Resolver struct {
+	DB *pg.DB
 }

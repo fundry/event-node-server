@@ -8,6 +8,8 @@ import (
 
 type CreateEvent struct {
 	Name        string        `json:"name"`
+	Summary     string        `json:"summary"`
+	Alias       string        `json:"alias"`
 	Description string        `json:"description"`
 	Website     string        `json:"website"`
 	Email       string        `json:"Email"`
@@ -21,10 +23,27 @@ type CreateEvent struct {
 	Date        int           `json:"Date"`
 }
 
+type CreateFile struct {
+	ID        int       `json:"id"`
+	Filename  string    `json:"filename"`
+	Mimetype  string    `json:"mimetype"`
+	Size      string    `json:"size"`
+	URI       string    `json:"uri"`
+	Encoding  string    `json:"encoding"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
 type CreatePreference struct {
 	Name  string       `json:"name"`
 	Color string       `json:"color"`
 	Event *CreateEvent `json:"Event"`
+}
+
+type CreateTeam struct {
+	Name      string        `json:"name"`
+	Members   []*CreateUser `json:"members"`
+	Goal      string        `json:"goal"`
+	CreatedBy *CreateUser   `json:"createdBy"`
 }
 
 type CreateUser struct {
@@ -36,22 +55,39 @@ type CreateUser struct {
 	Events     []*CreateEvent `json:"events"`
 }
 
+type DeleteFile struct {
+	ID  int     `json:"id"`
+	URI *string `json:"uri"`
+}
+
 type Event struct {
 	ID          int       `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
+	Summary     string    `json:"summary"`
+	Alias       string    `json:"alias"`
 	Email       string    `json:"Email"`
 	Website     string    `json:"website"`
 	BucketLink  string    `json:"bucketLink"`
 	Venue       string    `json:"venue"`
 	EventType   string    `json:"eventType"`
 	Date        int       `json:"Date"`
-	IsArchived  *bool     `json:"isArchived"`
-	IsLocked    *bool     `json:"isLocked"`
+	IsArchived  bool      `json:"isArchived"`
+	IsLocked    bool      `json:"isLocked"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 	Attendees   []*User   `json:"attendees"`
 	CreatedBy   *User     `json:"createdBy"`
+}
+
+type File struct {
+	ID        int       `json:"id"`
+	Filename  string    `json:"filename"`
+	Mimetype  string    `json:"mimetype"`
+	Size      string    `json:"size"`
+	URI       string    `json:"uri"`
+	Encoding  string    `json:"encoding"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 type Preference struct {
@@ -69,9 +105,21 @@ type Sponsor struct {
 	IsOrganization *bool  `json:"isOrganization"`
 }
 
+type Team struct {
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	Members   []*User   `json:"members"`
+	Goal      string    `json:"goal"`
+	CreatedBy *User     `json:"createdBy"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
 type UpdateEvent struct {
 	Name        string        `json:"name"`
 	Type        string        `json:"type"`
+	Summary     string        `json:"summary"`
+	Alias       string        `json:"alias"`
 	BucketLink  string        `json:"bucketLink"`
 	Description string        `json:"description"`
 	EventType   string        `json:"eventType"`
@@ -90,6 +138,13 @@ type UpdatePreference struct {
 	Color     string       `json:"color"`
 	Event     *CreateEvent `json:"Event"`
 	UpdatedAt time.Time    `json:"updatedAt"`
+}
+
+type UpdateTeam struct {
+	Name      string        `json:"name"`
+	Members   []*CreateUser `json:"members"`
+	Goal      string        `json:"goal"`
+	CreatedBy *CreateUser   `json:"createdBy"`
 }
 
 type UpdateUser struct {

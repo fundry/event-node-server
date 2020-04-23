@@ -7,4 +7,10 @@ type Mutation {
 
     createPreference(input: CreatePreference!): Preference!
     updatePreference(id: ID, input: UpdatePreference): Preference!
+
+    createFile(input: CreateFile!) : File!
+    updateFile(id: ID, input: DeleteFile): File!
+
+    createTeam(input: CreateTeam): Team!
+    updateTeam(id: ID, input:UpdateTeam): Team!
 }

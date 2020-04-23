@@ -2,14 +2,16 @@ type Event {
     id : ID!
     name: String!
     description: String!
+    summary: String!
+    alias: String!
     Email: String!
     website: String!
     bucketLink : String!
     venue: String!
     eventType: String!
     Date: Int!
-    isArchived: Boolean @default(value: false)
-    isLocked: Boolean @default(value: false)
+    isArchived: Boolean! @default(value: false)
+    isLocked: Boolean!  @default(value: false)
     createdAt: Time!
     updatedAt: Time!
     attendees: [User]
@@ -18,6 +20,8 @@ type Event {
 
 input CreateEvent {
     name: String!
+    summary: String!
+    alias: String!
     description: String!
     website: String!
     Email: String!
@@ -34,6 +38,8 @@ input CreateEvent {
 input UpdateEvent {
     name: String!
     type: String!
+    summary: String!
+    alias: String!
     bucketLink : String!
     description: String!
     eventType: String!

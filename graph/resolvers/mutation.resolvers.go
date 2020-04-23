@@ -18,8 +18,18 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.CreateEv
 		ID:          rand.Int(),
 		Name:        input.Name,
 		Description: input.Description,
+		Alias:       input.Alias,
+		Summary:     input.Summary,
 		Email:       input.Email,
+		EventType:   input.EventType,
+		Website:     input.Website,
+		Venue:       input.Venue,
+		Date:        input.Date,
+		BucketLink:  input.BucketLink,
+		IsArchived:  false,
+		IsLocked:    false,
 		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
 	}
 
 	if err := r.DB.Insert(&event); err != nil {
@@ -68,6 +78,22 @@ func (r *mutationResolver) CreatePreference(ctx context.Context, input model.Cre
 }
 
 func (r *mutationResolver) UpdatePreference(ctx context.Context, id *int, input *model.UpdatePreference) (*model.Preference, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) CreateFile(ctx context.Context, input model.CreateFile) (*model.File, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) UpdateFile(ctx context.Context, id *int, input *model.DeleteFile) (*model.File, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) CreateTeam(ctx context.Context, input *model.CreateTeam) (*model.Team, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) UpdateTeam(ctx context.Context, id *int, input *model.UpdateTeam) (*model.Team, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

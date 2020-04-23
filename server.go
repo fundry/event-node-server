@@ -23,12 +23,6 @@ func graphqlHandler() gin.HandlerFunc {
 		Resolvers: &Resolver.Resolver{
 			DB: Database,
 		}}))
-	// Todo Find how to use Cors with GIN
-	// h.Use(cors.New(cors.Options{
-	// 	AllowedOrigins:         []string{"http://localhost:4040"},
-	// 	AllowCredentials:       true,
-	// 	Debug:                  true,
-	// }))
 
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
@@ -49,8 +43,9 @@ func main() {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://http://localhost:8080"},
-		AllowMethods:     []string{"GET", "PUT", "POST" , "DELETE"},
+		AllowOrigins: []string{"http://localhost:3000"},
+		AllowMethods: []string{"GET", "PUT", "POST", "DELETE"},
+		AllowHeaders: []string{"content-type"},
 	}))
 
 	r.POST("/query", graphqlHandler())

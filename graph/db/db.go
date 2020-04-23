@@ -6,14 +6,15 @@ import (
 	"github.com/go-pg/pg/v9/orm"
 	"log"
 
+	"github.com/joho/godotenv"
+
 	"github.com/vickywane/event-server/graph/model"
 )
 
-//Todo : Use & Load env vars here
-
 func createSchema(db *pg.DB) error {
 	for _, models := range []interface{}{(*model.User)(nil),
-		(*model.User)(nil), (*model.Event)(nil), (*model.Preference)(nil)} {
+		(*model.User)(nil), (*model.Event)(nil), (*model.Preference)(nil),
+		(*model.File)(nil),(*model.Team)(nil) } {
 		err := db.CreateTable(models, &orm.CreateTableOptions{
 			IfNotExists: true,
 		})
@@ -27,30 +28,31 @@ func createSchema(db *pg.DB) error {
 }
 
 func Connect() *pg.DB {
-	log.Println("Db connection is starting")
-	// APP_NAME := os.Getenv("APPLICATION_NAME" )
-	// DB_USER := os.Getenv("POSTGRES_USER" )
-	// DB_PASSWORD := os.Getenv("POSTGRES_DB_PASSWORD" )
-	// DB_ADDRESS := os.Getenv("POSTGRES_DB_ADDRESS" )
-	// DB_DATABASE := os.Getenv("POSTGRES_DB" )
+	godotenv.Load(".env")
 
+	Envs, err := godotenv.Read(".env")
+ 	fmt.Println()
 
 	db := pg.Connect(&pg.Options{
-		User:            "postgres",
-		Password:        "postgres",
-		Addr:            "localhost:5432",
-		Database:        "event-database",
-		ApplicationName: "event-server",
+		User:             Envs["POSTGRES_USER"],
+		Password:          Envs["POSTGRES_DB_PASSWORD"],
+		Addr:             Envs["POSTGRES_DB_ADDRESS"],
+		Database:         Envs["POSTGRES_DB"],
+		ApplicationName:  Envs["APPLICATION_NAME"],
 	})
 
 	if db != nil {
 		fmt.Println(db)
 	}
 
-	err := createSchema(db)
-	if err != nil {
+	error := createSchema(db)
+	if error != nil {
 		panic(err)
 	}
+
+	 // NOTE!! this func might likely try to reseed on every restart
+	  SeedDatabase(db)
+
 
 	return db
 }

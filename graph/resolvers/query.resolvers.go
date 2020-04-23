@@ -11,8 +11,8 @@ import (
 	"github.com/vickywane/event-server/graph/model"
 )
 
-func (r *queryResolver) Event(ctx context.Context, id int) (*model.Event, error) {
-	event := model.Event{ID: id}
+func (r *queryResolver) Event(ctx context.Context, id *int, name string) (*model.Event, error) {
+	event := model.Event{ID: *id, Name: name}
 
 	if err := r.DB.Select(&event); err != nil {
 		return nil, err
@@ -33,8 +33,8 @@ func (r *queryResolver) Events(ctx context.Context) ([]*model.Event, error) {
 	return events, nil
 }
 
-func (r *queryResolver) User(ctx context.Context, id int) (*model.User, error) {
-	User := model.User{ID: id}
+func (r *queryResolver) User(ctx context.Context, id *int, name string) (*model.User, error) {
+	User := model.User{ID: *id, Name: name}
 
 	if err := r.DB.Select(&User); err != nil {
 		return nil, err
@@ -55,8 +55,8 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	return Users, nil
 }
 
-func (r *queryResolver) Preference(ctx context.Context, id int) (*model.Preference, error) {
-	Preference := model.Preference{ID: id}
+func (r *queryResolver) Preference(ctx context.Context, id *int, name string) (*model.Preference, error) {
+	Preference := model.Preference{ID: *id, Name: name}
 
 	if err := r.DB.Select(&Preference); err != nil {
 		return nil, err
@@ -75,6 +75,50 @@ func (r *queryResolver) Preferences(ctx context.Context) ([]*model.Preference, e
 	}
 
 	return Preferences, nil
+}
+
+func (r *queryResolver) File(ctx context.Context, id *int, name string) (*model.File, error) {
+	File := model.File{ID: *id, Filename: name}
+
+	if err := r.DB.Select(&File); err != nil {
+		return nil, err
+	}
+
+	return &File, nil
+}
+
+func (r *queryResolver) Files(ctx context.Context) ([]*model.File, error) {
+	var Files []*model.File
+
+	err := r.DB.Model(&Files).Select()
+
+	if err != nil {
+		fmt.Println("some err here")
+	}
+
+	return Files, nil
+}
+
+func (r *queryResolver) Team(ctx context.Context, id *int, name string) (*model.Team, error) {
+	Team := model.Team{ID: *id, Name: name}
+
+	if err := r.DB.Select(&Team); err != nil {
+		return nil, err
+	}
+
+	return &Team, nil
+}
+
+func (r *queryResolver) Teams(ctx context.Context) ([]*model.Team, error) {
+	var Teams []*model.Team
+
+	err := r.DB.Model(&Teams).Select()
+
+	if err != nil {
+		fmt.Println("some err here")
+	}
+
+	return Teams, nil
 }
 
 // Query returns generated.QueryResolver implementation.
