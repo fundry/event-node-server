@@ -9,13 +9,15 @@ import (
 
 	"github.com/vickywane/event-server/graph/db"
 	"github.com/vickywane/event-server/graph/generated"
+	InternalMiddleware "github.com/vickywane/event-server/graph/middlewares"
 	Resolver "github.com/vickywane/event-server/graph/resolvers"
-	// InternalMiddleware "github.com/vickywane/event-server/graph/middlewares"
 )
 
-// Defining the Graphql handler
+var Key = "id"
+
 func graphqlHandler() gin.HandlerFunc {
 
+	//Todo: Push logs into a log file
 	Database := db.Connect()
 	Database.AddQueryHook(db.Logs{})
 
@@ -39,14 +41,22 @@ func playgroundHandler() gin.HandlerFunc {
 }
 
 func main() {
-	// Setting up Gin
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"http://localhost:3000"},
+		AllowOrigins: []string{"http://localhost:3000", "http://localhost:8080"},
 		AllowMethods: []string{"GET", "PUT", "POST", "DELETE"},
 		AllowHeaders: []string{"content-type"},
-	}))
+	}),
+		gin.Recovery(),
+	// InternalMiddleware.AuthMiddleware(t),
+	)
+
+	// test routes for auth
+	r.POST("/login", InternalMiddleware.AuthMiddleware.LoginHandler)
+	r.GET("/auth", InternalMiddleware.AuthMiddleware.RefreshHandler)
+	r.GET("/hello", InternalMiddleware.LoginHandler)
+	// ====================>
 
 	r.POST("/query", graphqlHandler())
 	r.GET("/", playgroundHandler())

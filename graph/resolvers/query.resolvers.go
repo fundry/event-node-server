@@ -121,6 +121,14 @@ func (r *queryResolver) Teams(ctx context.Context) ([]*model.Team, error) {
 	return Teams, nil
 }
 
+func (r *queryResolver) Sponsor(ctx context.Context, id *int, name *string) (*model.Sponsor, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Sponsors(ctx context.Context) (*model.Sponsor, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 

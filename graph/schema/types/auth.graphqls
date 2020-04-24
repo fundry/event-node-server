@@ -1,0 +1,9 @@
+type AuthResponse {
+    token : String!
+    expiredAt: String
+}
+
+input LoginUser {
+    Email : String!
+    Password: String!
+}

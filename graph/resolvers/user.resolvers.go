@@ -12,7 +12,16 @@ import (
 )
 
 func (r *userResolver) Events(ctx context.Context, obj *model.User) ([]*model.Event, error) {
-	panic(fmt.Errorf("not implemented"))
+	var events []*model.Event
+
+	err := r.DB.Model(&events).Where("event_id = ?", obj.ID).Order("id").Select()
+
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return events, nil
 }
 
 // User returns generated.UserResolver implementation.

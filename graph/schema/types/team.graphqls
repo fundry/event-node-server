@@ -1,7 +1,7 @@
 type Team {
     id : ID!
     name : String!
-    members: [User]
+    members: [User!]
     goal: String!
     createdBy: User
     createdAt: Time!

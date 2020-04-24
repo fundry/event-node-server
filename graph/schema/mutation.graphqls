@@ -1,16 +1,21 @@
 type Mutation {
     createEvent(input: CreateEvent!): Event!
-    updateEvent(id: ID, input: UpdateEvent): Event!
+    updateEvent(id: ID, input: UpdateEvent!): Event!
 
     createUser(input: CreateUser!): User!
-    updateUser(id: ID, input: UpdateUser): User!
+    updateUser(id: ID, input: UpdateUser!): User!
 
     createPreference(input: CreatePreference!): Preference!
-    updatePreference(id: ID, input: UpdatePreference): Preference!
+    updatePreference(id: ID, input: UpdatePreference!): Preference!
 
     createFile(input: CreateFile!) : File!
-    updateFile(id: ID, input: DeleteFile): File!
+    updateFile(id: ID, input: DeleteFile!): File!
 
-    createTeam(input: CreateTeam): Team!
-    updateTeam(id: ID, input:UpdateTeam): Team!
+    createTeam(input: CreateTeam!): Team!
+    updateTeam(id: ID, input: UpdateTeam!): Team!
+
+    createSponsor(input: CreateSponsor): Sponsor!
+    updateSponsor(id: ID, input: UpdateSponsor):Sponsor!
+
+    loginUser(input: LoginUser!): AuthResponse!
 }

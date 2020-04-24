@@ -1,63 +1,66 @@
 package middlewares
 
-// pulled straight from d docs
-
 import (
-	"context"
-	"net/http"
-	// "github.com/vickywane/usecase-server/graph/db"
+	jwt "github.com/appleboy/gin-jwt/v2"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"time"
+
+
+	"github.com/vickywane/event-server/graph/model"
 )
 
-// A private key for context that only this package can access. This is important
-// to prevent collisions between different context uses
-var userCtxKey = &contextKey{"user"}
+var (
+	Env, _ = godotenv.Read(".env")
+)
 
-type contextKey struct {
-	name string
+var Key = Env["SECRET_KEY"]
+
+func LoginHandler(c *gin.Context) {
+	claims := jwt.ExtractClaims(c)
+	user, _ := c.Get(Key)
+	c.JSON(200, gin.H{
+		"userID":   claims[Key],
+		"userName": user.(*model.User).Name,
+	})
 }
 
-// A stand-in for our database backed user object
-type User struct {
-	Name    string
-	IsAdmin bool
-}
+var AuthMiddleware, err = jwt.New(&jwt.GinJWTMiddleware{
+	Realm:       "test zone",
+	Key:         []byte("secret key"),
+	Timeout:     time.Hour,
+	MaxRefresh:  time.Hour,
+	IdentityKey: Key,
+	PayloadFunc: func(data interface{}) jwt.MapClaims {
+		// if v, ok := data.(*model.User); ok {
+		// 	return jwt.MapClaims{
+		// 		identityKey: v.Name,
+		// 	}
+		// }
+		return jwt.MapClaims{}
+	},
 
-// Middleware decodes the share session cookie and packs the session into context
-func AuthMiddleware() func(http.Handler) http.Handler {
-	// Database := db.Connect()
+	IdentityHandler: func(c *gin.Context) interface{} {
+		claims := jwt.ExtractClaims(c)
+		return &model.User{
+			Name: claims[Key].(string),
+		}
+	},
 
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			c, err := r.Cookie("auth-cookie")
+	Authenticator: func(c *gin.Context) (interface{}, error) {
+		var UserDetails *model.User
+		if err := c.ShouldBind(&UserDetails); err != nil {
+			return "", jwt.ErrMissingLoginValues
+		}
+		userID := "admin"
+		password := "admin"
 
-			// Allow unauthenticated users in
-			if err != nil || c == nil {
-				next.ServeHTTP(w, r)
-				return
-			}
+		if (userID == "admin" && password == "admin") || (userID == "test" && password == "test") {
+			return &model.User{
+				Name: userID,
+			}, nil
+		}
 
-			// Todo IMPLEMENT  validateAndGetUserID & getUserById FIRST !!
-			// userId, err := validateAndGetUserID(c)
-			// if err != nil {
-			//     http.Error(w, "Invalid cookie", http.StatusForbidden)
-			//     return
-			// }
-			//
-			// // get the user from the database
-			// user := getUserByID(Database, userId)
-			//
-			// // put it in context
-			// ctx := context.WithValue(r.Context(), userCtxKey, user)
-			//
-			// // and call the next with our new context
-			// r = r.WithContext(ctx)
-			// next.ServeHTTP(w, r)
-		})
-	}
-}
-
-// ForContext finds the user from the context. REQUIRES Middleware to have run.
-func ForContext(ctx context.Context) *User {
-	raw, _ := ctx.Value(userCtxKey).(*User)
-	return raw
-}
+		return nil, jwt.ErrFailedAuthentication
+	},
+})

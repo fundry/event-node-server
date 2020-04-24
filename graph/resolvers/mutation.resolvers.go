@@ -5,11 +5,13 @@ package resolvers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"time"
 
 	"github.com/vickywane/event-server/graph/generated"
+	InternalMiddleware "github.com/vickywane/event-server/graph/middlewares"
 	"github.com/vickywane/event-server/graph/model"
 )
 
@@ -39,17 +41,21 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.CreateEv
 	return &event, nil
 }
 
-func (r *mutationResolver) UpdateEvent(ctx context.Context, id *int, input *model.UpdateEvent) (*model.Event, error) {
+func (r *mutationResolver) UpdateEvent(ctx context.Context, id *int, input model.UpdateEvent) (*model.Event, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUser) (*model.User, error) {
+	hashedPassword := HashPassword(input.Password)
+
 	user := model.User{
-		ID:        rand.Int(),
-		Name:      input.Name,
-		Email:     input.Email,
-		CreatedAt: time.Now(),
-		Role:      input.Role,
+		ID:         rand.Int(),
+		Name:       input.Name,
+		Email:      input.Email,
+		CreatedAt:  time.Now(),
+		Role:       input.Role,
+		Password:   hashedPassword,
+		BucketLink: input.BucketLink,
 	}
 
 	if err := r.DB.Insert(&user); err != nil {
@@ -59,7 +65,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUse
 	return &user, nil
 }
 
-func (r *mutationResolver) UpdateUser(ctx context.Context, id *int, input *model.UpdateUser) (*model.User, error) {
+func (r *mutationResolver) UpdateUser(ctx context.Context, id *int, input model.UpdateUser) (*model.User, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -77,7 +83,7 @@ func (r *mutationResolver) CreatePreference(ctx context.Context, input model.Cre
 	return &preference, nil
 }
 
-func (r *mutationResolver) UpdatePreference(ctx context.Context, id *int, input *model.UpdatePreference) (*model.Preference, error) {
+func (r *mutationResolver) UpdatePreference(ctx context.Context, id *int, input model.UpdatePreference) (*model.Preference, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -85,16 +91,37 @@ func (r *mutationResolver) CreateFile(ctx context.Context, input model.CreateFil
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) UpdateFile(ctx context.Context, id *int, input *model.DeleteFile) (*model.File, error) {
+func (r *mutationResolver) UpdateFile(ctx context.Context, id *int, input model.DeleteFile) (*model.File, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CreateTeam(ctx context.Context, input *model.CreateTeam) (*model.Team, error) {
+func (r *mutationResolver) CreateTeam(ctx context.Context, input model.CreateTeam) (*model.Team, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) UpdateTeam(ctx context.Context, id *int, input *model.UpdateTeam) (*model.Team, error) {
+func (r *mutationResolver) UpdateTeam(ctx context.Context, id *int, input model.UpdateTeam) (*model.Team, error) {
 	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) CreateSponsor(ctx context.Context, input *model.CreateSponsor) (*model.Sponsor, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) UpdateSponsor(ctx context.Context, id *int, input *model.UpdateSponsor) (*model.Sponsor, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) LoginUser(ctx context.Context, input model.LoginUser) (*model.AuthResponse, error) {
+	response := model.AuthResponse{}
+
+	auth := InternalMiddleware.AuthMiddleware.LoginResponse
+
+	// Todo convert the result here from JSON to string
+	if auth != nil {
+		fmt.Println(json.Marshal(auth))
+	}
+
+	return &response, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

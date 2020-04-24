@@ -40,6 +40,7 @@ type ResolverRoot interface {
 	Event() EventResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
+	Sponsor() SponsorResolver
 	User() UserResolver
 }
 
@@ -48,6 +49,11 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	AuthResponse struct {
+		ExpiredAt func(childComplexity int) int
+		Token     func(childComplexity int) int
+	}
+
 	Event struct {
 		Alias       func(childComplexity int) int
 		Attendees   func(childComplexity int) int
@@ -63,6 +69,7 @@ type ComplexityRoot struct {
 		IsLocked    func(childComplexity int) int
 		Name        func(childComplexity int) int
 		Summary     func(childComplexity int) int
+		Teams       func(childComplexity int) int
 		UpdatedAt   func(childComplexity int) int
 		Venue       func(childComplexity int) int
 		Website     func(childComplexity int) int
@@ -82,13 +89,16 @@ type ComplexityRoot struct {
 		CreateEvent      func(childComplexity int, input model.CreateEvent) int
 		CreateFile       func(childComplexity int, input model.CreateFile) int
 		CreatePreference func(childComplexity int, input model.CreatePreference) int
-		CreateTeam       func(childComplexity int, input *model.CreateTeam) int
+		CreateSponsor    func(childComplexity int, input *model.CreateSponsor) int
+		CreateTeam       func(childComplexity int, input model.CreateTeam) int
 		CreateUser       func(childComplexity int, input model.CreateUser) int
-		UpdateEvent      func(childComplexity int, id *int, input *model.UpdateEvent) int
-		UpdateFile       func(childComplexity int, id *int, input *model.DeleteFile) int
-		UpdatePreference func(childComplexity int, id *int, input *model.UpdatePreference) int
-		UpdateTeam       func(childComplexity int, id *int, input *model.UpdateTeam) int
-		UpdateUser       func(childComplexity int, id *int, input *model.UpdateUser) int
+		LoginUser        func(childComplexity int, input model.LoginUser) int
+		UpdateEvent      func(childComplexity int, id *int, input model.UpdateEvent) int
+		UpdateFile       func(childComplexity int, id *int, input model.DeleteFile) int
+		UpdatePreference func(childComplexity int, id *int, input model.UpdatePreference) int
+		UpdateSponsor    func(childComplexity int, id *int, input *model.UpdateSponsor) int
+		UpdateTeam       func(childComplexity int, id *int, input model.UpdateTeam) int
+		UpdateUser       func(childComplexity int, id *int, input model.UpdateUser) int
 	}
 
 	Preference struct {
@@ -107,6 +117,8 @@ type ComplexityRoot struct {
 		Files       func(childComplexity int) int
 		Preference  func(childComplexity int, id *int, name string) int
 		Preferences func(childComplexity int) int
+		Sponsor     func(childComplexity int, id *int, name *string) int
+		Sponsors    func(childComplexity int) int
 		Team        func(childComplexity int, id *int, name string) int
 		Teams       func(childComplexity int) int
 		User        func(childComplexity int, id *int, name string) int
@@ -114,9 +126,12 @@ type ComplexityRoot struct {
 	}
 
 	Sponsor struct {
+		Amount         func(childComplexity int) int
+		Event          func(childComplexity int) int
 		ID             func(childComplexity int) int
 		IsOrganization func(childComplexity int) int
 		Name           func(childComplexity int) int
+		Type           func(childComplexity int) int
 	}
 
 	Team struct {
@@ -143,20 +158,24 @@ type ComplexityRoot struct {
 }
 
 type EventResolver interface {
-	Attendees(ctx context.Context, obj *model.Event) ([]*model.User, error)
 	CreatedBy(ctx context.Context, obj *model.Event) (*model.User, error)
+	Attendees(ctx context.Context, obj *model.Event) ([]*model.User, error)
+	Teams(ctx context.Context, obj *model.Event) ([]*model.Team, error)
 }
 type MutationResolver interface {
 	CreateEvent(ctx context.Context, input model.CreateEvent) (*model.Event, error)
-	UpdateEvent(ctx context.Context, id *int, input *model.UpdateEvent) (*model.Event, error)
+	UpdateEvent(ctx context.Context, id *int, input model.UpdateEvent) (*model.Event, error)
 	CreateUser(ctx context.Context, input model.CreateUser) (*model.User, error)
-	UpdateUser(ctx context.Context, id *int, input *model.UpdateUser) (*model.User, error)
+	UpdateUser(ctx context.Context, id *int, input model.UpdateUser) (*model.User, error)
 	CreatePreference(ctx context.Context, input model.CreatePreference) (*model.Preference, error)
-	UpdatePreference(ctx context.Context, id *int, input *model.UpdatePreference) (*model.Preference, error)
+	UpdatePreference(ctx context.Context, id *int, input model.UpdatePreference) (*model.Preference, error)
 	CreateFile(ctx context.Context, input model.CreateFile) (*model.File, error)
-	UpdateFile(ctx context.Context, id *int, input *model.DeleteFile) (*model.File, error)
-	CreateTeam(ctx context.Context, input *model.CreateTeam) (*model.Team, error)
-	UpdateTeam(ctx context.Context, id *int, input *model.UpdateTeam) (*model.Team, error)
+	UpdateFile(ctx context.Context, id *int, input model.DeleteFile) (*model.File, error)
+	CreateTeam(ctx context.Context, input model.CreateTeam) (*model.Team, error)
+	UpdateTeam(ctx context.Context, id *int, input model.UpdateTeam) (*model.Team, error)
+	CreateSponsor(ctx context.Context, input *model.CreateSponsor) (*model.Sponsor, error)
+	UpdateSponsor(ctx context.Context, id *int, input *model.UpdateSponsor) (*model.Sponsor, error)
+	LoginUser(ctx context.Context, input model.LoginUser) (*model.AuthResponse, error)
 }
 type QueryResolver interface {
 	Event(ctx context.Context, id *int, name string) (*model.Event, error)
@@ -169,6 +188,11 @@ type QueryResolver interface {
 	Files(ctx context.Context) ([]*model.File, error)
 	Team(ctx context.Context, id *int, name string) (*model.Team, error)
 	Teams(ctx context.Context) ([]*model.Team, error)
+	Sponsor(ctx context.Context, id *int, name *string) (*model.Sponsor, error)
+	Sponsors(ctx context.Context) (*model.Sponsor, error)
+}
+type SponsorResolver interface {
+	Event(ctx context.Context, obj *model.Sponsor) (*model.Event, error)
 }
 type UserResolver interface {
 	Events(ctx context.Context, obj *model.User) ([]*model.Event, error)
@@ -188,6 +212,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "AuthResponse.expiredAt":
+		if e.complexity.AuthResponse.ExpiredAt == nil {
+			break
+		}
+
+		return e.complexity.AuthResponse.ExpiredAt(childComplexity), true
+
+	case "AuthResponse.token":
+		if e.complexity.AuthResponse.Token == nil {
+			break
+		}
+
+		return e.complexity.AuthResponse.Token(childComplexity), true
 
 	case "Event.alias":
 		if e.complexity.Event.Alias == nil {
@@ -286,6 +324,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Event.Summary(childComplexity), true
+
+	case "Event.teams":
+		if e.complexity.Event.Teams == nil {
+			break
+		}
+
+		return e.complexity.Event.Teams(childComplexity), true
 
 	case "Event.updatedAt":
 		if e.complexity.Event.UpdatedAt == nil {
@@ -393,6 +438,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreatePreference(childComplexity, args["input"].(model.CreatePreference)), true
 
+	case "Mutation.createSponsor":
+		if e.complexity.Mutation.CreateSponsor == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createSponsor_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateSponsor(childComplexity, args["input"].(*model.CreateSponsor)), true
+
 	case "Mutation.createTeam":
 		if e.complexity.Mutation.CreateTeam == nil {
 			break
@@ -403,7 +460,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateTeam(childComplexity, args["input"].(*model.CreateTeam)), true
+		return e.complexity.Mutation.CreateTeam(childComplexity, args["input"].(model.CreateTeam)), true
 
 	case "Mutation.createUser":
 		if e.complexity.Mutation.CreateUser == nil {
@@ -417,6 +474,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(model.CreateUser)), true
 
+	case "Mutation.loginUser":
+		if e.complexity.Mutation.LoginUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_loginUser_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.LoginUser(childComplexity, args["input"].(model.LoginUser)), true
+
 	case "Mutation.updateEvent":
 		if e.complexity.Mutation.UpdateEvent == nil {
 			break
@@ -427,7 +496,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateEvent(childComplexity, args["id"].(*int), args["input"].(*model.UpdateEvent)), true
+		return e.complexity.Mutation.UpdateEvent(childComplexity, args["id"].(*int), args["input"].(model.UpdateEvent)), true
 
 	case "Mutation.updateFile":
 		if e.complexity.Mutation.UpdateFile == nil {
@@ -439,7 +508,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateFile(childComplexity, args["id"].(*int), args["input"].(*model.DeleteFile)), true
+		return e.complexity.Mutation.UpdateFile(childComplexity, args["id"].(*int), args["input"].(model.DeleteFile)), true
 
 	case "Mutation.updatePreference":
 		if e.complexity.Mutation.UpdatePreference == nil {
@@ -451,7 +520,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdatePreference(childComplexity, args["id"].(*int), args["input"].(*model.UpdatePreference)), true
+		return e.complexity.Mutation.UpdatePreference(childComplexity, args["id"].(*int), args["input"].(model.UpdatePreference)), true
+
+	case "Mutation.updateSponsor":
+		if e.complexity.Mutation.UpdateSponsor == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateSponsor_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateSponsor(childComplexity, args["id"].(*int), args["input"].(*model.UpdateSponsor)), true
 
 	case "Mutation.updateTeam":
 		if e.complexity.Mutation.UpdateTeam == nil {
@@ -463,7 +544,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateTeam(childComplexity, args["id"].(*int), args["input"].(*model.UpdateTeam)), true
+		return e.complexity.Mutation.UpdateTeam(childComplexity, args["id"].(*int), args["input"].(model.UpdateTeam)), true
 
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -475,7 +556,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateUser(childComplexity, args["id"].(*int), args["input"].(*model.UpdateUser)), true
+		return e.complexity.Mutation.UpdateUser(childComplexity, args["id"].(*int), args["input"].(model.UpdateUser)), true
 
 	case "Preference.color":
 		if e.complexity.Preference.Color == nil {
@@ -576,6 +657,25 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Preferences(childComplexity), true
 
+	case "Query.sponsor":
+		if e.complexity.Query.Sponsor == nil {
+			break
+		}
+
+		args, err := ec.field_Query_sponsor_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Sponsor(childComplexity, args["id"].(*int), args["name"].(*string)), true
+
+	case "Query.sponsors":
+		if e.complexity.Query.Sponsors == nil {
+			break
+		}
+
+		return e.complexity.Query.Sponsors(childComplexity), true
+
 	case "Query.team":
 		if e.complexity.Query.Team == nil {
 			break
@@ -614,6 +714,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Users(childComplexity), true
 
+	case "Sponsor.amount":
+		if e.complexity.Sponsor.Amount == nil {
+			break
+		}
+
+		return e.complexity.Sponsor.Amount(childComplexity), true
+
+	case "Sponsor.event":
+		if e.complexity.Sponsor.Event == nil {
+			break
+		}
+
+		return e.complexity.Sponsor.Event(childComplexity), true
+
 	case "Sponsor.id":
 		if e.complexity.Sponsor.ID == nil {
 			break
@@ -634,6 +748,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Sponsor.Name(childComplexity), true
+
+	case "Sponsor.type":
+		if e.complexity.Sponsor.Type == nil {
+			break
+		}
+
+		return e.complexity.Sponsor.Type(childComplexity), true
 
 	case "Team.createdAt":
 		if e.complexity.Team.CreatedAt == nil {
@@ -837,35 +958,43 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
 #    | UNION`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/mutation.graphqls", Input: `type Mutation {
     createEvent(input: CreateEvent!): Event!
-    updateEvent(id: ID, input: UpdateEvent): Event!
+    updateEvent(id: ID, input: UpdateEvent!): Event!
 
     createUser(input: CreateUser!): User!
-    updateUser(id: ID, input: UpdateUser): User!
+    updateUser(id: ID, input: UpdateUser!): User!
 
     createPreference(input: CreatePreference!): Preference!
-    updatePreference(id: ID, input: UpdatePreference): Preference!
+    updatePreference(id: ID, input: UpdatePreference!): Preference!
 
     createFile(input: CreateFile!) : File!
-    updateFile(id: ID, input: DeleteFile): File!
+    updateFile(id: ID, input: DeleteFile!): File!
 
-    createTeam(input: CreateTeam): Team!
-    updateTeam(id: ID, input:UpdateTeam): Team!
+    createTeam(input: CreateTeam!): Team!
+    updateTeam(id: ID, input: UpdateTeam!): Team!
+
+    createSponsor(input: CreateSponsor): Sponsor!
+    updateSponsor(id: ID, input: UpdateSponsor):Sponsor!
+
+    loginUser(input: LoginUser!): AuthResponse!
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/query.graphqls", Input: `type Query {
     event(id: Int name: String!) : Event!
     events: [Event!]!
 
-    user(id: Int name: String!) : User!
+    user(id: Int, name: String!) : User!
     users : [User!]!
 
-    preference(id: Int name: String!) : Preference!
+    preference(id: Int, name: String!) : Preference!
     preferences : [Preference!]!
 
-    file(id: Int name: String!) : File!
+    file(id: Int, name: String!) : File!
     files: [File!]!
 
-    team(id: Int name: String!): Team!
+    team(id: Int , name: String!): Team!
     teams: [Team!]!
+
+    sponsor(id: Int , name : String): Sponsor!
+    sponsors: Sponsor!
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/scalar.graphqls", Input: `# My custom defined types https://github.com/99designs/gqlgen/blob/master/docs/content/reference/scalars.md
 
@@ -883,6 +1012,15 @@ scalar Any
 # resolves to Upload struct
 scalar Upload
 `, BuiltIn: false},
+	&ast.Source{Name: "graph/schema/types/auth.graphqls", Input: `type AuthResponse {
+    token : String!
+    expiredAt: String
+}
+
+input LoginUser {
+    Email : String!
+    Password: String!
+}`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/types/event.graphqls", Input: `type Event {
     id : ID!
     name: String!
@@ -895,12 +1033,13 @@ scalar Upload
     venue: String!
     eventType: String!
     Date: Int!
-    isArchived: Boolean! @default(value: false)
-    isLocked: Boolean!  @default(value: false)
     createdAt: Time!
     updatedAt: Time!
-    attendees: [User]
     createdBy : User
+    attendees: [User]
+    teams: [Team!]
+    isArchived: Boolean! @default(value: false)
+    isLocked: Boolean!  @default(value: false)
 }
 
 input CreateEvent {
@@ -936,6 +1075,7 @@ input UpdateEvent {
     attendees: [CreateUser]!
     venue: String!
     Date: Int!
+    team: CreateTeam
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/types/file.graphqls", Input: `type File {
     id: ID!
@@ -985,12 +1125,31 @@ input UpdatePreference {
 	&ast.Source{Name: "graph/schema/types/sponsor.graphqls", Input: `type Sponsor {
     id : ID!
     name : String!
+    type: String
+    amount: String
+    event: Event
     isOrganization : Boolean @default(value: false)
+}
+
+input CreateSponsor {
+    name : String!
+    type: String
+    amount: String
+    event: CreateEvent
+    isOrganization : Boolean
+}
+
+input UpdateSponsor {
+    name : String!
+    type: String
+    amount: String
+    event: CreateEvent
+    isOrganization : Boolean
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/types/team.graphqls", Input: `type Team {
     id : ID!
     name : String!
-    members: [User]
+    members: [User!]
     goal: String!
     createdBy: User
     createdAt: Time!
@@ -1103,12 +1262,26 @@ func (ec *executionContext) field_Mutation_createPreference_args(ctx context.Con
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createSponsor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.CreateSponsor
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalOCreateSponsor2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateSponsor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createTeam_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *model.CreateTeam
+	var arg0 model.CreateTeam
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalOCreateTeam2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTeam(ctx, tmp)
+		arg0, err = ec.unmarshalNCreateTeam2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTeam(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1131,6 +1304,20 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_loginUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.LoginUser
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNLoginUser2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐLoginUser(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_updateEvent_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1142,9 +1329,9 @@ func (ec *executionContext) field_Mutation_updateEvent_args(ctx context.Context,
 		}
 	}
 	args["id"] = arg0
-	var arg1 *model.UpdateEvent
+	var arg1 model.UpdateEvent
 	if tmp, ok := rawArgs["input"]; ok {
-		arg1, err = ec.unmarshalOUpdateEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateEvent(ctx, tmp)
+		arg1, err = ec.unmarshalNUpdateEvent2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateEvent(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1164,9 +1351,9 @@ func (ec *executionContext) field_Mutation_updateFile_args(ctx context.Context, 
 		}
 	}
 	args["id"] = arg0
-	var arg1 *model.DeleteFile
+	var arg1 model.DeleteFile
 	if tmp, ok := rawArgs["input"]; ok {
-		arg1, err = ec.unmarshalODeleteFile2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐDeleteFile(ctx, tmp)
+		arg1, err = ec.unmarshalNDeleteFile2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐDeleteFile(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1186,9 +1373,31 @@ func (ec *executionContext) field_Mutation_updatePreference_args(ctx context.Con
 		}
 	}
 	args["id"] = arg0
-	var arg1 *model.UpdatePreference
+	var arg1 model.UpdatePreference
 	if tmp, ok := rawArgs["input"]; ok {
-		arg1, err = ec.unmarshalOUpdatePreference2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdatePreference(ctx, tmp)
+		arg1, err = ec.unmarshalNUpdatePreference2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdatePreference(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateSponsor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalOID2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 *model.UpdateSponsor
+	if tmp, ok := rawArgs["input"]; ok {
+		arg1, err = ec.unmarshalOUpdateSponsor2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateSponsor(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1208,9 +1417,9 @@ func (ec *executionContext) field_Mutation_updateTeam_args(ctx context.Context, 
 		}
 	}
 	args["id"] = arg0
-	var arg1 *model.UpdateTeam
+	var arg1 model.UpdateTeam
 	if tmp, ok := rawArgs["input"]; ok {
-		arg1, err = ec.unmarshalOUpdateTeam2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTeam(ctx, tmp)
+		arg1, err = ec.unmarshalNUpdateTeam2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTeam(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1230,9 +1439,9 @@ func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, 
 		}
 	}
 	args["id"] = arg0
-	var arg1 *model.UpdateUser
+	var arg1 model.UpdateUser
 	if tmp, ok := rawArgs["input"]; ok {
-		arg1, err = ec.unmarshalOUpdateUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateUser(ctx, tmp)
+		arg1, err = ec.unmarshalNUpdateUser2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateUser(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1321,6 +1530,28 @@ func (ec *executionContext) field_Query_preference_args(ctx context.Context, raw
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_sponsor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 *string
+	if tmp, ok := rawArgs["name"]; ok {
+		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_team_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1400,6 +1631,71 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _AuthResponse_token(ctx context.Context, field graphql.CollectedField, obj *model.AuthResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "AuthResponse",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Token, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _AuthResponse_expiredAt(ctx context.Context, field graphql.CollectedField, obj *model.AuthResponse) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "AuthResponse",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ExpiredAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
 
 func (ec *executionContext) _Event_id(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
 	defer func() {
@@ -1775,6 +2071,167 @@ func (ec *executionContext) _Event_Date(ctx context.Context, field graphql.Colle
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Event_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Event_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Event_createdBy(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Event().CreatedBy(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Event_attendees(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Event().Attendees(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Event_teams(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Event().Teams(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Team)
+	fc.Result = res
+	return ec.marshalOTeam2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTeamᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Event_isArchived(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1889,136 +2346,6 @@ func (ec *executionContext) _Event_isLocked(ctx context.Context, field graphql.C
 	res := resTmp.(bool)
 	fc.Result = res
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Event_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Event",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CreatedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(time.Time)
-	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Event_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Event",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.UpdatedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(time.Time)
-	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Event_attendees(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Event",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Event().Attendees(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.User)
-	fc.Result = res
-	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Event_createdBy(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Event",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Event().CreatedBy(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.User)
-	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _File_id(ctx context.Context, field graphql.CollectedField, obj *model.File) (ret graphql.Marshaler) {
@@ -2324,7 +2651,7 @@ func (ec *executionContext) _Mutation_updateEvent(ctx context.Context, field gra
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateEvent(rctx, args["id"].(*int), args["input"].(*model.UpdateEvent))
+		return ec.resolvers.Mutation().UpdateEvent(rctx, args["id"].(*int), args["input"].(model.UpdateEvent))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2406,7 +2733,7 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateUser(rctx, args["id"].(*int), args["input"].(*model.UpdateUser))
+		return ec.resolvers.Mutation().UpdateUser(rctx, args["id"].(*int), args["input"].(model.UpdateUser))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2488,7 +2815,7 @@ func (ec *executionContext) _Mutation_updatePreference(ctx context.Context, fiel
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdatePreference(rctx, args["id"].(*int), args["input"].(*model.UpdatePreference))
+		return ec.resolvers.Mutation().UpdatePreference(rctx, args["id"].(*int), args["input"].(model.UpdatePreference))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2570,7 +2897,7 @@ func (ec *executionContext) _Mutation_updateFile(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateFile(rctx, args["id"].(*int), args["input"].(*model.DeleteFile))
+		return ec.resolvers.Mutation().UpdateFile(rctx, args["id"].(*int), args["input"].(model.DeleteFile))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2611,7 +2938,7 @@ func (ec *executionContext) _Mutation_createTeam(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateTeam(rctx, args["input"].(*model.CreateTeam))
+		return ec.resolvers.Mutation().CreateTeam(rctx, args["input"].(model.CreateTeam))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2652,7 +2979,7 @@ func (ec *executionContext) _Mutation_updateTeam(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateTeam(rctx, args["id"].(*int), args["input"].(*model.UpdateTeam))
+		return ec.resolvers.Mutation().UpdateTeam(rctx, args["id"].(*int), args["input"].(model.UpdateTeam))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2667,6 +2994,129 @@ func (ec *executionContext) _Mutation_updateTeam(ctx context.Context, field grap
 	res := resTmp.(*model.Team)
 	fc.Result = res
 	return ec.marshalNTeam2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTeam(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createSponsor(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createSponsor_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateSponsor(rctx, args["input"].(*model.CreateSponsor))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Sponsor)
+	fc.Result = res
+	return ec.marshalNSponsor2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐSponsor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateSponsor(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateSponsor_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateSponsor(rctx, args["id"].(*int), args["input"].(*model.UpdateSponsor))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Sponsor)
+	fc.Result = res
+	return ec.marshalNSponsor2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐSponsor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_loginUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_loginUser_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().LoginUser(rctx, args["input"].(model.LoginUser))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.AuthResponse)
+	fc.Result = res
+	return ec.marshalNAuthResponse2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAuthResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Preference_id(ctx context.Context, field graphql.CollectedField, obj *model.Preference) (ret graphql.Marshaler) {
@@ -3248,6 +3698,81 @@ func (ec *executionContext) _Query_teams(ctx context.Context, field graphql.Coll
 	return ec.marshalNTeam2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTeamᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_sponsor(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_sponsor_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Sponsor(rctx, args["id"].(*int), args["name"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Sponsor)
+	fc.Result = res
+	return ec.marshalNSponsor2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐSponsor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_sponsors(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Sponsors(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Sponsor)
+	fc.Result = res
+	return ec.marshalNSponsor2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐSponsor(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -3383,6 +3908,99 @@ func (ec *executionContext) _Sponsor_name(ctx context.Context, field graphql.Col
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Sponsor_type(ctx context.Context, field graphql.CollectedField, obj *model.Sponsor) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Sponsor",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Sponsor_amount(ctx context.Context, field graphql.CollectedField, obj *model.Sponsor) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Sponsor",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Amount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Sponsor_event(ctx context.Context, field graphql.CollectedField, obj *model.Sponsor) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Sponsor",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Sponsor().Event(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Event)
+	fc.Result = res
+	return ec.marshalOEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Sponsor_isOrganization(ctx context.Context, field graphql.CollectedField, obj *model.Sponsor) (ret graphql.Marshaler) {
@@ -3536,7 +4154,7 @@ func (ec *executionContext) _Team_members(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.([]*model.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Team_goal(ctx context.Context, field graphql.CollectedField, obj *model.Team) (ret graphql.Marshaler) {
@@ -5207,6 +5825,48 @@ func (ec *executionContext) unmarshalInputCreatePreference(ctx context.Context, 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreateSponsor(ctx context.Context, obj interface{}) (model.CreateSponsor, error) {
+	var it model.CreateSponsor
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "type":
+			var err error
+			it.Type, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "amount":
+			var err error
+			it.Amount, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "event":
+			var err error
+			it.Event, err = ec.unmarshalOCreateEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "isOrganization":
+			var err error
+			it.IsOrganization, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateTeam(ctx context.Context, obj interface{}) (model.CreateTeam, error) {
 	var it model.CreateTeam
 	var asMap = obj.(map[string]interface{})
@@ -5315,6 +5975,30 @@ func (ec *executionContext) unmarshalInputDeleteFile(ctx context.Context, obj in
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputLoginUser(ctx context.Context, obj interface{}) (model.LoginUser, error) {
+	var it model.LoginUser
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "Email":
+			var err error
+			it.Email, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Password":
+			var err error
+			it.Password, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateEvent(ctx context.Context, obj interface{}) (model.UpdateEvent, error) {
 	var it model.UpdateEvent
 	var asMap = obj.(map[string]interface{})
@@ -5411,6 +6095,12 @@ func (ec *executionContext) unmarshalInputUpdateEvent(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
+		case "team":
+			var err error
+			it.Team, err = ec.unmarshalOCreateTeam2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTeam(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -5444,6 +6134,48 @@ func (ec *executionContext) unmarshalInputUpdatePreference(ctx context.Context, 
 		case "updatedAt":
 			var err error
 			it.UpdatedAt, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateSponsor(ctx context.Context, obj interface{}) (model.UpdateSponsor, error) {
+	var it model.UpdateSponsor
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "type":
+			var err error
+			it.Type, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "amount":
+			var err error
+			it.Amount, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "event":
+			var err error
+			it.Event, err = ec.unmarshalOCreateEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "isOrganization":
+			var err error
+			it.IsOrganization, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5551,6 +6283,35 @@ func (ec *executionContext) unmarshalInputUpdateUser(ctx context.Context, obj in
 
 // region    **************************** object.gotpl ****************************
 
+var authResponseImplementors = []string{"AuthResponse"}
+
+func (ec *executionContext) _AuthResponse(ctx context.Context, sel ast.SelectionSet, obj *model.AuthResponse) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, authResponseImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AuthResponse")
+		case "token":
+			out.Values[i] = ec._AuthResponse_token(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "expiredAt":
+			out.Values[i] = ec._AuthResponse_expiredAt(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var eventImplementors = []string{"Event"}
 
 func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, obj *model.Event) graphql.Marshaler {
@@ -5617,16 +6378,6 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "isArchived":
-			out.Values[i] = ec._Event_isArchived(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
-		case "isLocked":
-			out.Values[i] = ec._Event_isLocked(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "createdAt":
 			out.Values[i] = ec._Event_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -5637,17 +6388,6 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "attendees":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Event_attendees(ctx, field, obj)
-				return res
-			})
 		case "createdBy":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -5659,6 +6399,38 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 				res = ec._Event_createdBy(ctx, field, obj)
 				return res
 			})
+		case "attendees":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Event_attendees(ctx, field, obj)
+				return res
+			})
+		case "teams":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Event_teams(ctx, field, obj)
+				return res
+			})
+		case "isArchived":
+			out.Values[i] = ec._Event_isArchived(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "isLocked":
+			out.Values[i] = ec._Event_isLocked(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5789,6 +6561,21 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "updateTeam":
 			out.Values[i] = ec._Mutation_updateTeam(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createSponsor":
+			out.Values[i] = ec._Mutation_createSponsor(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateSponsor":
+			out.Values[i] = ec._Mutation_updateSponsor(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "loginUser":
+			out.Values[i] = ec._Mutation_loginUser(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -6010,6 +6797,34 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "sponsor":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_sponsor(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "sponsors":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_sponsors(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
@@ -6039,13 +6854,28 @@ func (ec *executionContext) _Sponsor(ctx context.Context, sel ast.SelectionSet, 
 		case "id":
 			out.Values[i] = ec._Sponsor_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._Sponsor_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "type":
+			out.Values[i] = ec._Sponsor_type(ctx, field, obj)
+		case "amount":
+			out.Values[i] = ec._Sponsor_amount(ctx, field, obj)
+		case "event":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Sponsor_event(ctx, field, obj)
+				return res
+			})
 		case "isOrganization":
 			out.Values[i] = ec._Sponsor_isOrganization(ctx, field, obj)
 		default:
@@ -6425,6 +7255,20 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) marshalNAuthResponse2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAuthResponse(ctx context.Context, sel ast.SelectionSet, v model.AuthResponse) graphql.Marshaler {
+	return ec._AuthResponse(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAuthResponse2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAuthResponse(ctx context.Context, sel ast.SelectionSet, v *model.AuthResponse) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._AuthResponse(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	return graphql.UnmarshalBoolean(v)
 }
@@ -6479,6 +7323,10 @@ func (ec *executionContext) unmarshalNCreatePreference2githubᚗcomᚋvickywane�
 	return ec.unmarshalInputCreatePreference(ctx, v)
 }
 
+func (ec *executionContext) unmarshalNCreateTeam2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTeam(ctx context.Context, v interface{}) (model.CreateTeam, error) {
+	return ec.unmarshalInputCreateTeam(ctx, v)
+}
+
 func (ec *executionContext) unmarshalNCreateUser2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx context.Context, v interface{}) (model.CreateUser, error) {
 	return ec.unmarshalInputCreateUser(ctx, v)
 }
@@ -6501,6 +7349,10 @@ func (ec *executionContext) unmarshalNCreateUser2ᚕᚖgithubᚗcomᚋvickywane�
 		}
 	}
 	return res, nil
+}
+
+func (ec *executionContext) unmarshalNDeleteFile2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐDeleteFile(ctx context.Context, v interface{}) (model.DeleteFile, error) {
+	return ec.unmarshalInputDeleteFile(ctx, v)
 }
 
 func (ec *executionContext) marshalNEvent2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx context.Context, sel ast.SelectionSet, v model.Event) graphql.Marshaler {
@@ -6633,6 +7485,10 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
+func (ec *executionContext) unmarshalNLoginUser2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐLoginUser(ctx context.Context, v interface{}) (model.LoginUser, error) {
+	return ec.unmarshalInputLoginUser(ctx, v)
+}
+
 func (ec *executionContext) marshalNPreference2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐPreference(ctx context.Context, sel ast.SelectionSet, v model.Preference) graphql.Marshaler {
 	return ec._Preference(ctx, sel, &v)
 }
@@ -6682,6 +7538,20 @@ func (ec *executionContext) marshalNPreference2ᚖgithubᚗcomᚋvickywaneᚋeve
 		return graphql.Null
 	}
 	return ec._Preference(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐSponsor(ctx context.Context, sel ast.SelectionSet, v model.Sponsor) graphql.Marshaler {
+	return ec._Sponsor(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSponsor2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐSponsor(ctx context.Context, sel ast.SelectionSet, v *model.Sponsor) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Sponsor(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -6761,6 +7631,22 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNUpdateEvent2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateEvent(ctx context.Context, v interface{}) (model.UpdateEvent, error) {
+	return ec.unmarshalInputUpdateEvent(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNUpdatePreference2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdatePreference(ctx context.Context, v interface{}) (model.UpdatePreference, error) {
+	return ec.unmarshalInputUpdatePreference(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNUpdateTeam2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTeam(ctx context.Context, v interface{}) (model.UpdateTeam, error) {
+	return ec.unmarshalInputUpdateTeam(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNUpdateUser2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateUser(ctx context.Context, v interface{}) (model.UpdateUser, error) {
+	return ec.unmarshalInputUpdateUser(ctx, v)
 }
 
 func (ec *executionContext) marshalNUser2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
@@ -7095,6 +7981,18 @@ func (ec *executionContext) unmarshalOCreateEvent2ᚖgithubᚗcomᚋvickywaneᚋ
 	return &res, err
 }
 
+func (ec *executionContext) unmarshalOCreateSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateSponsor(ctx context.Context, v interface{}) (model.CreateSponsor, error) {
+	return ec.unmarshalInputCreateSponsor(ctx, v)
+}
+
+func (ec *executionContext) unmarshalOCreateSponsor2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateSponsor(ctx context.Context, v interface{}) (*model.CreateSponsor, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOCreateSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateSponsor(ctx, v)
+	return &res, err
+}
+
 func (ec *executionContext) unmarshalOCreateTeam2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTeam(ctx context.Context, v interface{}) (model.CreateTeam, error) {
 	return ec.unmarshalInputCreateTeam(ctx, v)
 }
@@ -7136,18 +8034,6 @@ func (ec *executionContext) unmarshalOCreateUser2ᚖgithubᚗcomᚋvickywaneᚋe
 		return nil, nil
 	}
 	res, err := ec.unmarshalOCreateUser2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
-	return &res, err
-}
-
-func (ec *executionContext) unmarshalODeleteFile2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐDeleteFile(ctx context.Context, v interface{}) (model.DeleteFile, error) {
-	return ec.unmarshalInputDeleteFile(ctx, v)
-}
-
-func (ec *executionContext) unmarshalODeleteFile2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐDeleteFile(ctx context.Context, v interface{}) (*model.DeleteFile, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalODeleteFile2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐDeleteFile(ctx, v)
 	return &res, err
 }
 
@@ -7303,51 +8189,55 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return ec.marshalOString2string(ctx, sel, *v)
 }
 
-func (ec *executionContext) unmarshalOUpdateEvent2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateEvent(ctx context.Context, v interface{}) (model.UpdateEvent, error) {
-	return ec.unmarshalInputUpdateEvent(ctx, v)
+func (ec *executionContext) marshalOTeam2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTeamᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Team) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTeam2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTeam(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
 }
 
-func (ec *executionContext) unmarshalOUpdateEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateEvent(ctx context.Context, v interface{}) (*model.UpdateEvent, error) {
+func (ec *executionContext) unmarshalOUpdateSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateSponsor(ctx context.Context, v interface{}) (model.UpdateSponsor, error) {
+	return ec.unmarshalInputUpdateSponsor(ctx, v)
+}
+
+func (ec *executionContext) unmarshalOUpdateSponsor2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateSponsor(ctx context.Context, v interface{}) (*model.UpdateSponsor, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalOUpdateEvent2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateEvent(ctx, v)
-	return &res, err
-}
-
-func (ec *executionContext) unmarshalOUpdatePreference2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdatePreference(ctx context.Context, v interface{}) (model.UpdatePreference, error) {
-	return ec.unmarshalInputUpdatePreference(ctx, v)
-}
-
-func (ec *executionContext) unmarshalOUpdatePreference2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdatePreference(ctx context.Context, v interface{}) (*model.UpdatePreference, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalOUpdatePreference2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdatePreference(ctx, v)
-	return &res, err
-}
-
-func (ec *executionContext) unmarshalOUpdateTeam2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTeam(ctx context.Context, v interface{}) (model.UpdateTeam, error) {
-	return ec.unmarshalInputUpdateTeam(ctx, v)
-}
-
-func (ec *executionContext) unmarshalOUpdateTeam2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTeam(ctx context.Context, v interface{}) (*model.UpdateTeam, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalOUpdateTeam2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTeam(ctx, v)
-	return &res, err
-}
-
-func (ec *executionContext) unmarshalOUpdateUser2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateUser(ctx context.Context, v interface{}) (model.UpdateUser, error) {
-	return ec.unmarshalInputUpdateUser(ctx, v)
-}
-
-func (ec *executionContext) unmarshalOUpdateUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateUser(ctx context.Context, v interface{}) (*model.UpdateUser, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalOUpdateUser2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateUser(ctx, v)
+	res, err := ec.unmarshalOUpdateSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateSponsor(ctx, v)
 	return &res, err
 }
 
@@ -7383,6 +8273,46 @@ func (ec *executionContext) marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋevent�
 				defer wg.Done()
 			}
 			ret[i] = ec.marshalOUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)

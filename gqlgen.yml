@@ -51,11 +51,17 @@ models:
         resolver: true
       attendees:
         resolver: true
+      teams:
+        resolver: true
   User:
     fields:
       events:
         resolver: true
   Preference:
+    fields:
+      event:
+        resolver: true
+  Sponsor:
     fields:
       event:
         resolver: true

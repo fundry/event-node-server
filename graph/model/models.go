@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+type AuthResponse struct {
+	Token     string  `json:"token"`
+	ExpiredAt *string `json:"expiredAt"`
+}
+
 type CreateEvent struct {
 	Name        string        `json:"name"`
 	Summary     string        `json:"summary"`
@@ -37,6 +42,14 @@ type CreatePreference struct {
 	Name  string       `json:"name"`
 	Color string       `json:"color"`
 	Event *CreateEvent `json:"Event"`
+}
+
+type CreateSponsor struct {
+	Name           string       `json:"name"`
+	Type           *string      `json:"type"`
+	Amount         *string      `json:"amount"`
+	Event          *CreateEvent `json:"event"`
+	IsOrganization *bool        `json:"isOrganization"`
 }
 
 type CreateTeam struct {
@@ -72,12 +85,13 @@ type Event struct {
 	Venue       string    `json:"venue"`
 	EventType   string    `json:"eventType"`
 	Date        int       `json:"Date"`
-	IsArchived  bool      `json:"isArchived"`
-	IsLocked    bool      `json:"isLocked"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
-	Attendees   []*User   `json:"attendees"`
 	CreatedBy   *User     `json:"createdBy"`
+	Attendees   []*User   `json:"attendees"`
+	Teams       []*Team   `json:"teams"`
+	IsArchived  bool      `json:"isArchived"`
+	IsLocked    bool      `json:"isLocked"`
 }
 
 type File struct {
@@ -90,6 +104,11 @@ type File struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
+type LoginUser struct {
+	Email    string `json:"Email"`
+	Password string `json:"Password"`
+}
+
 type Preference struct {
 	ID        int       `json:"id"`
 	Name      string    `json:"name"`
@@ -100,9 +119,12 @@ type Preference struct {
 }
 
 type Sponsor struct {
-	ID             int    `json:"id"`
-	Name           string `json:"name"`
-	IsOrganization *bool  `json:"isOrganization"`
+	ID             int     `json:"id"`
+	Name           string  `json:"name"`
+	Type           *string `json:"type"`
+	Amount         *string `json:"amount"`
+	Event          *Event  `json:"event"`
+	IsOrganization *bool   `json:"isOrganization"`
 }
 
 type Team struct {
@@ -131,6 +153,7 @@ type UpdateEvent struct {
 	Attendees   []*CreateUser `json:"attendees"`
 	Venue       string        `json:"venue"`
 	Date        int           `json:"Date"`
+	Team        *CreateTeam   `json:"team"`
 }
 
 type UpdatePreference struct {
@@ -138,6 +161,14 @@ type UpdatePreference struct {
 	Color     string       `json:"color"`
 	Event     *CreateEvent `json:"Event"`
 	UpdatedAt time.Time    `json:"updatedAt"`
+}
+
+type UpdateSponsor struct {
+	Name           string       `json:"name"`
+	Type           *string      `json:"type"`
+	Amount         *string      `json:"amount"`
+	Event          *CreateEvent `json:"event"`
+	IsOrganization *bool        `json:"isOrganization"`
 }
 
 type UpdateTeam struct {

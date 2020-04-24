@@ -1,6 +1,8 @@
 package resolvers
 
-import "github.com/go-pg/pg/v9"
+import (
+	"github.com/go-pg/pg/v9"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -8,4 +10,8 @@ import "github.com/go-pg/pg/v9"
 
 type Resolver struct {
 	DB *pg.DB
+}
+
+func GetUserById () {
+
 }

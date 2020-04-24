@@ -10,12 +10,13 @@ type Event {
     venue: String!
     eventType: String!
     Date: Int!
-    isArchived: Boolean! @default(value: false)
-    isLocked: Boolean!  @default(value: false)
     createdAt: Time!
     updatedAt: Time!
-    attendees: [User]
     createdBy : User
+    attendees: [User]
+    teams: [Team!]
+    isArchived: Boolean! @default(value: false)
+    isLocked: Boolean!  @default(value: false)
 }
 
 input CreateEvent {
@@ -51,4 +52,5 @@ input UpdateEvent {
     attendees: [CreateUser]!
     venue: String!
     Date: Int!
+    team: CreateTeam
 }

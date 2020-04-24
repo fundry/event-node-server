@@ -1,5 +1,24 @@
 type Sponsor {
     id : ID!
     name : String!
+    type: String
+    amount: String
+    event: Event
     isOrganization : Boolean @default(value: false)
+}
+
+input CreateSponsor {
+    name : String!
+    type: String
+    amount: String
+    event: CreateEvent
+    isOrganization : Boolean
+}
+
+input UpdateSponsor {
+    name : String!
+    type: String
+    amount: String
+    event: CreateEvent
+    isOrganization : Boolean
 }
