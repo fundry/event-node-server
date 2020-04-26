@@ -12,6 +12,7 @@ require (
 	github.com/go-pg/pg/v9 v9.1.6
 	github.com/golang/protobuf v1.4.0 // indirect
 	github.com/joho/godotenv v1.3.0
+	github.com/pkg/errors v0.8.1
 	github.com/rs/cors v1.7.0
 	github.com/vektah/gqlparser/v2 v2.0.1
 	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d

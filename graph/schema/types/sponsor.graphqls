@@ -1,16 +1,16 @@
 type Sponsor {
     id : ID!
     name : String!
-    type: String
-    amount: String
+    type: String!
+    amount: Int!
     event: Event
-    isOrganization : Boolean @default(value: false)
+    isOrganization : Boolean! @default(value: false)
 }
 
 input CreateSponsor {
     name : String!
     type: String
-    amount: String
+    amount: Int
     event: CreateEvent
     isOrganization : Boolean
 }

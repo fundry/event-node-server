@@ -47,7 +47,7 @@ type CreatePreference struct {
 type CreateSponsor struct {
 	Name           string       `json:"name"`
 	Type           *string      `json:"type"`
-	Amount         *string      `json:"amount"`
+	Amount         *int         `json:"amount"`
 	Event          *CreateEvent `json:"event"`
 	IsOrganization *bool        `json:"isOrganization"`
 }
@@ -119,12 +119,12 @@ type Preference struct {
 }
 
 type Sponsor struct {
-	ID             int     `json:"id"`
-	Name           string  `json:"name"`
-	Type           *string `json:"type"`
-	Amount         *string `json:"amount"`
-	Event          *Event  `json:"event"`
-	IsOrganization *bool   `json:"isOrganization"`
+	ID             int    `json:"id"`
+	Name           string `json:"name"`
+	Type           string `json:"type"`
+	Amount         int    `json:"amount"`
+	Event          *Event `json:"event"`
+	IsOrganization bool   `json:"isOrganization"`
 }
 
 type Team struct {
@@ -179,13 +179,12 @@ type UpdateTeam struct {
 }
 
 type UpdateUser struct {
-	Name       string         `json:"name"`
-	Role       *string        `json:"role"`
-	Email      string         `json:"email"`
-	Password   string         `json:"password"`
-	BucketLink string         `json:"bucketLink"`
-	Events     []*CreateEvent `json:"events"`
-	UpdatedAt  time.Time      `json:"updatedAt"`
+	Name      *string        `json:"name"`
+	Role      *string        `json:"role"`
+	Email     *string        `json:"email"`
+	Password  *string        `json:"password"`
+	Events    []*CreateEvent `json:"events"`
+	UpdatedAt *time.Time     `json:"updatedAt"`
 }
 
 type User struct {

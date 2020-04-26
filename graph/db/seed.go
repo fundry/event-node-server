@@ -63,10 +63,19 @@ func SeedDatabase(db *pg.DB) {
 		Encoding: "UTf8",
 	}
 
+	sponsor := model.Sponsor{
+		ID:             rand.Int(),
+		Name:           "John&sons.co",
+		Type:           "Platinum",
+		Amount:         1000,
+		Event:          nil,
+		IsOrganization: false,
+	}
+
 	db.Insert(&user)
 	db.Insert(&event)
 	db.Insert(&preference)
 	db.Insert(&team)
 	db.Insert(&file)
-
+db.Insert(&sponsor)
 }

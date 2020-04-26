@@ -20,11 +20,10 @@ input CreateUser {
 }
 
 input UpdateUser {
-    name: String!
+    name: String
     role: String
-    email: String!
-    password: String!
-    bucketLink: String!
-    events: [CreateEvent]!
-    updatedAt: Time!
+    email: String
+    password: String
+    events: [CreateEvent]
+    updatedAt: Time
 }

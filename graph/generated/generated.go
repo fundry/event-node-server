@@ -1125,16 +1125,16 @@ input UpdatePreference {
 	&ast.Source{Name: "graph/schema/types/sponsor.graphqls", Input: `type Sponsor {
     id : ID!
     name : String!
-    type: String
-    amount: String
+    type: String!
+    amount: Int!
     event: Event
-    isOrganization : Boolean @default(value: false)
+    isOrganization : Boolean! @default(value: false)
 }
 
 input CreateSponsor {
     name : String!
     type: String
-    amount: String
+    amount: Int
     event: CreateEvent
     isOrganization : Boolean
 }
@@ -1191,13 +1191,12 @@ input CreateUser {
 }
 
 input UpdateUser {
-    name: String!
+    name: String
     role: String
-    email: String!
-    password: String!
-    bucketLink: String!
-    events: [CreateEvent]!
-    updatedAt: Time!
+    email: String
+    password: String
+    events: [CreateEvent]
+    updatedAt: Time
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -3934,11 +3933,14 @@ func (ec *executionContext) _Sponsor_type(ctx context.Context, field graphql.Col
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Sponsor_amount(ctx context.Context, field graphql.CollectedField, obj *model.Sponsor) (ret graphql.Marshaler) {
@@ -3965,11 +3967,14 @@ func (ec *executionContext) _Sponsor_amount(ctx context.Context, field graphql.C
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Sponsor_event(ctx context.Context, field graphql.CollectedField, obj *model.Sponsor) (ret graphql.Marshaler) {
@@ -4041,21 +4046,24 @@ func (ec *executionContext) _Sponsor_isOrganization(ctx context.Context, field g
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(*bool); ok {
+		if data, ok := tmp.(bool); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *bool`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*bool)
+	res := resTmp.(bool)
 	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Team_id(ctx context.Context, field graphql.CollectedField, obj *model.Team) (ret graphql.Marshaler) {
@@ -5845,7 +5853,7 @@ func (ec *executionContext) unmarshalInputCreateSponsor(ctx context.Context, obj
 			}
 		case "amount":
 			var err error
-			it.Amount, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.Amount, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6229,7 +6237,7 @@ func (ec *executionContext) unmarshalInputUpdateUser(ctx context.Context, obj in
 		switch k {
 		case "name":
 			var err error
-			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6241,31 +6249,25 @@ func (ec *executionContext) unmarshalInputUpdateUser(ctx context.Context, obj in
 			}
 		case "email":
 			var err error
-			it.Email, err = ec.unmarshalNString2string(ctx, v)
+			it.Email, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "password":
 			var err error
-			it.Password, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "bucketLink":
-			var err error
-			it.BucketLink, err = ec.unmarshalNString2string(ctx, v)
+			it.Password, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "events":
 			var err error
-			it.Events, err = ec.unmarshalNCreateEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx, v)
+			it.Events, err = ec.unmarshalOCreateEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "updatedAt":
 			var err error
-			it.UpdatedAt, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
+			it.UpdatedAt, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6863,8 +6865,14 @@ func (ec *executionContext) _Sponsor(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "type":
 			out.Values[i] = ec._Sponsor_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "amount":
 			out.Values[i] = ec._Sponsor_amount(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "event":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -6878,6 +6886,9 @@ func (ec *executionContext) _Sponsor(ctx context.Context, sel ast.SelectionSet, 
 			})
 		case "isOrganization":
 			out.Values[i] = ec._Sponsor_isOrganization(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7285,26 +7296,6 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 
 func (ec *executionContext) unmarshalNCreateEvent2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx context.Context, v interface{}) (model.CreateEvent, error) {
 	return ec.unmarshalInputCreateEvent(ctx, v)
-}
-
-func (ec *executionContext) unmarshalNCreateEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx context.Context, v interface{}) ([]*model.CreateEvent, error) {
-	var vSlice []interface{}
-	if v != nil {
-		if tmp1, ok := v.([]interface{}); ok {
-			vSlice = tmp1
-		} else {
-			vSlice = []interface{}{v}
-		}
-	}
-	var err error
-	res := make([]*model.CreateEvent, len(vSlice))
-	for i := range vSlice {
-		res[i], err = ec.unmarshalOCreateEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
 }
 
 func (ec *executionContext) unmarshalNCreateEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx context.Context, v interface{}) (*model.CreateEvent, error) {
@@ -8227,6 +8218,29 @@ func (ec *executionContext) marshalOTeam2ᚕᚖgithubᚗcomᚋvickywaneᚋevent�
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) unmarshalOTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+	return graphql.UnmarshalTime(v)
+}
+
+func (ec *executionContext) marshalOTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
+	return graphql.MarshalTime(v)
+}
+
+func (ec *executionContext) unmarshalOTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOTime2timeᚐTime(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel ast.SelectionSet, v *time.Time) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec.marshalOTime2timeᚐTime(ctx, sel, *v)
 }
 
 func (ec *executionContext) unmarshalOUpdateSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateSponsor(ctx context.Context, v interface{}) (model.UpdateSponsor, error) {

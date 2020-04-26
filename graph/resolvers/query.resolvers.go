@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/vickywane/event-server/graph/generated"
+	InternalMiddlewares "github.com/vickywane/event-server/graph/middlewares"
 	"github.com/vickywane/event-server/graph/model"
 )
 
@@ -44,6 +45,15 @@ func (r *queryResolver) User(ctx context.Context, id *int, name string) (*model.
 }
 
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
+	gc, CtxErr := InternalMiddlewares.GinContextFromContext(ctx)
+
+	if CtxErr != nil {
+		fmt.Println(gc, "context resolver")
+		fmt.Println(CtxErr, "context resolver")
+	} else {
+		fmt.Println(CtxErr, "context")
+	}
+
 	var Users []*model.User
 
 	err := r.DB.Model(&Users).Select()
