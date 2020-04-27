@@ -4,139 +4,160 @@ package resolvers
 // will be copied through when generating and any unknown code will be moved to the end.
 
 import (
-	"context"
-	"fmt"
+    "context"
+    "fmt"
 
-	"github.com/vickywane/event-server/graph/generated"
-	InternalMiddlewares "github.com/vickywane/event-server/graph/middlewares"
-	"github.com/vickywane/event-server/graph/model"
+    "github.com/vickywane/event-server/graph/generated"
+    InternalMiddlewares "github.com/vickywane/event-server/graph/middlewares"
+    "github.com/vickywane/event-server/graph/model"
+    CustomResponse "github.com/vickywane/event-server/graph/validators"
+)
+
+var (
+    QueryErr interface{} = nil
 )
 
 func (r *queryResolver) Event(ctx context.Context, id *int, name string) (*model.Event, error) {
-	event := model.Event{ID: *id, Name: name}
+    event := model.Event{ID: *id, Name: name}
 
-	if err := r.DB.Select(&event); err != nil {
-		return nil, err
-	}
+    if err := r.DB.Select(&event); err != nil {
+        return nil, err
+    }
 
-	return &event, nil
+    return &event, nil
 }
 
-func (r *queryResolver) Events(ctx context.Context) ([]*model.Event, error) {
-	var events []*model.Event
+func (r *queryResolver) Events(ctx context.Context, limit *int) ([]*model.Event, error) {
+    var events []*model.Event
 
-	err := r.DB.Model(&events).Select()
+    if limit != nil {
+        QueryErr = r.DB.Model(&events).Limit(*limit).Select()
+    } else {
+        QueryErr = r.DB.Model(&events).Select()
+    }
 
-	if err != nil {
-		fmt.Println("some err here")
-	}
+    if QueryErr != nil {
+        return nil, CustomResponse.QueryError
+    }
 
-	return events, nil
+    return events, nil
 }
 
 func (r *queryResolver) User(ctx context.Context, id *int, name string) (*model.User, error) {
-	User := model.User{ID: *id, Name: name}
+    User := model.User{ID: *id, Name: name}
 
-	if err := r.DB.Select(&User); err != nil {
-		return nil, err
-	}
+    if err := r.DB.Select(&User); err != nil {
+        return nil, err
+    }
 
-	return &User, nil
+    return &User, nil
 }
 
-func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	gc, CtxErr := InternalMiddlewares.GinContextFromContext(ctx)
+func (r *queryResolver) Users(ctx context.Context, limit *int) ([]*model.User, error) {
+    gc, CtxErr := InternalMiddlewares.GinContextFromContext(ctx)
 
-	if CtxErr != nil {
-		fmt.Println(gc, "context resolver")
-		fmt.Println(CtxErr, "context resolver")
-	} else {
-		fmt.Println(CtxErr, "context")
-	}
+    if CtxErr != nil {
+        fmt.Println(gc, "context resolver")
+        fmt.Println(CtxErr, "context resolver")
+    } else {
+        fmt.Println(CtxErr, "context")
+    }
 
-	var Users []*model.User
+    var Users []*model.User
 
-	err := r.DB.Model(&Users).Select()
+    if limit != nil {
+        QueryErr = r.DB.Model(&Users).Limit(*limit).Select()
+    } else {
+        QueryErr = r.DB.Model(&Users).Select()
+    }
 
-	if err != nil {
-		fmt.Println("some err here")
-	}
+    if QueryErr != nil {
+        return nil, CustomResponse.QueryError
+    }
 
-	return Users, nil
+    return Users, nil
 }
 
 func (r *queryResolver) Preference(ctx context.Context, id *int, name string) (*model.Preference, error) {
-	Preference := model.Preference{ID: *id, Name: name}
+    Preference := model.Preference{ID: *id, Name: name}
 
-	if err := r.DB.Select(&Preference); err != nil {
-		return nil, err
-	}
+    if err := r.DB.Select(&Preference); err != nil {
+        return nil, err
+    }
 
-	return &Preference, nil
+    return &Preference, nil
 }
 
-func (r *queryResolver) Preferences(ctx context.Context) ([]*model.Preference, error) {
-	var Preferences []*model.Preference
+func (r *queryResolver) Preferences(ctx context.Context, limit *int) ([]*model.Preference, error) {
+    var Preferences []*model.Preference
 
-	err := r.DB.Model(&Preferences).Select()
+    if limit != nil {
+        QueryErr = r.DB.Model(&Preferences).Limit(*limit).Select()
+    } else {
+        QueryErr = r.DB.Model(&Preferences).Select()
+    }
 
-	if err != nil {
-		fmt.Println("some err here")
-	}
+    if QueryErr != nil {
+        return nil, CustomResponse.QueryError
+    }
 
-	return Preferences, nil
+    return Preferences, nil
 }
 
 func (r *queryResolver) File(ctx context.Context, id *int, name string) (*model.File, error) {
-	File := model.File{ID: *id, Filename: name}
+    File := model.File{ID: *id, Filename: name}
 
-	if err := r.DB.Select(&File); err != nil {
-		return nil, err
-	}
+    if err := r.DB.Select(&File); err != nil {
+        return nil, err
+    }
 
-	return &File, nil
+    return &File, nil
 }
 
 func (r *queryResolver) Files(ctx context.Context) ([]*model.File, error) {
-	var Files []*model.File
+    var Files []*model.File
 
-	err := r.DB.Model(&Files).Select()
+    err := r.DB.Model(&Files).Select()
 
-	if err != nil {
-		fmt.Println("some err here")
-	}
+    if err != nil {
+        fmt.Println("some err here")
+    }
 
-	return Files, nil
+    return Files, nil
 }
 
 func (r *queryResolver) Team(ctx context.Context, id *int, name string) (*model.Team, error) {
-	Team := model.Team{ID: *id, Name: name}
+    Team := model.Team{ID: *id, Name: name}
 
-	if err := r.DB.Select(&Team); err != nil {
-		return nil, err
-	}
+    if err := r.DB.Select(&Team); err != nil {
+        return nil, err
+    }
 
-	return &Team, nil
+    return &Team, nil
 }
 
-func (r *queryResolver) Teams(ctx context.Context) ([]*model.Team, error) {
-	var Teams []*model.Team
+func (r *queryResolver) Teams(ctx context.Context, limit *int) ([]*model.Team, error) {
+    var Teams []*model.Team
 
-	err := r.DB.Model(&Teams).Select()
+    if limit != nil {
+        QueryErr = r.DB.Model(&Teams).Limit(*limit).Select()
+    } else {
+        QueryErr = r.DB.Model(&Teams).Select()
+    }
 
-	if err != nil {
-		fmt.Println("some err here")
-	}
+    if QueryErr != nil {
+        return nil, CustomResponse.QueryError
+    }
 
-	return Teams, nil
+    return Teams, nil
 }
 
 func (r *queryResolver) Sponsor(ctx context.Context, id *int, name *string) (*model.Sponsor, error) {
-	panic(fmt.Errorf("not implemented"))
+    panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Sponsors(ctx context.Context) (*model.Sponsor, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *queryResolver) Sponsors(ctx context.Context, limit *int) (*model.Sponsor, error) {
+    panic(fmt.Errorf("not implemented"))
 }
 
 // Query returns generated.QueryResolver implementation.

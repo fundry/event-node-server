@@ -1,19 +1,19 @@
 type Query {
     event(id: Int name: String!) : Event!
-    events: [Event!]!
+    events(Limit: Int): [Event!]!
 
     user(id: Int, name: String!) : User!
-    users : [User!]!
+    users(Limit: Int) : [User!]!
 
     preference(id: Int, name: String!) : Preference!
-    preferences : [Preference!]!
+    preferences(Limit: Int) : [Preference!]!
 
     file(id: Int, name: String!) : File!
     files: [File!]!
 
     team(id: Int , name: String!): Team!
-    teams: [Team!]!
+    teams(Limit: Int): [Team!]!
 
     sponsor(id: Int , name : String): Sponsor!
-    sponsors: Sponsor!
+    sponsors(Limit: Int): Sponsor!
 }

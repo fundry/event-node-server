@@ -6,4 +6,5 @@ var (
     ShortInput = errors.New("input too short")
     NotFound   = errors.New("input not found")
     ErrorUpdating = errors.New("an Error occurred while updating")
+    QueryError = errors.New("An error occurred while querying the item")
 )

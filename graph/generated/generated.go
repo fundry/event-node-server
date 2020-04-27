@@ -118,17 +118,17 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Event       func(childComplexity int, id *int, name string) int
-		Events      func(childComplexity int) int
+		Events      func(childComplexity int, limit *int) int
 		File        func(childComplexity int, id *int, name string) int
 		Files       func(childComplexity int) int
 		Preference  func(childComplexity int, id *int, name string) int
-		Preferences func(childComplexity int) int
+		Preferences func(childComplexity int, limit *int) int
 		Sponsor     func(childComplexity int, id *int, name *string) int
-		Sponsors    func(childComplexity int) int
+		Sponsors    func(childComplexity int, limit *int) int
 		Team        func(childComplexity int, id *int, name string) int
-		Teams       func(childComplexity int) int
+		Teams       func(childComplexity int, limit *int) int
 		User        func(childComplexity int, id *int, name string) int
-		Users       func(childComplexity int) int
+		Users       func(childComplexity int, limit *int) int
 	}
 
 	Response struct {
@@ -195,17 +195,17 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Event(ctx context.Context, id *int, name string) (*model.Event, error)
-	Events(ctx context.Context) ([]*model.Event, error)
+	Events(ctx context.Context, limit *int) ([]*model.Event, error)
 	User(ctx context.Context, id *int, name string) (*model.User, error)
-	Users(ctx context.Context) ([]*model.User, error)
+	Users(ctx context.Context, limit *int) ([]*model.User, error)
 	Preference(ctx context.Context, id *int, name string) (*model.Preference, error)
-	Preferences(ctx context.Context) ([]*model.Preference, error)
+	Preferences(ctx context.Context, limit *int) ([]*model.Preference, error)
 	File(ctx context.Context, id *int, name string) (*model.File, error)
 	Files(ctx context.Context) ([]*model.File, error)
 	Team(ctx context.Context, id *int, name string) (*model.Team, error)
-	Teams(ctx context.Context) ([]*model.Team, error)
+	Teams(ctx context.Context, limit *int) ([]*model.Team, error)
 	Sponsor(ctx context.Context, id *int, name *string) (*model.Sponsor, error)
-	Sponsors(ctx context.Context) (*model.Sponsor, error)
+	Sponsors(ctx context.Context, limit *int) (*model.Sponsor, error)
 }
 type SponsorResolver interface {
 	Event(ctx context.Context, obj *model.Sponsor) (*model.Event, error)
@@ -705,7 +705,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Events(childComplexity), true
+		args, err := ec.field_Query_events_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Events(childComplexity, args["Limit"].(*int)), true
 
 	case "Query.file":
 		if e.complexity.Query.File == nil {
@@ -743,7 +748,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Preferences(childComplexity), true
+		args, err := ec.field_Query_preferences_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Preferences(childComplexity, args["Limit"].(*int)), true
 
 	case "Query.sponsor":
 		if e.complexity.Query.Sponsor == nil {
@@ -762,7 +772,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Sponsors(childComplexity), true
+		args, err := ec.field_Query_sponsors_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Sponsors(childComplexity, args["Limit"].(*int)), true
 
 	case "Query.team":
 		if e.complexity.Query.Team == nil {
@@ -781,7 +796,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Teams(childComplexity), true
+		args, err := ec.field_Query_teams_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Teams(childComplexity, args["Limit"].(*int)), true
 
 	case "Query.user":
 		if e.complexity.Query.User == nil {
@@ -800,7 +820,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Users(childComplexity), true
+		args, err := ec.field_Query_users_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Users(childComplexity, args["Limit"].(*int)), true
 
 	case "Response.completed":
 		if e.complexity.Response.Completed == nil {
@@ -1084,22 +1109,22 @@ type Mutation {
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/query.graphqls", Input: `type Query {
     event(id: Int name: String!) : Event!
-    events: [Event!]!
+    events(Limit: Int): [Event!]!
 
     user(id: Int, name: String!) : User!
-    users : [User!]!
+    users(Limit: Int) : [User!]!
 
     preference(id: Int, name: String!) : Preference!
-    preferences : [Preference!]!
+    preferences(Limit: Int) : [Preference!]!
 
     file(id: Int, name: String!) : File!
     files: [File!]!
 
     team(id: Int , name: String!): Team!
-    teams: [Team!]!
+    teams(Limit: Int): [Team!]!
 
     sponsor(id: Int , name : String): Sponsor!
-    sponsors: Sponsor!
+    sponsors(Limit: Int): Sponsor!
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/scalar.graphqls", Input: `# My custom defined types https://github.com/99designs/gqlgen/blob/master/docs/content/reference/scalars.md
 
@@ -1672,6 +1697,20 @@ func (ec *executionContext) field_Query_event_args(ctx context.Context, rawArgs 
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_events_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["Limit"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["Limit"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_file_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1716,6 +1755,20 @@ func (ec *executionContext) field_Query_preference_args(ctx context.Context, raw
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_preferences_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["Limit"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["Limit"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_sponsor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1735,6 +1788,20 @@ func (ec *executionContext) field_Query_sponsor_args(ctx context.Context, rawArg
 		}
 	}
 	args["name"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_sponsors_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["Limit"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["Limit"] = arg0
 	return args, nil
 }
 
@@ -1760,6 +1827,20 @@ func (ec *executionContext) field_Query_team_args(ctx context.Context, rawArgs m
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_teams_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["Limit"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["Limit"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_user_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1779,6 +1860,20 @@ func (ec *executionContext) field_Query_user_args(ctx context.Context, rawArgs m
 		}
 	}
 	args["name"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_users_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["Limit"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["Limit"] = arg0
 	return args, nil
 }
 
@@ -3811,9 +3906,16 @@ func (ec *executionContext) _Query_events(ctx context.Context, field graphql.Col
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_events_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Events(rctx)
+		return ec.resolvers.Query().Events(rctx, args["Limit"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3886,9 +3988,16 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_users_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Users(rctx)
+		return ec.resolvers.Query().Users(rctx, args["Limit"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3961,9 +4070,16 @@ func (ec *executionContext) _Query_preferences(ctx context.Context, field graphq
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_preferences_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Preferences(rctx)
+		return ec.resolvers.Query().Preferences(rctx, args["Limit"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4111,9 +4227,16 @@ func (ec *executionContext) _Query_teams(ctx context.Context, field graphql.Coll
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_teams_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Teams(rctx)
+		return ec.resolvers.Query().Teams(rctx, args["Limit"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4186,9 +4309,16 @@ func (ec *executionContext) _Query_sponsors(ctx context.Context, field graphql.C
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_sponsors_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Sponsors(rctx)
+		return ec.resolvers.Query().Sponsors(rctx, args["Limit"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
