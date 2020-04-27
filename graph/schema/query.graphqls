@@ -15,5 +15,8 @@ type Query {
     teams(Limit: Int): [Team!]!
 
     sponsor(id: Int , name : String): Sponsor!
-    sponsors(Limit: Int): Sponsor!
+    sponsors(Limit: Int): [Sponsor!]
+
+    task(id: Int) : Tasks!
+    tasks(Limit: Int) : [Tasks!]
 }

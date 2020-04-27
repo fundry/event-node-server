@@ -72,10 +72,19 @@ func SeedDatabase(db *pg.DB) {
 		IsOrganization: false,
 	}
 
+	task := model.Tasks{
+		ID:             rand.Int(),
+		Name:           "Sketch and Create Event Media Assets",
+		Type:           "Design",
+		IsCompleted: 	false,
+		Assignees:   	nil,
+	}
+
 	db.Insert(&user)
 	db.Insert(&event)
 	db.Insert(&preference)
 	db.Insert(&team)
 	db.Insert(&file)
-db.Insert(&sponsor)
+	db.Insert(&sponsor)
+	db.Insert(&task)
 }

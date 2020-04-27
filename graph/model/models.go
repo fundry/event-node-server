@@ -50,6 +50,14 @@ type CreateSponsor struct {
 	IsOrganization *bool        `json:"isOrganization"`
 }
 
+type CreateTasks struct {
+	Name        string        `json:"name"`
+	Type        string        `json:"type"`
+	IsCompleted bool          `json:"isCompleted"`
+	Assignees   []*CreateUser `json:"assignees"`
+	CreatedBy   *CreateUser   `json:"createdBy"`
+}
+
 type CreateTeam struct {
 	Name      string        `json:"name"`
 	Members   []*CreateUser `json:"members"`
@@ -128,6 +136,17 @@ type Sponsor struct {
 	IsOrganization bool   `json:"isOrganization"`
 }
 
+type Tasks struct {
+	ID          int       `json:"id"`
+	Name        string    `json:"name"`
+	Type        string    `json:"type"`
+	IsCompleted bool      `json:"isCompleted"`
+	Assignees   []*User   `json:"assignees"`
+	CreatedBy   *User     `json:"createdBy"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+}
+
 type Team struct {
 	ID        int       `json:"id"`
 	Name      string    `json:"name"`
@@ -170,6 +189,13 @@ type UpdateSponsor struct {
 	Amount         *string      `json:"amount"`
 	Event          *CreateEvent `json:"event"`
 	IsOrganization *bool        `json:"isOrganization"`
+}
+
+type UpdateTask struct {
+	Name        string        `json:"name"`
+	Type        string        `json:"type"`
+	IsCompleted bool          `json:"isCompleted"`
+	Assignees   []*CreateUser `json:"assignees"`
 }
 
 type UpdateTeam struct {

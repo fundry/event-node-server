@@ -4,24 +4,22 @@ import (
 	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/go-pg/pg/v9/orm"
-	"log"
-
 	"github.com/joho/godotenv"
 	"github.com/satori/go.uuid"
+
 	"github.com/vickywane/event-server/graph/model"
 )
 
 func createSchema(db *pg.DB) error {
 	for _, models := range []interface{}{(*model.User)(nil),
 		(*model.User)(nil), (*model.Event)(nil), (*model.Preference)(nil),
-			(*model.File)(nil),(*model.Team)(nil), (*model.Sponsor)(nil)  } {
+			(*model.File)(nil),(*model.Team)(nil), (*model.Sponsor)(nil) ,
+			(*model.Tasks)(nil) } {
 			err := db.CreateTable(models, &orm.CreateTableOptions{
 			IfNotExists: true,
 		})
 		if err != nil {
 			panic(err)
-		} else {
-			log.Println(err)
 		}
 	}
 	return nil
@@ -34,12 +32,6 @@ func Connect() *pg.DB {
 
 	id := uuid.NewV4()
 	fmt.Println(id, "uuid number here")
-	// if err != nil {
-	// 	fmt.Println("error generating uuid")
-	// }else {
-	// 	fmt.Println(id)
-	// }
-	//
 
 	db := pg.Connect(&pg.Options{
 		User:             Envs["POSTGRES_USER"],
@@ -60,7 +52,6 @@ func Connect() *pg.DB {
 
 	 // NOTE!! this func might likely try to reseed on every restart
 	  SeedDatabase(db)
-
 
 	return db
 }

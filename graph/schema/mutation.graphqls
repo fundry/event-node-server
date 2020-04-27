@@ -28,4 +28,8 @@ type Mutation {
     deleteSponsor(id: ID!) : Boolean!
 
     loginUser(input: LoginUser!): AuthResponse!
+
+    createTask(input: CreateTasks) : Tasks!
+    updateTask(id: ID! , input: UpdateTask) : Tasks!
+    deleteTask(id: ID!) : Boolean!
 }

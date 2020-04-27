@@ -1,0 +1,25 @@
+type Tasks {
+    id : Int!
+    name : String!
+    type: String!
+    isCompleted: Boolean!
+    assignees: [User!]
+    createdBy: User
+    createdAt: Time!
+    updatedAt: Time!
+}
+
+input CreateTasks {
+    name : String!
+    type: String!
+    isCompleted: Boolean!
+    assignees: [CreateUser!]
+    createdBy: CreateUser
+}
+
+input UpdateTask {
+    name : String!
+    type: String!
+    isCompleted: Boolean!
+    assignees: [CreateUser!]
+}
