@@ -31,7 +31,7 @@ func graphqlHandler() gin.HandlerFunc  {
     }
 }
 
-// Defining the Playground handler
+//Playground handler
 func playgroundHandler() gin.HandlerFunc {
     h := playground.Handler("GraphQL", "/query")
 
@@ -43,8 +43,7 @@ func playgroundHandler() gin.HandlerFunc {
 func main() {
     r := gin.Default()
 
-    r.Use(
-        cors.New(cors.Config{
+    r.Use(cors.New(cors.Config{
         AllowOrigins: []string{"http://localhost:3000", "http://localhost:8080"},
         AllowMethods: []string{"GET", "PUT", "POST", "DELETE"},
         AllowHeaders: []string{"content-type"},

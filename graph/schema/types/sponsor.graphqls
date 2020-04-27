@@ -1,5 +1,5 @@
 type Sponsor {
-    id : ID!
+    id : Int!
     name : String!
     type: String!
     amount: Int!

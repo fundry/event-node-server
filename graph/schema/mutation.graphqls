@@ -1,21 +1,31 @@
+type Response {
+    completed : Boolean!
+}
+
 type Mutation {
     createEvent(input: CreateEvent!): Event!
     updateEvent(id: ID, input: UpdateEvent!): Event!
+    deleteEvent(id: ID!) : Response!
 
     createUser(input: CreateUser!): User!
     updateUser(id: ID, input: UpdateUser!): User!
+    deleteUser(id: ID!) : Boolean!
 
     createPreference(input: CreatePreference!): Preference!
     updatePreference(id: ID, input: UpdatePreference!): Preference!
+    deletePreference(id: ID!) : Boolean!
 
     createFile(input: CreateFile!) : File!
     updateFile(id: ID, input: DeleteFile!): File!
+    deleteFile(id: ID!) : Boolean!
 
     createTeam(input: CreateTeam!): Team!
     updateTeam(id: ID, input: UpdateTeam!): Team!
+    deleteTeam(id: ID!) : Boolean!
 
     createSponsor(input: CreateSponsor): Sponsor!
     updateSponsor(id: ID, input: UpdateSponsor):Sponsor!
+    deleteSponsor(id: ID!) : Boolean!
 
     loginUser(input: LoginUser!): AuthResponse!
 }

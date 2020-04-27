@@ -1,5 +1,5 @@
 type User {
-    id : ID!
+    id : Int!
     name: String!
     role: String
     email: String!
@@ -15,7 +15,6 @@ input CreateUser {
     role: String
     email: String!
     password: String!
-    bucketLink: String!
     events: [CreateEvent]
 }
 

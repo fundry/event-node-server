@@ -7,7 +7,7 @@ import (
 	"log"
 
 	"github.com/joho/godotenv"
-
+	"github.com/satori/go.uuid"
 	"github.com/vickywane/event-server/graph/model"
 )
 
@@ -31,7 +31,15 @@ func Connect() *pg.DB {
 	godotenv.Load(".env")
 
 	Envs, err := godotenv.Read(".env")
- 	fmt.Println()
+
+	id := uuid.NewV4()
+	fmt.Println(id, "uuid number here")
+	// if err != nil {
+	// 	fmt.Println("error generating uuid")
+	// }else {
+	// 	fmt.Println(id)
+	// }
+	//
 
 	db := pg.Connect(&pg.Options{
 		User:             Envs["POSTGRES_USER"],

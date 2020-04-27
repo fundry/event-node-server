@@ -1,5 +1,5 @@
 type Team {
-    id : ID!
+    id : Int!
     name : String!
     members: [User!]
     goal: String!

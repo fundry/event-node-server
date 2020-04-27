@@ -21,8 +21,6 @@ type CreateEvent struct {
 	EventType   string        `json:"eventType"`
 	IsArchived  *bool         `json:"isArchived"`
 	IsLocked    *bool         `json:"isLocked"`
-	BucketLink  string        `json:"bucketLink"`
-	CreatedBy   *CreateUser   `json:"createdBy"`
 	Attendees   []*CreateUser `json:"attendees"`
 	Venue       string        `json:"venue"`
 	Date        int           `json:"Date"`
@@ -60,12 +58,11 @@ type CreateTeam struct {
 }
 
 type CreateUser struct {
-	Name       string         `json:"name"`
-	Role       *string        `json:"role"`
-	Email      string         `json:"email"`
-	Password   string         `json:"password"`
-	BucketLink string         `json:"bucketLink"`
-	Events     []*CreateEvent `json:"events"`
+	Name     string         `json:"name"`
+	Role     *string        `json:"role"`
+	Email    string         `json:"email"`
+	Password string         `json:"password"`
+	Events   []*CreateEvent `json:"events"`
 }
 
 type DeleteFile struct {
@@ -116,6 +113,10 @@ type Preference struct {
 	Event     *Event    `json:"Event"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+type Response struct {
+	Completed bool `json:"completed"`
 }
 
 type Sponsor struct {

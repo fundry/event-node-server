@@ -14,6 +14,7 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/pkg/errors v0.8.1
 	github.com/rs/cors v1.7.0
+	github.com/satori/go.uuid v1.2.0
 	github.com/vektah/gqlparser/v2 v2.0.1
 	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d
 	golang.org/x/exp v0.0.0-20200331195152-e8c3332aa8e5 // indirect

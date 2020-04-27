@@ -1,5 +1,5 @@
 type Event {
-    id : ID!
+    id : Int!
     name: String!
     description: String!
     summary: String!
@@ -29,8 +29,6 @@ input CreateEvent {
     eventType: String!
     isArchived: Boolean
     isLocked: Boolean
-    bucketLink : String!
-    createdBy: CreateUser
     attendees: [CreateUser]
     venue: String!
     Date: Int!
