@@ -50,6 +50,17 @@ type CreateSponsor struct {
 	IsOrganization *bool        `json:"isOrganization"`
 }
 
+type CreateTalk struct {
+	Title        string        `json:"title"`
+	Author       *CreateUser   `json:"author"`
+	TalkCoverURI *string       `json:"talkCoverUri"`
+	Summary      string        `json:"summary"`
+	Description  string        `json:"description"`
+	Reviewers    []*CreateUser `json:"reviewers"`
+	Archived     *bool         `json:"Archived"`
+	Tags         []*string     `json:"tags"`
+}
+
 type CreateTasks struct {
 	Name        string        `json:"name"`
 	Type        string        `json:"type"`
@@ -63,6 +74,17 @@ type CreateTeam struct {
 	Members   []*CreateUser `json:"members"`
 	Goal      string        `json:"goal"`
 	CreatedBy *CreateUser   `json:"createdBy"`
+}
+
+type CreateTrack struct {
+	Name        string        `json:"name"`
+	TrackImgURI *string       `json:"trackImgUri"`
+	Duration    string        `json:"duration"`
+	Talks       []*CreateTalk `json:"talks"`
+	TotalTalks  int           `json:"totalTalks"`
+	CreatedBy   *CreateEvent  `json:"createdBy"`
+	IsCompleted bool          `json:"isCompleted"`
+	Archived    bool          `json:"Archived"`
 }
 
 type CreateUser struct {
@@ -136,6 +158,20 @@ type Sponsor struct {
 	IsOrganization bool   `json:"isOrganization"`
 }
 
+type Talk struct {
+	ID           int       `json:"id"`
+	Title        string    `json:"title"`
+	Author       *User     `json:"author"`
+	TalkCoverURI *string   `json:"talkCoverUri"`
+	Summary      string    `json:"summary"`
+	Description  string    `json:"description"`
+	Reviewers    []*User   `json:"reviewers"`
+	Archived     *bool     `json:"Archived"`
+	Tags         []*string `json:"tags"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
+}
+
 type Tasks struct {
 	ID          int       `json:"id"`
 	Name        string    `json:"name"`
@@ -155,6 +191,20 @@ type Team struct {
 	CreatedBy *User     `json:"createdBy"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+type Track struct {
+	ID          int       `json:"id"`
+	Name        string    `json:"name"`
+	TrackImgURI *string   `json:"trackImgUri"`
+	Duration    string    `json:"duration"`
+	Talks       []*Talk   `json:"talks"`
+	TotalTalks  int       `json:"totalTalks"`
+	CreatedBy   *Event    `json:"createdBy"`
+	IsCompleted bool      `json:"isCompleted"`
+	Archived    bool      `json:"Archived"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 type UpdateEvent struct {
@@ -191,6 +241,16 @@ type UpdateSponsor struct {
 	IsOrganization *bool        `json:"isOrganization"`
 }
 
+type UpdateTalk struct {
+	Title        string        `json:"title"`
+	TalkCoverURI *string       `json:"talkCoverUri"`
+	Summary      string        `json:"summary"`
+	Description  string        `json:"description"`
+	Reviewers    []*CreateUser `json:"reviewers"`
+	Archived     *bool         `json:"Archived"`
+	Tags         []*string     `json:"tags"`
+}
+
 type UpdateTask struct {
 	Name        string        `json:"name"`
 	Type        string        `json:"type"`
@@ -203,6 +263,16 @@ type UpdateTeam struct {
 	Members   []*CreateUser `json:"members"`
 	Goal      string        `json:"goal"`
 	CreatedBy *CreateUser   `json:"createdBy"`
+}
+
+type UpdateTrack struct {
+	Name        string        `json:"name"`
+	TrackImgURI *string       `json:"trackImgUri"`
+	Duration    string        `json:"duration"`
+	Talks       []*CreateTalk `json:"talks"`
+	TotalTalks  int           `json:"totalTalks"`
+	IsCompleted bool          `json:"isCompleted"`
+	Archived    bool          `json:"Archived"`
 }
 
 type UpdateUser struct {

@@ -90,23 +90,29 @@ type ComplexityRoot struct {
 		CreateFile       func(childComplexity int, input model.CreateFile) int
 		CreatePreference func(childComplexity int, input model.CreatePreference) int
 		CreateSponsor    func(childComplexity int, input *model.CreateSponsor) int
+		CreateTalk       func(childComplexity int, input *model.CreateTalk) int
 		CreateTask       func(childComplexity int, input *model.CreateTasks) int
 		CreateTeam       func(childComplexity int, input model.CreateTeam) int
+		CreateTrack      func(childComplexity int, input *model.CreateTalk) int
 		CreateUser       func(childComplexity int, input model.CreateUser) int
 		DeleteEvent      func(childComplexity int, id int) int
 		DeleteFile       func(childComplexity int, id int) int
 		DeletePreference func(childComplexity int, id int) int
 		DeleteSponsor    func(childComplexity int, id int) int
+		DeleteTalk       func(childComplexity int, id int) int
 		DeleteTask       func(childComplexity int, id int) int
 		DeleteTeam       func(childComplexity int, id int) int
+		DeleteTrack      func(childComplexity int, id int) int
 		DeleteUser       func(childComplexity int, id int) int
 		LoginUser        func(childComplexity int, input model.LoginUser) int
 		UpdateEvent      func(childComplexity int, id *int, input model.UpdateEvent) int
 		UpdateFile       func(childComplexity int, id *int, input model.DeleteFile) int
 		UpdatePreference func(childComplexity int, id *int, input model.UpdatePreference) int
 		UpdateSponsor    func(childComplexity int, id *int, input *model.UpdateSponsor) int
+		UpdateTalk       func(childComplexity int, id int, input *model.UpdateTalk) int
 		UpdateTask       func(childComplexity int, id int, input *model.UpdateTask) int
 		UpdateTeam       func(childComplexity int, id *int, input model.UpdateTeam) int
+		UpdateTrack      func(childComplexity int, id int, input *model.UpdateTrack) int
 		UpdateUser       func(childComplexity int, id *int, input model.UpdateUser) int
 	}
 
@@ -128,10 +134,14 @@ type ComplexityRoot struct {
 		Preferences func(childComplexity int, limit *int) int
 		Sponsor     func(childComplexity int, id *int, name *string) int
 		Sponsors    func(childComplexity int, limit *int) int
+		Talk        func(childComplexity int, id int) int
+		Talks       func(childComplexity int, limit *int) int
 		Task        func(childComplexity int, id *int) int
 		Tasks       func(childComplexity int, limit *int) int
 		Team        func(childComplexity int, id *int, name string) int
 		Teams       func(childComplexity int, limit *int) int
+		Track       func(childComplexity int, id int) int
+		Tracks      func(childComplexity int, limit *int) int
 		User        func(childComplexity int, id *int, name string) int
 		Users       func(childComplexity int, limit *int) int
 	}
@@ -147,6 +157,20 @@ type ComplexityRoot struct {
 		IsOrganization func(childComplexity int) int
 		Name           func(childComplexity int) int
 		Type           func(childComplexity int) int
+	}
+
+	Talk struct {
+		Archived     func(childComplexity int) int
+		Author       func(childComplexity int) int
+		CreatedAt    func(childComplexity int) int
+		Description  func(childComplexity int) int
+		ID           func(childComplexity int) int
+		Reviewers    func(childComplexity int) int
+		Summary      func(childComplexity int) int
+		Tags         func(childComplexity int) int
+		TalkCoverURI func(childComplexity int) int
+		Title        func(childComplexity int) int
+		UpdatedAt    func(childComplexity int) int
 	}
 
 	Tasks struct {
@@ -168,6 +192,20 @@ type ComplexityRoot struct {
 		Members   func(childComplexity int) int
 		Name      func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
+	}
+
+	Track struct {
+		Archived    func(childComplexity int) int
+		CreatedAt   func(childComplexity int) int
+		CreatedBy   func(childComplexity int) int
+		Duration    func(childComplexity int) int
+		ID          func(childComplexity int) int
+		IsCompleted func(childComplexity int) int
+		Name        func(childComplexity int) int
+		Talks       func(childComplexity int) int
+		TotalTalks  func(childComplexity int) int
+		TrackImgURI func(childComplexity int) int
+		UpdatedAt   func(childComplexity int) int
 	}
 
 	User struct {
@@ -211,6 +249,12 @@ type MutationResolver interface {
 	CreateTask(ctx context.Context, input *model.CreateTasks) (*model.Tasks, error)
 	UpdateTask(ctx context.Context, id int, input *model.UpdateTask) (*model.Tasks, error)
 	DeleteTask(ctx context.Context, id int) (bool, error)
+	CreateTalk(ctx context.Context, input *model.CreateTalk) (*model.Talk, error)
+	UpdateTalk(ctx context.Context, id int, input *model.UpdateTalk) (*model.Talk, error)
+	DeleteTalk(ctx context.Context, id int) (bool, error)
+	CreateTrack(ctx context.Context, input *model.CreateTalk) (*model.Track, error)
+	UpdateTrack(ctx context.Context, id int, input *model.UpdateTrack) (*model.Track, error)
+	DeleteTrack(ctx context.Context, id int) (bool, error)
 }
 type QueryResolver interface {
 	Event(ctx context.Context, id *int, name string) (*model.Event, error)
@@ -227,6 +271,10 @@ type QueryResolver interface {
 	Sponsors(ctx context.Context, limit *int) ([]*model.Sponsor, error)
 	Task(ctx context.Context, id *int) (*model.Tasks, error)
 	Tasks(ctx context.Context, limit *int) ([]*model.Tasks, error)
+	Talk(ctx context.Context, id int) (*model.Talk, error)
+	Talks(ctx context.Context, limit *int) ([]*model.Talk, error)
+	Track(ctx context.Context, id int) (*model.Track, error)
+	Tracks(ctx context.Context, limit *int) ([]*model.Track, error)
 }
 type SponsorResolver interface {
 	Event(ctx context.Context, obj *model.Sponsor) (*model.Event, error)
@@ -487,6 +535,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateSponsor(childComplexity, args["input"].(*model.CreateSponsor)), true
 
+	case "Mutation.createTalk":
+		if e.complexity.Mutation.CreateTalk == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createTalk_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateTalk(childComplexity, args["input"].(*model.CreateTalk)), true
+
 	case "Mutation.createTask":
 		if e.complexity.Mutation.CreateTask == nil {
 			break
@@ -510,6 +570,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateTeam(childComplexity, args["input"].(model.CreateTeam)), true
+
+	case "Mutation.createTrack":
+		if e.complexity.Mutation.CreateTrack == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createTrack_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateTrack(childComplexity, args["input"].(*model.CreateTalk)), true
 
 	case "Mutation.createUser":
 		if e.complexity.Mutation.CreateUser == nil {
@@ -571,6 +643,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeleteSponsor(childComplexity, args["id"].(int)), true
 
+	case "Mutation.deleteTalk":
+		if e.complexity.Mutation.DeleteTalk == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteTalk_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteTalk(childComplexity, args["id"].(int)), true
+
 	case "Mutation.deleteTask":
 		if e.complexity.Mutation.DeleteTask == nil {
 			break
@@ -594,6 +678,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteTeam(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteTrack":
+		if e.complexity.Mutation.DeleteTrack == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteTrack_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteTrack(childComplexity, args["id"].(int)), true
 
 	case "Mutation.deleteUser":
 		if e.complexity.Mutation.DeleteUser == nil {
@@ -667,6 +763,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateSponsor(childComplexity, args["id"].(*int), args["input"].(*model.UpdateSponsor)), true
 
+	case "Mutation.updateTalk":
+		if e.complexity.Mutation.UpdateTalk == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateTalk_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateTalk(childComplexity, args["id"].(int), args["input"].(*model.UpdateTalk)), true
+
 	case "Mutation.updateTask":
 		if e.complexity.Mutation.UpdateTask == nil {
 			break
@@ -690,6 +798,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateTeam(childComplexity, args["id"].(*int), args["input"].(model.UpdateTeam)), true
+
+	case "Mutation.updateTrack":
+		if e.complexity.Mutation.UpdateTrack == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateTrack_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateTrack(childComplexity, args["id"].(int), args["input"].(*model.UpdateTrack)), true
 
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -836,6 +956,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Sponsors(childComplexity, args["Limit"].(*int)), true
 
+	case "Query.talk":
+		if e.complexity.Query.Talk == nil {
+			break
+		}
+
+		args, err := ec.field_Query_talk_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Talk(childComplexity, args["id"].(int)), true
+
+	case "Query.talks":
+		if e.complexity.Query.Talks == nil {
+			break
+		}
+
+		args, err := ec.field_Query_talks_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Talks(childComplexity, args["Limit"].(*int)), true
+
 	case "Query.task":
 		if e.complexity.Query.Task == nil {
 			break
@@ -883,6 +1027,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Teams(childComplexity, args["Limit"].(*int)), true
+
+	case "Query.track":
+		if e.complexity.Query.Track == nil {
+			break
+		}
+
+		args, err := ec.field_Query_track_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Track(childComplexity, args["id"].(int)), true
+
+	case "Query.tracks":
+		if e.complexity.Query.Tracks == nil {
+			break
+		}
+
+		args, err := ec.field_Query_tracks_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Tracks(childComplexity, args["Limit"].(*int)), true
 
 	case "Query.user":
 		if e.complexity.Query.User == nil {
@@ -956,6 +1124,83 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Sponsor.Type(childComplexity), true
+
+	case "Talk.Archived":
+		if e.complexity.Talk.Archived == nil {
+			break
+		}
+
+		return e.complexity.Talk.Archived(childComplexity), true
+
+	case "Talk.author":
+		if e.complexity.Talk.Author == nil {
+			break
+		}
+
+		return e.complexity.Talk.Author(childComplexity), true
+
+	case "Talk.createdAt":
+		if e.complexity.Talk.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Talk.CreatedAt(childComplexity), true
+
+	case "Talk.description":
+		if e.complexity.Talk.Description == nil {
+			break
+		}
+
+		return e.complexity.Talk.Description(childComplexity), true
+
+	case "Talk.id":
+		if e.complexity.Talk.ID == nil {
+			break
+		}
+
+		return e.complexity.Talk.ID(childComplexity), true
+
+	case "Talk.reviewers":
+		if e.complexity.Talk.Reviewers == nil {
+			break
+		}
+
+		return e.complexity.Talk.Reviewers(childComplexity), true
+
+	case "Talk.summary":
+		if e.complexity.Talk.Summary == nil {
+			break
+		}
+
+		return e.complexity.Talk.Summary(childComplexity), true
+
+	case "Talk.tags":
+		if e.complexity.Talk.Tags == nil {
+			break
+		}
+
+		return e.complexity.Talk.Tags(childComplexity), true
+
+	case "Talk.talkCoverUri":
+		if e.complexity.Talk.TalkCoverURI == nil {
+			break
+		}
+
+		return e.complexity.Talk.TalkCoverURI(childComplexity), true
+
+	case "Talk.title":
+		if e.complexity.Talk.Title == nil {
+			break
+		}
+
+		return e.complexity.Talk.Title(childComplexity), true
+
+	case "Talk.updatedAt":
+		if e.complexity.Talk.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Talk.UpdatedAt(childComplexity), true
 
 	case "Tasks.assignees":
 		if e.complexity.Tasks.Assignees == nil {
@@ -1061,6 +1306,83 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Team.UpdatedAt(childComplexity), true
+
+	case "Track.Archived":
+		if e.complexity.Track.Archived == nil {
+			break
+		}
+
+		return e.complexity.Track.Archived(childComplexity), true
+
+	case "Track.createdAt":
+		if e.complexity.Track.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Track.CreatedAt(childComplexity), true
+
+	case "Track.createdBy":
+		if e.complexity.Track.CreatedBy == nil {
+			break
+		}
+
+		return e.complexity.Track.CreatedBy(childComplexity), true
+
+	case "Track.duration":
+		if e.complexity.Track.Duration == nil {
+			break
+		}
+
+		return e.complexity.Track.Duration(childComplexity), true
+
+	case "Track.id":
+		if e.complexity.Track.ID == nil {
+			break
+		}
+
+		return e.complexity.Track.ID(childComplexity), true
+
+	case "Track.isCompleted":
+		if e.complexity.Track.IsCompleted == nil {
+			break
+		}
+
+		return e.complexity.Track.IsCompleted(childComplexity), true
+
+	case "Track.name":
+		if e.complexity.Track.Name == nil {
+			break
+		}
+
+		return e.complexity.Track.Name(childComplexity), true
+
+	case "Track.talks":
+		if e.complexity.Track.Talks == nil {
+			break
+		}
+
+		return e.complexity.Track.Talks(childComplexity), true
+
+	case "Track.totalTalks":
+		if e.complexity.Track.TotalTalks == nil {
+			break
+		}
+
+		return e.complexity.Track.TotalTalks(childComplexity), true
+
+	case "Track.trackImgUri":
+		if e.complexity.Track.TrackImgURI == nil {
+			break
+		}
+
+		return e.complexity.Track.TrackImgURI(childComplexity), true
+
+	case "Track.updatedAt":
+		if e.complexity.Track.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Track.UpdatedAt(childComplexity), true
 
 	case "User.bucketLink":
 		if e.complexity.User.BucketLink == nil {
@@ -1247,6 +1569,14 @@ type Mutation {
     createTask(input: CreateTasks) : Tasks!
     updateTask(id: ID! , input: UpdateTask) : Tasks!
     deleteTask(id: ID!) : Boolean!
+
+    createTalk(input: CreateTalk) : Talk!
+    updateTalk(id: ID! , input: UpdateTalk) : Talk!
+    deleteTalk(id: ID!) : Boolean!
+
+    createTrack(input: CreateTalk) : Track!
+    updateTrack(id: ID! , input: UpdateTrack) : Track!
+    deleteTrack(id: ID!) : Boolean!
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/query.graphqls", Input: `type Query {
     event(id: Int name: String!) : Event!
@@ -1269,6 +1599,12 @@ type Mutation {
 
     task(id: Int) : Tasks!
     tasks(Limit: Int) : [Tasks!]
+
+    talk(id : Int!): Talk!
+    talks(Limit: Int) : [Talk!]!
+
+    track(id : Int!): Track!
+    tracks(Limit: Int) : [Track!]!
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/scalar.graphqls", Input: `# My custom defined types https://github.com/99designs/gqlgen/blob/master/docs/content/reference/scalars.md
 
@@ -1419,6 +1755,40 @@ input UpdateSponsor {
     event: CreateEvent
     isOrganization : Boolean
 }`, BuiltIn: false},
+	&ast.Source{Name: "graph/schema/types/talk.graphqls", Input: `type Talk {
+    id : Int!
+    title: String!
+    author: User
+    talkCoverUri: String
+    summary: String!
+    description: String!
+    reviewers: [User]
+    Archived: Boolean
+    tags: [String]
+    createdAt: Time!
+    updatedAt: Time!
+}
+
+input CreateTalk {
+    title: String!
+    author: CreateUser
+    talkCoverUri: String
+    summary: String!
+    description: String!
+    reviewers: [CreateUser]
+    Archived: Boolean
+    tags: [String]
+}
+
+input UpdateTalk {
+    title: String!
+    talkCoverUri: String
+    summary: String!
+    description: String!
+    reviewers: [CreateUser]
+    Archived: Boolean
+    tags: [String]
+}`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/types/tasks.graphqls", Input: `type Tasks {
     id : Int!
     name : String!
@@ -1467,6 +1837,44 @@ input UpdateTeam {
     goal: String!
     createdBy: CreateUser
 }`, BuiltIn: false},
+	&ast.Source{Name: "graph/schema/types/track.graphqls", Input: `type Track {
+    id : Int!
+    name: String!
+    trackImgUri: String
+    duration: String!
+    talks: [Talk]
+    totalTalks: Int!
+    createdBy: Event
+    isCompleted: Boolean!
+    Archived: Boolean!
+    createdAt: Time!
+    updatedAt: Time!
+}
+
+input CreateTrack {
+    name: String!
+    trackImgUri: String
+    duration: String!
+    talks: [CreateTalk]
+    totalTalks: Int!
+    createdBy: CreateEvent
+    isCompleted: Boolean!
+    Archived: Boolean!
+}
+
+input UpdateTrack {
+    name: String!
+    trackImgUri: String
+    duration: String!
+    talks: [CreateTalk]
+    totalTalks: Int!
+    isCompleted: Boolean!
+    Archived: Boolean!
+}
+
+
+
+`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/types/user.graphqls", Input: `type User {
     id : Int!
     name: String!
@@ -1572,6 +1980,20 @@ func (ec *executionContext) field_Mutation_createSponsor_args(ctx context.Contex
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createTalk_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.CreateTalk
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalOCreateTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createTask_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1592,6 +2014,20 @@ func (ec *executionContext) field_Mutation_createTeam_args(ctx context.Context, 
 	var arg0 model.CreateTeam
 	if tmp, ok := rawArgs["input"]; ok {
 		arg0, err = ec.unmarshalNCreateTeam2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTeam(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createTrack_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.CreateTalk
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalOCreateTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1670,6 +2106,20 @@ func (ec *executionContext) field_Mutation_deleteSponsor_args(ctx context.Contex
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_deleteTalk_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_deleteTask_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1685,6 +2135,20 @@ func (ec *executionContext) field_Mutation_deleteTask_args(ctx context.Context, 
 }
 
 func (ec *executionContext) field_Mutation_deleteTeam_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteTrack_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 int
@@ -1814,6 +2278,28 @@ func (ec *executionContext) field_Mutation_updateSponsor_args(ctx context.Contex
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_updateTalk_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 *model.UpdateTalk
+	if tmp, ok := rawArgs["input"]; ok {
+		arg1, err = ec.unmarshalOUpdateTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTalk(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_updateTask_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1850,6 +2336,28 @@ func (ec *executionContext) field_Mutation_updateTeam_args(ctx context.Context, 
 	var arg1 model.UpdateTeam
 	if tmp, ok := rawArgs["input"]; ok {
 		arg1, err = ec.unmarshalNUpdateTeam2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTeam(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateTrack_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 *model.UpdateTrack
+	if tmp, ok := rawArgs["input"]; ok {
+		arg1, err = ec.unmarshalOUpdateTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTrack(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2024,6 +2532,34 @@ func (ec *executionContext) field_Query_sponsors_args(ctx context.Context, rawAr
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_talk_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_talks_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["Limit"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["Limit"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_task_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2075,6 +2611,34 @@ func (ec *executionContext) field_Query_team_args(ctx context.Context, rawArgs m
 }
 
 func (ec *executionContext) field_Query_teams_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["Limit"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["Limit"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_track_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_tracks_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *int
@@ -4016,6 +4580,252 @@ func (ec *executionContext) _Mutation_deleteTask(ctx context.Context, field grap
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_createTalk(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createTalk_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateTalk(rctx, args["input"].(*model.CreateTalk))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Talk)
+	fc.Result = res
+	return ec.marshalNTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalk(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateTalk(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateTalk_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateTalk(rctx, args["id"].(int), args["input"].(*model.UpdateTalk))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Talk)
+	fc.Result = res
+	return ec.marshalNTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalk(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteTalk(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteTalk_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteTalk(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createTrack(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createTrack_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateTrack(rctx, args["input"].(*model.CreateTalk))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Track)
+	fc.Result = res
+	return ec.marshalNTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateTrack(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateTrack_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateTrack(rctx, args["id"].(int), args["input"].(*model.UpdateTrack))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Track)
+	fc.Result = res
+	return ec.marshalNTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteTrack(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteTrack_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteTrack(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Preference_id(ctx context.Context, field graphql.CollectedField, obj *model.Preference) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -4781,6 +5591,170 @@ func (ec *executionContext) _Query_tasks(ctx context.Context, field graphql.Coll
 	return ec.marshalOTasks2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTasksᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_talk(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_talk_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Talk(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Talk)
+	fc.Result = res
+	return ec.marshalNTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalk(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_talks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_talks_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Talks(rctx, args["Limit"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Talk)
+	fc.Result = res
+	return ec.marshalNTalk2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalkᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_track(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_track_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Track(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Track)
+	fc.Result = res
+	return ec.marshalNTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_tracks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_tracks_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Tracks(rctx, args["Limit"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Track)
+	fc.Result = res
+	return ec.marshalNTrack2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrackᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -5107,6 +6081,365 @@ func (ec *executionContext) _Sponsor_isOrganization(ctx context.Context, field g
 	res := resTmp.(bool)
 	fc.Result = res
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_id(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_title(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_author(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Author, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_talkCoverUri(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TalkCoverURI, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_summary(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Summary, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_description(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_reviewers(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Reviewers, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_Archived(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Archived, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_tags(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Tags, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*string)
+	fc.Result = res
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Tasks_id(ctx context.Context, field graphql.CollectedField, obj *model.Tasks) (ret graphql.Marshaler) {
@@ -5582,6 +6915,371 @@ func (ec *executionContext) _Team_updatedAt(ctx context.Context, field graphql.C
 	}()
 	fc := &graphql.FieldContext{
 		Object:   "Team",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Track_id(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Track",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Track_name(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Track",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Track_trackImgUri(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Track",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TrackImgURI, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Track_duration(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Track",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Duration, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Track_talks(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Track",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Talks, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Talk)
+	fc.Result = res
+	return ec.marshalOTalk2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalk(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Track_totalTalks(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Track",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalTalks, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Track_createdBy(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Track",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedBy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Event)
+	fc.Result = res
+	return ec.marshalOEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Track_isCompleted(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Track",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsCompleted, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Track_Archived(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Track",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Archived, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Track_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Track",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Track_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Track",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -7172,6 +8870,66 @@ func (ec *executionContext) unmarshalInputCreateSponsor(ctx context.Context, obj
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreateTalk(ctx context.Context, obj interface{}) (model.CreateTalk, error) {
+	var it model.CreateTalk
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "title":
+			var err error
+			it.Title, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "author":
+			var err error
+			it.Author, err = ec.unmarshalOCreateUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "talkCoverUri":
+			var err error
+			it.TalkCoverURI, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "summary":
+			var err error
+			it.Summary, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+			it.Description, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "reviewers":
+			var err error
+			it.Reviewers, err = ec.unmarshalOCreateUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Archived":
+			var err error
+			it.Archived, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "tags":
+			var err error
+			it.Tags, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateTasks(ctx context.Context, obj interface{}) (model.CreateTasks, error) {
 	var it model.CreateTasks
 	var asMap = obj.(map[string]interface{})
@@ -7241,6 +8999,66 @@ func (ec *executionContext) unmarshalInputCreateTeam(ctx context.Context, obj in
 		case "createdBy":
 			var err error
 			it.CreatedBy, err = ec.unmarshalOCreateUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateTrack(ctx context.Context, obj interface{}) (model.CreateTrack, error) {
+	var it model.CreateTrack
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "trackImgUri":
+			var err error
+			it.TrackImgURI, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "duration":
+			var err error
+			it.Duration, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "talks":
+			var err error
+			it.Talks, err = ec.unmarshalOCreateTalk2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "totalTalks":
+			var err error
+			it.TotalTalks, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "createdBy":
+			var err error
+			it.CreatedBy, err = ec.unmarshalOCreateEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "isCompleted":
+			var err error
+			it.IsCompleted, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Archived":
+			var err error
+			it.Archived, err = ec.unmarshalNBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7526,6 +9344,60 @@ func (ec *executionContext) unmarshalInputUpdateSponsor(ctx context.Context, obj
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdateTalk(ctx context.Context, obj interface{}) (model.UpdateTalk, error) {
+	var it model.UpdateTalk
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "title":
+			var err error
+			it.Title, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "talkCoverUri":
+			var err error
+			it.TalkCoverURI, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "summary":
+			var err error
+			it.Summary, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+			it.Description, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "reviewers":
+			var err error
+			it.Reviewers, err = ec.unmarshalOCreateUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Archived":
+			var err error
+			it.Archived, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "tags":
+			var err error
+			it.Tags, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateTask(ctx context.Context, obj interface{}) (model.UpdateTask, error) {
 	var it model.UpdateTask
 	var asMap = obj.(map[string]interface{})
@@ -7589,6 +9461,60 @@ func (ec *executionContext) unmarshalInputUpdateTeam(ctx context.Context, obj in
 		case "createdBy":
 			var err error
 			it.CreatedBy, err = ec.unmarshalOCreateUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateTrack(ctx context.Context, obj interface{}) (model.UpdateTrack, error) {
+	var it model.UpdateTrack
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "trackImgUri":
+			var err error
+			it.TrackImgURI, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "duration":
+			var err error
+			it.Duration, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "talks":
+			var err error
+			it.Talks, err = ec.unmarshalOCreateTalk2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "totalTalks":
+			var err error
+			it.TotalTalks, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "isCompleted":
+			var err error
+			it.IsCompleted, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "Archived":
+			var err error
+			it.Archived, err = ec.unmarshalNBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7995,6 +9921,36 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "createTalk":
+			out.Values[i] = ec._Mutation_createTalk(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateTalk":
+			out.Values[i] = ec._Mutation_updateTalk(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteTalk":
+			out.Values[i] = ec._Mutation_deleteTalk(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createTrack":
+			out.Values[i] = ec._Mutation_createTrack(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateTrack":
+			out.Values[i] = ec._Mutation_updateTrack(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteTrack":
+			out.Values[i] = ec._Mutation_deleteTrack(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8263,6 +10219,62 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_tasks(ctx, field)
 				return res
 			})
+		case "talk":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_talk(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "talks":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_talks(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "track":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_track(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "tracks":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_tracks(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
@@ -8351,6 +10363,68 @@ func (ec *executionContext) _Sponsor(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._Sponsor_isOrganization(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var talkImplementors = []string{"Talk"}
+
+func (ec *executionContext) _Talk(ctx context.Context, sel ast.SelectionSet, obj *model.Talk) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, talkImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Talk")
+		case "id":
+			out.Values[i] = ec._Talk_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "title":
+			out.Values[i] = ec._Talk_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "author":
+			out.Values[i] = ec._Talk_author(ctx, field, obj)
+		case "talkCoverUri":
+			out.Values[i] = ec._Talk_talkCoverUri(ctx, field, obj)
+		case "summary":
+			out.Values[i] = ec._Talk_summary(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "description":
+			out.Values[i] = ec._Talk_description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "reviewers":
+			out.Values[i] = ec._Talk_reviewers(ctx, field, obj)
+		case "Archived":
+			out.Values[i] = ec._Talk_Archived(ctx, field, obj)
+		case "tags":
+			out.Values[i] = ec._Talk_tags(ctx, field, obj)
+		case "createdAt":
+			out.Values[i] = ec._Talk_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updatedAt":
+			out.Values[i] = ec._Talk_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -8456,6 +10530,74 @@ func (ec *executionContext) _Team(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "updatedAt":
 			out.Values[i] = ec._Team_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var trackImplementors = []string{"Track"}
+
+func (ec *executionContext) _Track(ctx context.Context, sel ast.SelectionSet, obj *model.Track) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, trackImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Track")
+		case "id":
+			out.Values[i] = ec._Track_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Track_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "trackImgUri":
+			out.Values[i] = ec._Track_trackImgUri(ctx, field, obj)
+		case "duration":
+			out.Values[i] = ec._Track_duration(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "talks":
+			out.Values[i] = ec._Track_talks(ctx, field, obj)
+		case "totalTalks":
+			out.Values[i] = ec._Track_totalTalks(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createdBy":
+			out.Values[i] = ec._Track_createdBy(ctx, field, obj)
+		case "isCompleted":
+			out.Values[i] = ec._Track_isCompleted(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "Archived":
+			out.Values[i] = ec._Track_Archived(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._Track_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updatedAt":
+			out.Values[i] = ec._Track_updatedAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -9100,6 +11242,57 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
+func (ec *executionContext) marshalNTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalk(ctx context.Context, sel ast.SelectionSet, v model.Talk) graphql.Marshaler {
+	return ec._Talk(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTalk2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalkᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Talk) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalk(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalk(ctx context.Context, sel ast.SelectionSet, v *model.Talk) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Talk(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNTasks2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTasks(ctx context.Context, sel ast.SelectionSet, v model.Tasks) graphql.Marshaler {
 	return ec._Tasks(ctx, sel, &v)
 }
@@ -9177,6 +11370,57 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNTrack2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx context.Context, sel ast.SelectionSet, v model.Track) graphql.Marshaler {
+	return ec._Track(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTrack2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrackᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Track) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx context.Context, sel ast.SelectionSet, v *model.Track) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Track(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNUpdateEvent2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateEvent(ctx context.Context, v interface{}) (model.UpdateEvent, error) {
@@ -9539,6 +11783,38 @@ func (ec *executionContext) unmarshalOCreateSponsor2ᚖgithubᚗcomᚋvickywane�
 	return &res, err
 }
 
+func (ec *executionContext) unmarshalOCreateTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx context.Context, v interface{}) (model.CreateTalk, error) {
+	return ec.unmarshalInputCreateTalk(ctx, v)
+}
+
+func (ec *executionContext) unmarshalOCreateTalk2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx context.Context, v interface{}) ([]*model.CreateTalk, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*model.CreateTalk, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalOCreateTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOCreateTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx context.Context, v interface{}) (*model.CreateTalk, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOCreateTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx, v)
+	return &res, err
+}
+
 func (ec *executionContext) unmarshalOCreateTasks2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTasks(ctx context.Context, v interface{}) (model.CreateTasks, error) {
 	return ec.unmarshalInputCreateTasks(ctx, v)
 }
@@ -9792,6 +12068,38 @@ func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
+func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v interface{}) ([]*string, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*string, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
 	if v == nil {
 		return nil, nil
@@ -9805,6 +12113,57 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return ec.marshalOString2string(ctx, sel, *v)
+}
+
+func (ec *executionContext) marshalOTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalk(ctx context.Context, sel ast.SelectionSet, v model.Talk) graphql.Marshaler {
+	return ec._Talk(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOTalk2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalk(ctx context.Context, sel ast.SelectionSet, v []*model.Talk) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalk(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalk(ctx context.Context, sel ast.SelectionSet, v *model.Talk) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Talk(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOTasks2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTasksᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Tasks) graphql.Marshaler {
@@ -9922,6 +12281,18 @@ func (ec *executionContext) unmarshalOUpdateSponsor2ᚖgithubᚗcomᚋvickywane�
 	return &res, err
 }
 
+func (ec *executionContext) unmarshalOUpdateTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTalk(ctx context.Context, v interface{}) (model.UpdateTalk, error) {
+	return ec.unmarshalInputUpdateTalk(ctx, v)
+}
+
+func (ec *executionContext) unmarshalOUpdateTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTalk(ctx context.Context, v interface{}) (*model.UpdateTalk, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOUpdateTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTalk(ctx, v)
+	return &res, err
+}
+
 func (ec *executionContext) unmarshalOUpdateTask2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTask(ctx context.Context, v interface{}) (model.UpdateTask, error) {
 	return ec.unmarshalInputUpdateTask(ctx, v)
 }
@@ -9931,6 +12302,18 @@ func (ec *executionContext) unmarshalOUpdateTask2ᚖgithubᚗcomᚋvickywaneᚋe
 		return nil, nil
 	}
 	res, err := ec.unmarshalOUpdateTask2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTask(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) unmarshalOUpdateTrack2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTrack(ctx context.Context, v interface{}) (model.UpdateTrack, error) {
+	return ec.unmarshalInputUpdateTrack(ctx, v)
+}
+
+func (ec *executionContext) unmarshalOUpdateTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTrack(ctx context.Context, v interface{}) (*model.UpdateTrack, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOUpdateTrack2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTrack(ctx, v)
 	return &res, err
 }
 

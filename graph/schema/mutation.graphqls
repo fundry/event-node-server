@@ -32,4 +32,12 @@ type Mutation {
     createTask(input: CreateTasks) : Tasks!
     updateTask(id: ID! , input: UpdateTask) : Tasks!
     deleteTask(id: ID!) : Boolean!
+
+    createTalk(input: CreateTalk) : Talk!
+    updateTalk(id: ID! , input: UpdateTalk) : Talk!
+    deleteTalk(id: ID!) : Boolean!
+
+    createTrack(input: CreateTalk) : Track!
+    updateTrack(id: ID! , input: UpdateTrack) : Track!
+    deleteTrack(id: ID!) : Boolean!
 }

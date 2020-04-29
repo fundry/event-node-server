@@ -19,4 +19,10 @@ type Query {
 
     task(id: Int) : Tasks!
     tasks(Limit: Int) : [Tasks!]
+
+    talk(id : Int!): Talk!
+    talks(Limit: Int) : [Talk!]!
+
+    track(id : Int!): Track!
+    tracks(Limit: Int) : [Track!]!
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/go-pg/pg/v9"
 	"math/rand"
+	"time"
 
 	"github.com/vickywane/event-server/graph/model"
 )
@@ -80,6 +81,33 @@ func SeedDatabase(db *pg.DB) {
 		Assignees:   	nil,
 	}
 
+	talk := model.Talk{
+		ID:           rand.Int(),
+		Title:        "Building Modern Distributed Systems",
+		TalkCoverURI:  nil,
+		Summary:      "Learn about Distributed systems and how they're built ",
+		Description:  "Come learn how building modern distributed systems can affect performance of a Software",
+		Reviewers:    nil,
+		Archived:     nil,
+		Tags:         nil,
+		CreatedAt:    time.Time{},
+		UpdatedAt:    time.Time{},
+	}
+
+	track := model.Track{
+		ID:          rand.Int(),
+		Name:        "Design Track",
+		TrackImgURI: nil,
+		Duration:    "10am - 11pm",
+		Talks:       nil,
+		TotalTalks:  2,
+		CreatedBy:   nil,
+		IsCompleted: false,
+		Archived:    false,
+		CreatedAt:   time.Time{},
+		UpdatedAt:   time.Time{},
+	}
+
 	db.Insert(&user)
 	db.Insert(&event)
 	db.Insert(&preference)
@@ -87,4 +115,6 @@ func SeedDatabase(db *pg.DB) {
 	db.Insert(&file)
 	db.Insert(&sponsor)
 	db.Insert(&task)
+	db.Insert(&talk)
+	db.Insert(&track)
 }

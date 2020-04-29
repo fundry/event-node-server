@@ -178,6 +178,22 @@ func (r *queryResolver) Tasks(ctx context.Context, limit *int) ([]*model.Tasks, 
 	return Tasks, nil
 }
 
+func (r *queryResolver) Talk(ctx context.Context, id int) (*model.Talk, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Talks(ctx context.Context, limit *int) ([]*model.Talk, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Track(ctx context.Context, id int) (*model.Track, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Tracks(ctx context.Context, limit *int) ([]*model.Track, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 

@@ -1,0 +1,34 @@
+type Talk {
+    id : Int!
+    title: String!
+    author: User
+    talkCoverUri: String
+    summary: String!
+    description: String!
+    reviewers: [User]
+    Archived: Boolean
+    tags: [String]
+    createdAt: Time!
+    updatedAt: Time!
+}
+
+input CreateTalk {
+    title: String!
+    author: CreateUser
+    talkCoverUri: String
+    summary: String!
+    description: String!
+    reviewers: [CreateUser]
+    Archived: Boolean
+    tags: [String]
+}
+
+input UpdateTalk {
+    title: String!
+    talkCoverUri: String
+    summary: String!
+    description: String!
+    reviewers: [CreateUser]
+    Archived: Boolean
+    tags: [String]
+}

@@ -1,0 +1,37 @@
+type Track {
+    id : Int!
+    name: String!
+    trackImgUri: String
+    duration: String!
+    talks: [Talk]
+    totalTalks: Int!
+    createdBy: Event
+    isCompleted: Boolean!
+    Archived: Boolean!
+    createdAt: Time!
+    updatedAt: Time!
+}
+
+input CreateTrack {
+    name: String!
+    trackImgUri: String
+    duration: String!
+    talks: [CreateTalk]
+    totalTalks: Int!
+    createdBy: CreateEvent
+    isCompleted: Boolean!
+    Archived: Boolean!
+}
+
+input UpdateTrack {
+    name: String!
+    trackImgUri: String
+    duration: String!
+    talks: [CreateTalk]
+    totalTalks: Int!
+    isCompleted: Boolean!
+    Archived: Boolean!
+}
+
+
+
