@@ -1,14 +1,10 @@
-type Response {
-    completed : Boolean!
-}
-
 type Mutation {
-    createEvent(input: CreateEvent!): Event!
+    createEvent(input: CreateEvent!, UserID: Int!): Event!
     updateEvent(id: ID, input: UpdateEvent!): Event!
-    deleteEvent(id: ID!) : Response!
+    deleteEvent(id: ID!) : Boolean!
 
     createUser(input: CreateUser!): User!
-    updateUser(id: ID, input: UpdateUser!): User!
+    updateUser(id: ID, input: UpdateUser! ): User!
     deleteUser(id: ID!) : Boolean!
 
     createPreference(input: CreatePreference!): Preference!
@@ -19,25 +15,25 @@ type Mutation {
     updateFile(id: ID, input: DeleteFile!): File!
     deleteFile(id: ID!) : Boolean!
 
-    createTeam(input: CreateTeam!): Team!
+    createTeam(input: CreateTeam!, EventID: Int! ): Team!
     updateTeam(id: ID, input: UpdateTeam!): Team!
     deleteTeam(id: ID!) : Boolean!
 
-    createSponsor(input: CreateSponsor): Sponsor!
-    updateSponsor(id: ID, input: UpdateSponsor):Sponsor!
+    createSponsor(input: CreateSponsor!): Sponsor!
+    updateSponsor(id: ID, input: UpdateSponsor!):Sponsor!
     deleteSponsor(id: ID!) : Boolean!
 
     loginUser(input: LoginUser!): AuthResponse!
 
-    createTask(input: CreateTasks) : Tasks!
-    updateTask(id: ID! , input: UpdateTask) : Tasks!
+    createTask(input: CreateTasks!) : Tasks!
+    updateTask(id: ID! , input: UpdateTask!) : Tasks!
     deleteTask(id: ID!) : Boolean!
 
-    createTalk(input: CreateTalk) : Talk!
-    updateTalk(id: ID! , input: UpdateTalk) : Talk!
+    createTalk(input: CreateTalk!, UserID: Int!) : Talk!
+    updateTalk(id: ID! , input: UpdateTalk!) : Talk!
     deleteTalk(id: ID!) : Boolean!
 
-    createTrack(input: CreateTalk) : Track!
-    updateTrack(id: ID! , input: UpdateTrack) : Track!
+    createTrack(input: CreateTrack!, EventID: Int!) : Track!
+    updateTrack(id: ID! , input: UpdateTrack!) : Track!
     deleteTrack(id: ID!) : Boolean!
 }

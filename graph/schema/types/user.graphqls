@@ -5,7 +5,9 @@ type User {
     email: String!
     password: String!
     bucketLink: String!
-    events: [Event]
+    talks: [Talk]
+    events: [Event!]
+    event_id: Int!
     createdAt: Time!
     updatedAt: Time!
 }

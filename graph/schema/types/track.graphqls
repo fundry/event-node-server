@@ -5,11 +5,12 @@ type Track {
     duration: String!
     talks: [Talk]
     totalTalks: Int!
-    createdBy: Event
+    createdBy: [Event] # testing purposes!! this should be single later
     isCompleted: Boolean!
     Archived: Boolean!
     createdAt: Time!
     updatedAt: Time!
+    event_id: Int! #my event FK
 }
 
 input CreateTrack {

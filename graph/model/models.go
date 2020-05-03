@@ -15,15 +15,16 @@ type CreateEvent struct {
 	Name        string        `json:"name"`
 	Summary     string        `json:"summary"`
 	Alias       string        `json:"alias"`
+	Date        int           `json:"Date"`
 	Description string        `json:"description"`
 	Website     string        `json:"website"`
 	Email       string        `json:"Email"`
 	EventType   string        `json:"eventType"`
 	IsArchived  *bool         `json:"isArchived"`
 	IsLocked    *bool         `json:"isLocked"`
+	CreatedBy   *CreateUser   `json:"CreatedBy"`
 	Attendees   []*CreateUser `json:"attendees"`
 	Venue       string        `json:"venue"`
-	Date        int           `json:"Date"`
 }
 
 type CreateFile struct {
@@ -51,29 +52,29 @@ type CreateSponsor struct {
 }
 
 type CreateTalk struct {
-	Title        string        `json:"title"`
-	Author       *CreateUser   `json:"author"`
-	TalkCoverURI *string       `json:"talkCoverUri"`
-	Summary      string        `json:"summary"`
-	Description  string        `json:"description"`
-	Reviewers    []*CreateUser `json:"reviewers"`
-	Archived     *bool         `json:"Archived"`
-	Tags         []*string     `json:"tags"`
+	Title        string    `json:"title"`
+	TalkCoverURI *string   `json:"talkCoverUri"`
+	Summary      string    `json:"summary"`
+	Description  string    `json:"description"`
+	Archived     bool      `json:"Archived"`
+	Duration     int       `json:"duration"`
+	Tags         []*string `json:"tags"`
 }
 
 type CreateTasks struct {
 	Name        string        `json:"name"`
 	Type        string        `json:"type"`
 	IsCompleted bool          `json:"isCompleted"`
+	Event       *CreateEvent  `json:"event"`
 	Assignees   []*CreateUser `json:"assignees"`
 	CreatedBy   *CreateUser   `json:"createdBy"`
+	TeamID      int           `json:"team_id"`
 }
 
 type CreateTeam struct {
-	Name      string        `json:"name"`
-	Members   []*CreateUser `json:"members"`
-	Goal      string        `json:"goal"`
-	CreatedBy *CreateUser   `json:"createdBy"`
+	Name    string        `json:"name"`
+	Members []*CreateUser `json:"members"`
+	Goal    string        `json:"goal"`
 }
 
 type CreateTrack struct {
@@ -95,6 +96,13 @@ type CreateUser struct {
 	Events   []*CreateEvent `json:"events"`
 }
 
+type CreateVolunteer struct {
+	User          *CreateUser `json:"user"`
+	Role          string      `json:"role"`
+	Availiability *string     `json:"availiability"`
+	Team          *CreateTeam `json:"team"`
+}
+
 type DeleteFile struct {
 	ID  int     `json:"id"`
 	URI *string `json:"uri"`
@@ -114,8 +122,11 @@ type Event struct {
 	Date        int       `json:"Date"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
-	CreatedBy   *User     `json:"createdBy"`
+	AuthorID    int       `json:"author_id"`
+	CreatedBy   []*User   `json:"createdBy"`
 	Attendees   []*User   `json:"attendees"`
+	Tracks      []*Track  `json:"tracks"`
+	TrackID     *int      `json:"track_id"`
 	Teams       []*Team   `json:"teams"`
 	IsArchived  bool      `json:"isArchived"`
 	IsLocked    bool      `json:"isLocked"`
@@ -145,10 +156,6 @@ type Preference struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-type Response struct {
-	Completed bool `json:"completed"`
-}
-
 type Sponsor struct {
 	ID             int    `json:"id"`
 	Name           string `json:"name"`
@@ -161,15 +168,20 @@ type Sponsor struct {
 type Talk struct {
 	ID           int       `json:"id"`
 	Title        string    `json:"title"`
-	Author       *User     `json:"author"`
 	TalkCoverURI *string   `json:"talkCoverUri"`
+	Duration     int       `json:"duration"`
 	Summary      string    `json:"summary"`
 	Description  string    `json:"description"`
-	Reviewers    []*User   `json:"reviewers"`
-	Archived     *bool     `json:"Archived"`
+	Archived     bool      `json:"Archived"`
 	Tags         []*string `json:"tags"`
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
+	EventID      *int      `json:"event_id"`
+	ReviewersID  int       `json:"reviewers_id"`
+	SpeakerID    int       `json:"speaker_id"`
+	Event        []*Event  `json:"event"`
+	Speaker      []*User   `json:"speaker"`
+	Reviewers    []*User   `json:"reviewers"`
 }
 
 type Tasks struct {
@@ -179,8 +191,10 @@ type Tasks struct {
 	IsCompleted bool      `json:"isCompleted"`
 	Assignees   []*User   `json:"assignees"`
 	CreatedBy   *User     `json:"createdBy"`
+	Event       *Event    `json:"event"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
+	TeamID      int       `json:"team_id"`
 }
 
 type Team struct {
@@ -188,9 +202,11 @@ type Team struct {
 	Name      string    `json:"name"`
 	Members   []*User   `json:"members"`
 	Goal      string    `json:"goal"`
-	CreatedBy *User     `json:"createdBy"`
+	CreatedBy []*Event  `json:"createdBy"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
+	EventID   int       `json:"event_id"`
+	Event     []*Event  `json:"event"`
 }
 
 type Track struct {
@@ -200,28 +216,30 @@ type Track struct {
 	Duration    string    `json:"duration"`
 	Talks       []*Talk   `json:"talks"`
 	TotalTalks  int       `json:"totalTalks"`
-	CreatedBy   *Event    `json:"createdBy"`
+	CreatedBy   []*Event  `json:"createdBy"`
 	IsCompleted bool      `json:"isCompleted"`
 	Archived    bool      `json:"Archived"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
+	EventID     int       `json:"event_id"`
 }
 
 type UpdateEvent struct {
-	Name        string        `json:"name"`
-	Type        string        `json:"type"`
-	Summary     string        `json:"summary"`
-	Alias       string        `json:"alias"`
-	BucketLink  string        `json:"bucketLink"`
-	Description string        `json:"description"`
-	EventType   string        `json:"eventType"`
+	Name        *string       `json:"name"`
+	Type        *string       `json:"type"`
+	Summary     *string       `json:"summary"`
+	Alias       *string       `json:"alias"`
+	BucketLink  *string       `json:"bucketLink"`
+	Description *string       `json:"description"`
+	EventType   *string       `json:"eventType"`
 	IsArchived  *bool         `json:"isArchived"`
 	IsLocked    *bool         `json:"isLocked"`
-	Email       string        `json:"Email"`
-	Website     string        `json:"website"`
-	UpdatedAt   time.Time     `json:"updatedAt"`
+	Email       *string       `json:"Email"`
+	Website     *string       `json:"website"`
+	TrackID     *int          `json:"track_id"`
+	UpdatedAt   *time.Time    `json:"updatedAt"`
 	Attendees   []*CreateUser `json:"attendees"`
-	Venue       string        `json:"venue"`
+	Venue       *string       `json:"venue"`
 	Date        int           `json:"Date"`
 	Team        *CreateTeam   `json:"team"`
 }
@@ -247,7 +265,8 @@ type UpdateTalk struct {
 	Summary      string        `json:"summary"`
 	Description  string        `json:"description"`
 	Reviewers    []*CreateUser `json:"reviewers"`
-	Archived     *bool         `json:"Archived"`
+	Archived     bool          `json:"Archived"`
+	Duration     int           `json:"duration"`
 	Tags         []*string     `json:"tags"`
 }
 
@@ -259,10 +278,9 @@ type UpdateTask struct {
 }
 
 type UpdateTeam struct {
-	Name      string        `json:"name"`
-	Members   []*CreateUser `json:"members"`
-	Goal      string        `json:"goal"`
-	CreatedBy *CreateUser   `json:"createdBy"`
+	Name    string        `json:"name"`
+	Members []*CreateUser `json:"members"`
+	Goal    string        `json:"goal"`
 }
 
 type UpdateTrack struct {
@@ -284,6 +302,10 @@ type UpdateUser struct {
 	UpdatedAt *time.Time     `json:"updatedAt"`
 }
 
+type UpdateVolunteer struct {
+	Role *string `json:"role"`
+}
+
 type User struct {
 	ID         int       `json:"id"`
 	Name       string    `json:"name"`
@@ -291,7 +313,17 @@ type User struct {
 	Email      string    `json:"email"`
 	Password   string    `json:"password"`
 	BucketLink string    `json:"bucketLink"`
+	Talks      []*Talk   `json:"talks"`
 	Events     []*Event  `json:"events"`
+	EventID    int       `json:"event_id"`
 	CreatedAt  time.Time `json:"createdAt"`
 	UpdatedAt  time.Time `json:"updatedAt"`
+}
+
+type Volunteer struct {
+	ID            int    `json:"id"`
+	User          *User  `json:"user"`
+	Role          string `json:"role"`
+	Availiability string `json:"availiability"`
+	Team          *Team  `json:"team"`
 }

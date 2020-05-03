@@ -41,6 +41,9 @@ type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Sponsor() SponsorResolver
+	Talk() TalkResolver
+	Team() TeamResolver
+	Track() TrackResolver
 	User() UserResolver
 }
 
@@ -57,6 +60,7 @@ type ComplexityRoot struct {
 	Event struct {
 		Alias       func(childComplexity int) int
 		Attendees   func(childComplexity int) int
+		AuthorID    func(childComplexity int) int
 		BucketLink  func(childComplexity int) int
 		CreatedAt   func(childComplexity int) int
 		CreatedBy   func(childComplexity int) int
@@ -70,6 +74,8 @@ type ComplexityRoot struct {
 		Name        func(childComplexity int) int
 		Summary     func(childComplexity int) int
 		Teams       func(childComplexity int) int
+		TrackID     func(childComplexity int) int
+		Tracks      func(childComplexity int) int
 		UpdatedAt   func(childComplexity int) int
 		Venue       func(childComplexity int) int
 		Website     func(childComplexity int) int
@@ -86,14 +92,14 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateEvent      func(childComplexity int, input model.CreateEvent) int
+		CreateEvent      func(childComplexity int, input model.CreateEvent, userID int) int
 		CreateFile       func(childComplexity int, input model.CreateFile) int
 		CreatePreference func(childComplexity int, input model.CreatePreference) int
-		CreateSponsor    func(childComplexity int, input *model.CreateSponsor) int
-		CreateTalk       func(childComplexity int, input *model.CreateTalk) int
-		CreateTask       func(childComplexity int, input *model.CreateTasks) int
-		CreateTeam       func(childComplexity int, input model.CreateTeam) int
-		CreateTrack      func(childComplexity int, input *model.CreateTalk) int
+		CreateSponsor    func(childComplexity int, input model.CreateSponsor) int
+		CreateTalk       func(childComplexity int, input model.CreateTalk, userID int) int
+		CreateTask       func(childComplexity int, input model.CreateTasks) int
+		CreateTeam       func(childComplexity int, input model.CreateTeam, eventID int) int
+		CreateTrack      func(childComplexity int, input model.CreateTrack, eventID int) int
 		CreateUser       func(childComplexity int, input model.CreateUser) int
 		DeleteEvent      func(childComplexity int, id int) int
 		DeleteFile       func(childComplexity int, id int) int
@@ -108,11 +114,11 @@ type ComplexityRoot struct {
 		UpdateEvent      func(childComplexity int, id *int, input model.UpdateEvent) int
 		UpdateFile       func(childComplexity int, id *int, input model.DeleteFile) int
 		UpdatePreference func(childComplexity int, id *int, input model.UpdatePreference) int
-		UpdateSponsor    func(childComplexity int, id *int, input *model.UpdateSponsor) int
-		UpdateTalk       func(childComplexity int, id int, input *model.UpdateTalk) int
-		UpdateTask       func(childComplexity int, id int, input *model.UpdateTask) int
+		UpdateSponsor    func(childComplexity int, id *int, input model.UpdateSponsor) int
+		UpdateTalk       func(childComplexity int, id int, input model.UpdateTalk) int
+		UpdateTask       func(childComplexity int, id int, input model.UpdateTask) int
 		UpdateTeam       func(childComplexity int, id *int, input model.UpdateTeam) int
-		UpdateTrack      func(childComplexity int, id int, input *model.UpdateTrack) int
+		UpdateTrack      func(childComplexity int, id int, input model.UpdateTrack) int
 		UpdateUser       func(childComplexity int, id *int, input model.UpdateUser) int
 	}
 
@@ -146,10 +152,6 @@ type ComplexityRoot struct {
 		Users       func(childComplexity int, limit *int) int
 	}
 
-	Response struct {
-		Completed func(childComplexity int) int
-	}
-
 	Sponsor struct {
 		Amount         func(childComplexity int) int
 		Event          func(childComplexity int) int
@@ -161,11 +163,16 @@ type ComplexityRoot struct {
 
 	Talk struct {
 		Archived     func(childComplexity int) int
-		Author       func(childComplexity int) int
 		CreatedAt    func(childComplexity int) int
 		Description  func(childComplexity int) int
+		Duration     func(childComplexity int) int
+		Event        func(childComplexity int) int
+		EventID      func(childComplexity int) int
 		ID           func(childComplexity int) int
 		Reviewers    func(childComplexity int) int
+		ReviewersID  func(childComplexity int) int
+		Speaker      func(childComplexity int) int
+		SpeakerID    func(childComplexity int) int
 		Summary      func(childComplexity int) int
 		Tags         func(childComplexity int) int
 		TalkCoverURI func(childComplexity int) int
@@ -177,9 +184,11 @@ type ComplexityRoot struct {
 		Assignees   func(childComplexity int) int
 		CreatedAt   func(childComplexity int) int
 		CreatedBy   func(childComplexity int) int
+		Event       func(childComplexity int) int
 		ID          func(childComplexity int) int
 		IsCompleted func(childComplexity int) int
 		Name        func(childComplexity int) int
+		TeamID      func(childComplexity int) int
 		Type        func(childComplexity int) int
 		UpdatedAt   func(childComplexity int) int
 	}
@@ -187,6 +196,8 @@ type ComplexityRoot struct {
 	Team struct {
 		CreatedAt func(childComplexity int) int
 		CreatedBy func(childComplexity int) int
+		Event     func(childComplexity int) int
+		EventID   func(childComplexity int) int
 		Goal      func(childComplexity int) int
 		ID        func(childComplexity int) int
 		Members   func(childComplexity int) int
@@ -199,6 +210,7 @@ type ComplexityRoot struct {
 		CreatedAt   func(childComplexity int) int
 		CreatedBy   func(childComplexity int) int
 		Duration    func(childComplexity int) int
+		EventID     func(childComplexity int) int
 		ID          func(childComplexity int) int
 		IsCompleted func(childComplexity int) int
 		Name        func(childComplexity int) int
@@ -212,24 +224,36 @@ type ComplexityRoot struct {
 		BucketLink func(childComplexity int) int
 		CreatedAt  func(childComplexity int) int
 		Email      func(childComplexity int) int
+		EventID    func(childComplexity int) int
 		Events     func(childComplexity int) int
 		ID         func(childComplexity int) int
 		Name       func(childComplexity int) int
 		Password   func(childComplexity int) int
 		Role       func(childComplexity int) int
+		Talks      func(childComplexity int) int
 		UpdatedAt  func(childComplexity int) int
+	}
+
+	Volunteer struct {
+		Availiability func(childComplexity int) int
+		ID            func(childComplexity int) int
+		Role          func(childComplexity int) int
+		Team          func(childComplexity int) int
+		User          func(childComplexity int) int
 	}
 }
 
 type EventResolver interface {
-	CreatedBy(ctx context.Context, obj *model.Event) (*model.User, error)
+	CreatedBy(ctx context.Context, obj *model.Event) ([]*model.User, error)
 	Attendees(ctx context.Context, obj *model.Event) ([]*model.User, error)
+	Tracks(ctx context.Context, obj *model.Event) ([]*model.Track, error)
+
 	Teams(ctx context.Context, obj *model.Event) ([]*model.Team, error)
 }
 type MutationResolver interface {
-	CreateEvent(ctx context.Context, input model.CreateEvent) (*model.Event, error)
+	CreateEvent(ctx context.Context, input model.CreateEvent, userID int) (*model.Event, error)
 	UpdateEvent(ctx context.Context, id *int, input model.UpdateEvent) (*model.Event, error)
-	DeleteEvent(ctx context.Context, id int) (*model.Response, error)
+	DeleteEvent(ctx context.Context, id int) (bool, error)
 	CreateUser(ctx context.Context, input model.CreateUser) (*model.User, error)
 	UpdateUser(ctx context.Context, id *int, input model.UpdateUser) (*model.User, error)
 	DeleteUser(ctx context.Context, id int) (bool, error)
@@ -239,21 +263,21 @@ type MutationResolver interface {
 	CreateFile(ctx context.Context, input model.CreateFile) (*model.File, error)
 	UpdateFile(ctx context.Context, id *int, input model.DeleteFile) (*model.File, error)
 	DeleteFile(ctx context.Context, id int) (bool, error)
-	CreateTeam(ctx context.Context, input model.CreateTeam) (*model.Team, error)
+	CreateTeam(ctx context.Context, input model.CreateTeam, eventID int) (*model.Team, error)
 	UpdateTeam(ctx context.Context, id *int, input model.UpdateTeam) (*model.Team, error)
 	DeleteTeam(ctx context.Context, id int) (bool, error)
-	CreateSponsor(ctx context.Context, input *model.CreateSponsor) (*model.Sponsor, error)
-	UpdateSponsor(ctx context.Context, id *int, input *model.UpdateSponsor) (*model.Sponsor, error)
+	CreateSponsor(ctx context.Context, input model.CreateSponsor) (*model.Sponsor, error)
+	UpdateSponsor(ctx context.Context, id *int, input model.UpdateSponsor) (*model.Sponsor, error)
 	DeleteSponsor(ctx context.Context, id int) (bool, error)
 	LoginUser(ctx context.Context, input model.LoginUser) (*model.AuthResponse, error)
-	CreateTask(ctx context.Context, input *model.CreateTasks) (*model.Tasks, error)
-	UpdateTask(ctx context.Context, id int, input *model.UpdateTask) (*model.Tasks, error)
+	CreateTask(ctx context.Context, input model.CreateTasks) (*model.Tasks, error)
+	UpdateTask(ctx context.Context, id int, input model.UpdateTask) (*model.Tasks, error)
 	DeleteTask(ctx context.Context, id int) (bool, error)
-	CreateTalk(ctx context.Context, input *model.CreateTalk) (*model.Talk, error)
-	UpdateTalk(ctx context.Context, id int, input *model.UpdateTalk) (*model.Talk, error)
+	CreateTalk(ctx context.Context, input model.CreateTalk, userID int) (*model.Talk, error)
+	UpdateTalk(ctx context.Context, id int, input model.UpdateTalk) (*model.Talk, error)
 	DeleteTalk(ctx context.Context, id int) (bool, error)
-	CreateTrack(ctx context.Context, input *model.CreateTalk) (*model.Track, error)
-	UpdateTrack(ctx context.Context, id int, input *model.UpdateTrack) (*model.Track, error)
+	CreateTrack(ctx context.Context, input model.CreateTrack, eventID int) (*model.Track, error)
+	UpdateTrack(ctx context.Context, id int, input model.UpdateTrack) (*model.Track, error)
 	DeleteTrack(ctx context.Context, id int) (bool, error)
 }
 type QueryResolver interface {
@@ -279,7 +303,22 @@ type QueryResolver interface {
 type SponsorResolver interface {
 	Event(ctx context.Context, obj *model.Sponsor) (*model.Event, error)
 }
+type TalkResolver interface {
+	Speaker(ctx context.Context, obj *model.Talk) ([]*model.User, error)
+	Reviewers(ctx context.Context, obj *model.Talk) ([]*model.User, error)
+}
+type TeamResolver interface {
+	Members(ctx context.Context, obj *model.Team) ([]*model.User, error)
+
+	CreatedBy(ctx context.Context, obj *model.Team) ([]*model.Event, error)
+}
+type TrackResolver interface {
+	Talks(ctx context.Context, obj *model.Track) ([]*model.Talk, error)
+
+	CreatedBy(ctx context.Context, obj *model.Track) ([]*model.Event, error)
+}
 type UserResolver interface {
+	Talks(ctx context.Context, obj *model.User) ([]*model.Talk, error)
 	Events(ctx context.Context, obj *model.User) ([]*model.Event, error)
 }
 
@@ -325,6 +364,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Event.Attendees(childComplexity), true
+
+	case "Event.author_id":
+		if e.complexity.Event.AuthorID == nil {
+			break
+		}
+
+		return e.complexity.Event.AuthorID(childComplexity), true
 
 	case "Event.bucketLink":
 		if e.complexity.Event.BucketLink == nil {
@@ -417,6 +463,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Event.Teams(childComplexity), true
 
+	case "Event.track_id":
+		if e.complexity.Event.TrackID == nil {
+			break
+		}
+
+		return e.complexity.Event.TrackID(childComplexity), true
+
+	case "Event.tracks":
+		if e.complexity.Event.Tracks == nil {
+			break
+		}
+
+		return e.complexity.Event.Tracks(childComplexity), true
+
 	case "Event.updatedAt":
 		if e.complexity.Event.UpdatedAt == nil {
 			break
@@ -497,7 +557,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateEvent(childComplexity, args["input"].(model.CreateEvent)), true
+		return e.complexity.Mutation.CreateEvent(childComplexity, args["input"].(model.CreateEvent), args["UserID"].(int)), true
 
 	case "Mutation.createFile":
 		if e.complexity.Mutation.CreateFile == nil {
@@ -533,7 +593,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateSponsor(childComplexity, args["input"].(*model.CreateSponsor)), true
+		return e.complexity.Mutation.CreateSponsor(childComplexity, args["input"].(model.CreateSponsor)), true
 
 	case "Mutation.createTalk":
 		if e.complexity.Mutation.CreateTalk == nil {
@@ -545,7 +605,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateTalk(childComplexity, args["input"].(*model.CreateTalk)), true
+		return e.complexity.Mutation.CreateTalk(childComplexity, args["input"].(model.CreateTalk), args["UserID"].(int)), true
 
 	case "Mutation.createTask":
 		if e.complexity.Mutation.CreateTask == nil {
@@ -557,7 +617,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateTask(childComplexity, args["input"].(*model.CreateTasks)), true
+		return e.complexity.Mutation.CreateTask(childComplexity, args["input"].(model.CreateTasks)), true
 
 	case "Mutation.createTeam":
 		if e.complexity.Mutation.CreateTeam == nil {
@@ -569,7 +629,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateTeam(childComplexity, args["input"].(model.CreateTeam)), true
+		return e.complexity.Mutation.CreateTeam(childComplexity, args["input"].(model.CreateTeam), args["EventID"].(int)), true
 
 	case "Mutation.createTrack":
 		if e.complexity.Mutation.CreateTrack == nil {
@@ -581,7 +641,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateTrack(childComplexity, args["input"].(*model.CreateTalk)), true
+		return e.complexity.Mutation.CreateTrack(childComplexity, args["input"].(model.CreateTrack), args["EventID"].(int)), true
 
 	case "Mutation.createUser":
 		if e.complexity.Mutation.CreateUser == nil {
@@ -761,7 +821,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateSponsor(childComplexity, args["id"].(*int), args["input"].(*model.UpdateSponsor)), true
+		return e.complexity.Mutation.UpdateSponsor(childComplexity, args["id"].(*int), args["input"].(model.UpdateSponsor)), true
 
 	case "Mutation.updateTalk":
 		if e.complexity.Mutation.UpdateTalk == nil {
@@ -773,7 +833,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateTalk(childComplexity, args["id"].(int), args["input"].(*model.UpdateTalk)), true
+		return e.complexity.Mutation.UpdateTalk(childComplexity, args["id"].(int), args["input"].(model.UpdateTalk)), true
 
 	case "Mutation.updateTask":
 		if e.complexity.Mutation.UpdateTask == nil {
@@ -785,7 +845,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateTask(childComplexity, args["id"].(int), args["input"].(*model.UpdateTask)), true
+		return e.complexity.Mutation.UpdateTask(childComplexity, args["id"].(int), args["input"].(model.UpdateTask)), true
 
 	case "Mutation.updateTeam":
 		if e.complexity.Mutation.UpdateTeam == nil {
@@ -809,7 +869,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateTrack(childComplexity, args["id"].(int), args["input"].(*model.UpdateTrack)), true
+		return e.complexity.Mutation.UpdateTrack(childComplexity, args["id"].(int), args["input"].(model.UpdateTrack)), true
 
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -1076,13 +1136,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Users(childComplexity, args["Limit"].(*int)), true
 
-	case "Response.completed":
-		if e.complexity.Response.Completed == nil {
-			break
-		}
-
-		return e.complexity.Response.Completed(childComplexity), true
-
 	case "Sponsor.amount":
 		if e.complexity.Sponsor.Amount == nil {
 			break
@@ -1132,13 +1185,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Talk.Archived(childComplexity), true
 
-	case "Talk.author":
-		if e.complexity.Talk.Author == nil {
-			break
-		}
-
-		return e.complexity.Talk.Author(childComplexity), true
-
 	case "Talk.createdAt":
 		if e.complexity.Talk.CreatedAt == nil {
 			break
@@ -1153,6 +1199,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Talk.Description(childComplexity), true
 
+	case "Talk.duration":
+		if e.complexity.Talk.Duration == nil {
+			break
+		}
+
+		return e.complexity.Talk.Duration(childComplexity), true
+
+	case "Talk.event":
+		if e.complexity.Talk.Event == nil {
+			break
+		}
+
+		return e.complexity.Talk.Event(childComplexity), true
+
+	case "Talk.event_id":
+		if e.complexity.Talk.EventID == nil {
+			break
+		}
+
+		return e.complexity.Talk.EventID(childComplexity), true
+
 	case "Talk.id":
 		if e.complexity.Talk.ID == nil {
 			break
@@ -1166,6 +1233,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Talk.Reviewers(childComplexity), true
+
+	case "Talk.reviewers_id":
+		if e.complexity.Talk.ReviewersID == nil {
+			break
+		}
+
+		return e.complexity.Talk.ReviewersID(childComplexity), true
+
+	case "Talk.speaker":
+		if e.complexity.Talk.Speaker == nil {
+			break
+		}
+
+		return e.complexity.Talk.Speaker(childComplexity), true
+
+	case "Talk.speaker_id":
+		if e.complexity.Talk.SpeakerID == nil {
+			break
+		}
+
+		return e.complexity.Talk.SpeakerID(childComplexity), true
 
 	case "Talk.summary":
 		if e.complexity.Talk.Summary == nil {
@@ -1223,6 +1311,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tasks.CreatedBy(childComplexity), true
 
+	case "Tasks.event":
+		if e.complexity.Tasks.Event == nil {
+			break
+		}
+
+		return e.complexity.Tasks.Event(childComplexity), true
+
 	case "Tasks.id":
 		if e.complexity.Tasks.ID == nil {
 			break
@@ -1243,6 +1338,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Tasks.Name(childComplexity), true
+
+	case "Tasks.team_id":
+		if e.complexity.Tasks.TeamID == nil {
+			break
+		}
+
+		return e.complexity.Tasks.TeamID(childComplexity), true
 
 	case "Tasks.type":
 		if e.complexity.Tasks.Type == nil {
@@ -1271,6 +1373,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Team.CreatedBy(childComplexity), true
+
+	case "Team.event":
+		if e.complexity.Team.Event == nil {
+			break
+		}
+
+		return e.complexity.Team.Event(childComplexity), true
+
+	case "Team.event_id":
+		if e.complexity.Team.EventID == nil {
+			break
+		}
+
+		return e.complexity.Team.EventID(childComplexity), true
 
 	case "Team.goal":
 		if e.complexity.Team.Goal == nil {
@@ -1334,6 +1450,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Track.Duration(childComplexity), true
+
+	case "Track.event_id":
+		if e.complexity.Track.EventID == nil {
+			break
+		}
+
+		return e.complexity.Track.EventID(childComplexity), true
 
 	case "Track.id":
 		if e.complexity.Track.ID == nil {
@@ -1405,6 +1528,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.Email(childComplexity), true
 
+	case "User.event_id":
+		if e.complexity.User.EventID == nil {
+			break
+		}
+
+		return e.complexity.User.EventID(childComplexity), true
+
 	case "User.events":
 		if e.complexity.User.Events == nil {
 			break
@@ -1440,12 +1570,54 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.Role(childComplexity), true
 
+	case "User.talks":
+		if e.complexity.User.Talks == nil {
+			break
+		}
+
+		return e.complexity.User.Talks(childComplexity), true
+
 	case "User.updatedAt":
 		if e.complexity.User.UpdatedAt == nil {
 			break
 		}
 
 		return e.complexity.User.UpdatedAt(childComplexity), true
+
+	case "Volunteer.availiability":
+		if e.complexity.Volunteer.Availiability == nil {
+			break
+		}
+
+		return e.complexity.Volunteer.Availiability(childComplexity), true
+
+	case "Volunteer.id":
+		if e.complexity.Volunteer.ID == nil {
+			break
+		}
+
+		return e.complexity.Volunteer.ID(childComplexity), true
+
+	case "Volunteer.role":
+		if e.complexity.Volunteer.Role == nil {
+			break
+		}
+
+		return e.complexity.Volunteer.Role(childComplexity), true
+
+	case "Volunteer.team":
+		if e.complexity.Volunteer.Team == nil {
+			break
+		}
+
+		return e.complexity.Volunteer.Team(childComplexity), true
+
+	case "Volunteer.user":
+		if e.complexity.Volunteer.User == nil {
+			break
+		}
+
+		return e.complexity.Volunteer.User(childComplexity), true
 
 	}
 	return 0, false
@@ -1535,17 +1707,13 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
 #    | ENUM
 #    | INTERFACE
 #    | UNION`, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/mutation.graphqls", Input: `type Response {
-    completed : Boolean!
-}
-
-type Mutation {
-    createEvent(input: CreateEvent!): Event!
+	&ast.Source{Name: "graph/schema/mutation.graphqls", Input: `type Mutation {
+    createEvent(input: CreateEvent!, UserID: Int!): Event!
     updateEvent(id: ID, input: UpdateEvent!): Event!
-    deleteEvent(id: ID!) : Response!
+    deleteEvent(id: ID!) : Boolean!
 
     createUser(input: CreateUser!): User!
-    updateUser(id: ID, input: UpdateUser!): User!
+    updateUser(id: ID, input: UpdateUser! ): User!
     deleteUser(id: ID!) : Boolean!
 
     createPreference(input: CreatePreference!): Preference!
@@ -1556,26 +1724,26 @@ type Mutation {
     updateFile(id: ID, input: DeleteFile!): File!
     deleteFile(id: ID!) : Boolean!
 
-    createTeam(input: CreateTeam!): Team!
+    createTeam(input: CreateTeam!, EventID: Int! ): Team!
     updateTeam(id: ID, input: UpdateTeam!): Team!
     deleteTeam(id: ID!) : Boolean!
 
-    createSponsor(input: CreateSponsor): Sponsor!
-    updateSponsor(id: ID, input: UpdateSponsor):Sponsor!
+    createSponsor(input: CreateSponsor!): Sponsor!
+    updateSponsor(id: ID, input: UpdateSponsor!):Sponsor!
     deleteSponsor(id: ID!) : Boolean!
 
     loginUser(input: LoginUser!): AuthResponse!
 
-    createTask(input: CreateTasks) : Tasks!
-    updateTask(id: ID! , input: UpdateTask) : Tasks!
+    createTask(input: CreateTasks!) : Tasks!
+    updateTask(id: ID! , input: UpdateTask!) : Tasks!
     deleteTask(id: ID!) : Boolean!
 
-    createTalk(input: CreateTalk) : Talk!
-    updateTalk(id: ID! , input: UpdateTalk) : Talk!
+    createTalk(input: CreateTalk!, UserID: Int!) : Talk!
+    updateTalk(id: ID! , input: UpdateTalk!) : Talk!
     deleteTalk(id: ID!) : Boolean!
 
-    createTrack(input: CreateTalk) : Track!
-    updateTrack(id: ID! , input: UpdateTrack) : Track!
+    createTrack(input: CreateTrack!, EventID: Int!) : Track!
+    updateTrack(id: ID! , input: UpdateTrack!) : Track!
     deleteTrack(id: ID!) : Boolean!
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/query.graphqls", Input: `type Query {
@@ -1645,8 +1813,11 @@ input LoginUser {
     Date: Int!
     createdAt: Time!
     updatedAt: Time!
-    createdBy : User
+    author_id : Int!
+    createdBy: [User]  # just for testing . This shouldnt be an array
     attendees: [User]
+    tracks: [Track]
+    track_id: Int
     teams: [Team!]
     isArchived: Boolean! @default(value: false)
     isLocked: Boolean!  @default(value: false)
@@ -1656,32 +1827,34 @@ input CreateEvent {
     name: String!
     summary: String!
     alias: String!
+    Date: Int!
     description: String!
     website: String!
     Email: String!
     eventType: String!
     isArchived: Boolean
     isLocked: Boolean
+    CreatedBy: CreateUser
     attendees: [CreateUser]
     venue: String!
-    Date: Int!
 }
 
 input UpdateEvent {
-    name: String!
-    type: String!
-    summary: String!
-    alias: String!
-    bucketLink : String!
-    description: String!
-    eventType: String!
+    name: String
+    type: String
+    summary: String
+    alias: String
+    bucketLink : String
+    description: String
+    eventType: String
     isArchived: Boolean
     isLocked: Boolean
-    Email: String!
-    website: String!
-    updatedAt: Time!
-    attendees: [CreateUser]!
-    venue: String!
+    Email: String
+    website: String
+    track_id: Int
+    updatedAt: Time
+    attendees: [CreateUser]
+    venue: String
     Date: Int!
     team: CreateTeam
 }`, BuiltIn: false},
@@ -1758,25 +1931,29 @@ input UpdateSponsor {
 	&ast.Source{Name: "graph/schema/types/talk.graphqls", Input: `type Talk {
     id : Int!
     title: String!
-    author: User
     talkCoverUri: String
+    duration : Int!
     summary: String!
     description: String!
-    reviewers: [User]
-    Archived: Boolean
+    Archived: Boolean!
     tags: [String]
     createdAt: Time!
     updatedAt: Time!
+    event_id : Int
+    reviewers_id: Int!
+    speaker_id: Int!
+    event: [Event]
+    speaker: [User]
+    reviewers: [User]
 }
 
 input CreateTalk {
     title: String!
-    author: CreateUser
     talkCoverUri: String
     summary: String!
     description: String!
-    reviewers: [CreateUser]
-    Archived: Boolean
+    Archived: Boolean!
+    duration : Int!
     tags: [String]
 }
 
@@ -1785,8 +1962,10 @@ input UpdateTalk {
     talkCoverUri: String
     summary: String!
     description: String!
+    # Reviewers would insert their id when accepting a talk
     reviewers: [CreateUser]
-    Archived: Boolean
+    Archived: Boolean!
+    duration : Int!
     tags: [String]
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/types/tasks.graphqls", Input: `type Tasks {
@@ -1796,16 +1975,20 @@ input UpdateTalk {
     isCompleted: Boolean!
     assignees: [User!]
     createdBy: User
+    event: Event
     createdAt: Time!
     updatedAt: Time!
+    team_id : Int! #team FK
 }
 
 input CreateTasks {
     name : String!
     type: String!
     isCompleted: Boolean!
+    event: CreateEvent
     assignees: [CreateUser!]
     createdBy: CreateUser
+    team_id : Int!
 }
 
 input UpdateTask {
@@ -1819,23 +2002,23 @@ input UpdateTask {
     name : String!
     members: [User!]
     goal: String!
-    createdBy: User
+    createdBy: [Event]
     createdAt: Time!
     updatedAt: Time!
+    event_id : Int! #event FK
+    event: [Event]
 }
 
 input CreateTeam {
     name : String!
     members: [CreateUser]
     goal: String!
-    createdBy: CreateUser
 }
 
 input UpdateTeam {
     name : String!
     members: [CreateUser]
     goal: String!
-    createdBy: CreateUser
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/types/track.graphqls", Input: `type Track {
     id : Int!
@@ -1844,11 +2027,12 @@ input UpdateTeam {
     duration: String!
     talks: [Talk]
     totalTalks: Int!
-    createdBy: Event
+    createdBy: [Event] # testing purposes!! this should be single later
     isCompleted: Boolean!
     Archived: Boolean!
     createdAt: Time!
     updatedAt: Time!
+    event_id: Int! #my event FK
 }
 
 input CreateTrack {
@@ -1882,7 +2066,9 @@ input UpdateTrack {
     email: String!
     password: String!
     bucketLink: String!
-    events: [Event]
+    talks: [Talk]
+    events: [Event!]
+    event_id: Int!
     createdAt: Time!
     updatedAt: Time!
 }
@@ -1903,6 +2089,26 @@ input UpdateUser {
     events: [CreateEvent]
     updatedAt: Time
 }`, BuiltIn: false},
+	&ast.Source{Name: "graph/schema/types/volunteer.graphqls", Input: `type Volunteer {
+ id : Int!
+ user : User
+ role : String!
+ availiability : String!
+ team : Team
+}
+
+input CreateVolunteer {
+  user : CreateUser
+  role: String!
+  availiability: String
+  team: CreateTeam
+}
+
+input UpdateVolunteer {
+ role: String
+}
+
+`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -1935,6 +2141,14 @@ func (ec *executionContext) field_Mutation_createEvent_args(ctx context.Context,
 		}
 	}
 	args["input"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["UserID"]; ok {
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["UserID"] = arg1
 	return args, nil
 }
 
@@ -1969,9 +2183,9 @@ func (ec *executionContext) field_Mutation_createPreference_args(ctx context.Con
 func (ec *executionContext) field_Mutation_createSponsor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *model.CreateSponsor
+	var arg0 model.CreateSponsor
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalOCreateSponsor2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateSponsor(ctx, tmp)
+		arg0, err = ec.unmarshalNCreateSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateSponsor(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1983,23 +2197,31 @@ func (ec *executionContext) field_Mutation_createSponsor_args(ctx context.Contex
 func (ec *executionContext) field_Mutation_createTalk_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *model.CreateTalk
+	var arg0 model.CreateTalk
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalOCreateTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx, tmp)
+		arg0, err = ec.unmarshalNCreateTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["input"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["UserID"]; ok {
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["UserID"] = arg1
 	return args, nil
 }
 
 func (ec *executionContext) field_Mutation_createTask_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *model.CreateTasks
+	var arg0 model.CreateTasks
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalOCreateTasks2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTasks(ctx, tmp)
+		arg0, err = ec.unmarshalNCreateTasks2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTasks(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2019,20 +2241,36 @@ func (ec *executionContext) field_Mutation_createTeam_args(ctx context.Context, 
 		}
 	}
 	args["input"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["EventID"]; ok {
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["EventID"] = arg1
 	return args, nil
 }
 
 func (ec *executionContext) field_Mutation_createTrack_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *model.CreateTalk
+	var arg0 model.CreateTrack
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalOCreateTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx, tmp)
+		arg0, err = ec.unmarshalNCreateTrack2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTrack(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["input"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["EventID"]; ok {
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["EventID"] = arg1
 	return args, nil
 }
 
@@ -2267,9 +2505,9 @@ func (ec *executionContext) field_Mutation_updateSponsor_args(ctx context.Contex
 		}
 	}
 	args["id"] = arg0
-	var arg1 *model.UpdateSponsor
+	var arg1 model.UpdateSponsor
 	if tmp, ok := rawArgs["input"]; ok {
-		arg1, err = ec.unmarshalOUpdateSponsor2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateSponsor(ctx, tmp)
+		arg1, err = ec.unmarshalNUpdateSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateSponsor(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2289,9 +2527,9 @@ func (ec *executionContext) field_Mutation_updateTalk_args(ctx context.Context, 
 		}
 	}
 	args["id"] = arg0
-	var arg1 *model.UpdateTalk
+	var arg1 model.UpdateTalk
 	if tmp, ok := rawArgs["input"]; ok {
-		arg1, err = ec.unmarshalOUpdateTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTalk(ctx, tmp)
+		arg1, err = ec.unmarshalNUpdateTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTalk(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2311,9 +2549,9 @@ func (ec *executionContext) field_Mutation_updateTask_args(ctx context.Context, 
 		}
 	}
 	args["id"] = arg0
-	var arg1 *model.UpdateTask
+	var arg1 model.UpdateTask
 	if tmp, ok := rawArgs["input"]; ok {
-		arg1, err = ec.unmarshalOUpdateTask2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTask(ctx, tmp)
+		arg1, err = ec.unmarshalNUpdateTask2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTask(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2355,9 +2593,9 @@ func (ec *executionContext) field_Mutation_updateTrack_args(ctx context.Context,
 		}
 	}
 	args["id"] = arg0
-	var arg1 *model.UpdateTrack
+	var arg1 model.UpdateTrack
 	if tmp, ok := rawArgs["input"]; ok {
-		arg1, err = ec.unmarshalOUpdateTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTrack(ctx, tmp)
+		arg1, err = ec.unmarshalNUpdateTrack2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTrack(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3231,6 +3469,40 @@ func (ec *executionContext) _Event_updatedAt(ctx context.Context, field graphql.
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Event_author_id(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AuthorID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Event_createdBy(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -3257,9 +3529,9 @@ func (ec *executionContext) _Event_createdBy(ctx context.Context, field graphql.
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.User)
+	res := resTmp.([]*model.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Event_attendees(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
@@ -3291,6 +3563,68 @@ func (ec *executionContext) _Event_attendees(ctx context.Context, field graphql.
 	res := resTmp.([]*model.User)
 	fc.Result = res
 	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Event_tracks(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Event().Tracks(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Track)
+	fc.Result = res
+	return ec.marshalOTrack2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Event_track_id(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TrackID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Event_teams(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
@@ -3702,7 +4036,7 @@ func (ec *executionContext) _Mutation_createEvent(ctx context.Context, field gra
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateEvent(rctx, args["input"].(model.CreateEvent))
+		return ec.resolvers.Mutation().CreateEvent(rctx, args["input"].(model.CreateEvent), args["UserID"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3796,9 +4130,9 @@ func (ec *executionContext) _Mutation_deleteEvent(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Response)
+	res := resTmp.(bool)
 	fc.Result = res
-	return ec.marshalNResponse2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐResponse(ctx, field.Selections, res)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -4194,7 +4528,7 @@ func (ec *executionContext) _Mutation_createTeam(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateTeam(rctx, args["input"].(model.CreateTeam))
+		return ec.resolvers.Mutation().CreateTeam(rctx, args["input"].(model.CreateTeam), args["EventID"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4317,7 +4651,7 @@ func (ec *executionContext) _Mutation_createSponsor(ctx context.Context, field g
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateSponsor(rctx, args["input"].(*model.CreateSponsor))
+		return ec.resolvers.Mutation().CreateSponsor(rctx, args["input"].(model.CreateSponsor))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4358,7 +4692,7 @@ func (ec *executionContext) _Mutation_updateSponsor(ctx context.Context, field g
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateSponsor(rctx, args["id"].(*int), args["input"].(*model.UpdateSponsor))
+		return ec.resolvers.Mutation().UpdateSponsor(rctx, args["id"].(*int), args["input"].(model.UpdateSponsor))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4481,7 +4815,7 @@ func (ec *executionContext) _Mutation_createTask(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateTask(rctx, args["input"].(*model.CreateTasks))
+		return ec.resolvers.Mutation().CreateTask(rctx, args["input"].(model.CreateTasks))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4522,7 +4856,7 @@ func (ec *executionContext) _Mutation_updateTask(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateTask(rctx, args["id"].(int), args["input"].(*model.UpdateTask))
+		return ec.resolvers.Mutation().UpdateTask(rctx, args["id"].(int), args["input"].(model.UpdateTask))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4604,7 +4938,7 @@ func (ec *executionContext) _Mutation_createTalk(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateTalk(rctx, args["input"].(*model.CreateTalk))
+		return ec.resolvers.Mutation().CreateTalk(rctx, args["input"].(model.CreateTalk), args["UserID"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4645,7 +4979,7 @@ func (ec *executionContext) _Mutation_updateTalk(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateTalk(rctx, args["id"].(int), args["input"].(*model.UpdateTalk))
+		return ec.resolvers.Mutation().UpdateTalk(rctx, args["id"].(int), args["input"].(model.UpdateTalk))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4727,7 +5061,7 @@ func (ec *executionContext) _Mutation_createTrack(ctx context.Context, field gra
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateTrack(rctx, args["input"].(*model.CreateTalk))
+		return ec.resolvers.Mutation().CreateTrack(rctx, args["input"].(model.CreateTrack), args["EventID"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4768,7 +5102,7 @@ func (ec *executionContext) _Mutation_updateTrack(ctx context.Context, field gra
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateTrack(rctx, args["id"].(int), args["input"].(*model.UpdateTrack))
+		return ec.resolvers.Mutation().UpdateTrack(rctx, args["id"].(int), args["input"].(model.UpdateTrack))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5824,40 +6158,6 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Response_completed(ctx context.Context, field graphql.CollectedField, obj *model.Response) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Response",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Completed, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Sponsor_id(ctx context.Context, field graphql.CollectedField, obj *model.Sponsor) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6151,37 +6451,6 @@ func (ec *executionContext) _Talk_title(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Talk_author(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Talk",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Author, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.User)
-	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Talk_talkCoverUri(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6211,6 +6480,40 @@ func (ec *executionContext) _Talk_talkCoverUri(ctx context.Context, field graphq
 	res := resTmp.(*string)
 	fc.Result = res
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_duration(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Duration, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Talk_summary(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
@@ -6281,37 +6584,6 @@ func (ec *executionContext) _Talk_description(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Talk_reviewers(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Talk",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Reviewers, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.User)
-	fc.Result = res
-	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Talk_Archived(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6336,11 +6608,14 @@ func (ec *executionContext) _Talk_Archived(ctx context.Context, field graphql.Co
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*bool)
+	res := resTmp.(bool)
 	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Talk_tags(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
@@ -6440,6 +6715,198 @@ func (ec *executionContext) _Talk_updatedAt(ctx context.Context, field graphql.C
 	res := resTmp.(time.Time)
 	fc.Result = res
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_event_id(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EventID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_reviewers_id(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ReviewersID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_speaker_id(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SpeakerID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_event(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Event, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Event)
+	fc.Result = res
+	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_speaker(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Talk().Speaker(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_reviewers(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Talk().Reviewers(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Tasks_id(ctx context.Context, field graphql.CollectedField, obj *model.Tasks) (ret graphql.Marshaler) {
@@ -6640,6 +7107,37 @@ func (ec *executionContext) _Tasks_createdBy(ctx context.Context, field graphql.
 	return ec.marshalOUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Tasks_event(ctx context.Context, field graphql.CollectedField, obj *model.Tasks) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Tasks",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Event, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Event)
+	fc.Result = res
+	return ec.marshalOEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Tasks_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Tasks) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6706,6 +7204,40 @@ func (ec *executionContext) _Tasks_updatedAt(ctx context.Context, field graphql.
 	res := resTmp.(time.Time)
 	fc.Result = res
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Tasks_team_id(ctx context.Context, field graphql.CollectedField, obj *model.Tasks) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Tasks",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TeamID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Team_id(ctx context.Context, field graphql.CollectedField, obj *model.Team) (ret graphql.Marshaler) {
@@ -6787,13 +7319,13 @@ func (ec *executionContext) _Team_members(ctx context.Context, field graphql.Col
 		Object:   "Team",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Members, nil
+		return ec.resolvers.Team().Members(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6852,13 +7384,13 @@ func (ec *executionContext) _Team_createdBy(ctx context.Context, field graphql.C
 		Object:   "Team",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.CreatedBy, nil
+		return ec.resolvers.Team().CreatedBy(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6867,9 +7399,9 @@ func (ec *executionContext) _Team_createdBy(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.User)
+	res := resTmp.([]*model.Event)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Team_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Team) (ret graphql.Marshaler) {
@@ -6938,6 +7470,71 @@ func (ec *executionContext) _Team_updatedAt(ctx context.Context, field graphql.C
 	res := resTmp.(time.Time)
 	fc.Result = res
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Team_event_id(ctx context.Context, field graphql.CollectedField, obj *model.Team) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Team",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EventID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Team_event(ctx context.Context, field graphql.CollectedField, obj *model.Team) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Team",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Event, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Event)
+	fc.Result = res
+	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Track_id(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
@@ -7084,13 +7681,13 @@ func (ec *executionContext) _Track_talks(ctx context.Context, field graphql.Coll
 		Object:   "Track",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Talks, nil
+		return ec.resolvers.Track().Talks(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7149,13 +7746,13 @@ func (ec *executionContext) _Track_createdBy(ctx context.Context, field graphql.
 		Object:   "Track",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.CreatedBy, nil
+		return ec.resolvers.Track().CreatedBy(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -7164,9 +7761,9 @@ func (ec *executionContext) _Track_createdBy(ctx context.Context, field graphql.
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.Event)
+	res := resTmp.([]*model.Event)
 	fc.Result = res
-	return ec.marshalOEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
+	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Track_isCompleted(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
@@ -7303,6 +7900,40 @@ func (ec *executionContext) _Track_updatedAt(ctx context.Context, field graphql.
 	res := resTmp.(time.Time)
 	fc.Result = res
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Track_event_id(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Track",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EventID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
@@ -7506,6 +8137,37 @@ func (ec *executionContext) _User_bucketLink(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _User_talks(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.User().Talks(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Talk)
+	fc.Result = res
+	return ec.marshalOTalk2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalk(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _User_events(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -7534,7 +8196,41 @@ func (ec *executionContext) _User_events(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.([]*model.Event)
 	fc.Result = res
-	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
+	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_event_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EventID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
@@ -7603,6 +8299,170 @@ func (ec *executionContext) _User_updatedAt(ctx context.Context, field graphql.C
 	res := resTmp.(time.Time)
 	fc.Result = res
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Volunteer_id(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Volunteer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Volunteer_user(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Volunteer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.User, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Volunteer_role(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Volunteer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Role, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Volunteer_availiability(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Volunteer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Availiability, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Volunteer_team(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Volunteer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Team, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Team)
+	fc.Result = res
+	return ec.marshalOTeam2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTeam(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -8684,6 +9544,12 @@ func (ec *executionContext) unmarshalInputCreateEvent(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
+		case "Date":
+			var err error
+			it.Date, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "description":
 			var err error
 			it.Description, err = ec.unmarshalNString2string(ctx, v)
@@ -8720,6 +9586,12 @@ func (ec *executionContext) unmarshalInputCreateEvent(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
+		case "CreatedBy":
+			var err error
+			it.CreatedBy, err = ec.unmarshalOCreateUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "attendees":
 			var err error
 			it.Attendees, err = ec.unmarshalOCreateUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
@@ -8729,12 +9601,6 @@ func (ec *executionContext) unmarshalInputCreateEvent(ctx context.Context, obj i
 		case "venue":
 			var err error
 			it.Venue, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "Date":
-			var err error
-			it.Date, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8882,12 +9748,6 @@ func (ec *executionContext) unmarshalInputCreateTalk(ctx context.Context, obj in
 			if err != nil {
 				return it, err
 			}
-		case "author":
-			var err error
-			it.Author, err = ec.unmarshalOCreateUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "talkCoverUri":
 			var err error
 			it.TalkCoverURI, err = ec.unmarshalOString2ᚖstring(ctx, v)
@@ -8906,15 +9766,15 @@ func (ec *executionContext) unmarshalInputCreateTalk(ctx context.Context, obj in
 			if err != nil {
 				return it, err
 			}
-		case "reviewers":
+		case "Archived":
 			var err error
-			it.Reviewers, err = ec.unmarshalOCreateUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
+			it.Archived, err = ec.unmarshalNBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "Archived":
+		case "duration":
 			var err error
-			it.Archived, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			it.Duration, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8954,6 +9814,12 @@ func (ec *executionContext) unmarshalInputCreateTasks(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
+		case "event":
+			var err error
+			it.Event, err = ec.unmarshalOCreateEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "assignees":
 			var err error
 			it.Assignees, err = ec.unmarshalOCreateUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUserᚄ(ctx, v)
@@ -8963,6 +9829,12 @@ func (ec *executionContext) unmarshalInputCreateTasks(ctx context.Context, obj i
 		case "createdBy":
 			var err error
 			it.CreatedBy, err = ec.unmarshalOCreateUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "team_id":
+			var err error
+			it.TeamID, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8993,12 +9865,6 @@ func (ec *executionContext) unmarshalInputCreateTeam(ctx context.Context, obj in
 		case "goal":
 			var err error
 			it.Goal, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "createdBy":
-			var err error
-			it.CreatedBy, err = ec.unmarshalOCreateUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9110,6 +9976,42 @@ func (ec *executionContext) unmarshalInputCreateUser(ctx context.Context, obj in
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreateVolunteer(ctx context.Context, obj interface{}) (model.CreateVolunteer, error) {
+	var it model.CreateVolunteer
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "user":
+			var err error
+			it.User, err = ec.unmarshalOCreateUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "role":
+			var err error
+			it.Role, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "availiability":
+			var err error
+			it.Availiability, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "team":
+			var err error
+			it.Team, err = ec.unmarshalOCreateTeam2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTeam(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputDeleteFile(ctx context.Context, obj interface{}) (model.DeleteFile, error) {
 	var it model.DeleteFile
 	var asMap = obj.(map[string]interface{})
@@ -9166,43 +10068,43 @@ func (ec *executionContext) unmarshalInputUpdateEvent(ctx context.Context, obj i
 		switch k {
 		case "name":
 			var err error
-			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			it.Name, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "type":
 			var err error
-			it.Type, err = ec.unmarshalNString2string(ctx, v)
+			it.Type, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "summary":
 			var err error
-			it.Summary, err = ec.unmarshalNString2string(ctx, v)
+			it.Summary, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "alias":
 			var err error
-			it.Alias, err = ec.unmarshalNString2string(ctx, v)
+			it.Alias, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "bucketLink":
 			var err error
-			it.BucketLink, err = ec.unmarshalNString2string(ctx, v)
+			it.BucketLink, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "description":
 			var err error
-			it.Description, err = ec.unmarshalNString2string(ctx, v)
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "eventType":
 			var err error
-			it.EventType, err = ec.unmarshalNString2string(ctx, v)
+			it.EventType, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9220,31 +10122,37 @@ func (ec *executionContext) unmarshalInputUpdateEvent(ctx context.Context, obj i
 			}
 		case "Email":
 			var err error
-			it.Email, err = ec.unmarshalNString2string(ctx, v)
+			it.Email, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "website":
 			var err error
-			it.Website, err = ec.unmarshalNString2string(ctx, v)
+			it.Website, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "track_id":
+			var err error
+			it.TrackID, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "updatedAt":
 			var err error
-			it.UpdatedAt, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
+			it.UpdatedAt, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "attendees":
 			var err error
-			it.Attendees, err = ec.unmarshalNCreateUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
+			it.Attendees, err = ec.unmarshalOCreateUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "venue":
 			var err error
-			it.Venue, err = ec.unmarshalNString2string(ctx, v)
+			it.Venue, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9382,7 +10290,13 @@ func (ec *executionContext) unmarshalInputUpdateTalk(ctx context.Context, obj in
 			}
 		case "Archived":
 			var err error
-			it.Archived, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			it.Archived, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "duration":
+			var err error
+			it.Duration, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9455,12 +10369,6 @@ func (ec *executionContext) unmarshalInputUpdateTeam(ctx context.Context, obj in
 		case "goal":
 			var err error
 			it.Goal, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "createdBy":
-			var err error
-			it.CreatedBy, err = ec.unmarshalOCreateUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9563,6 +10471,24 @@ func (ec *executionContext) unmarshalInputUpdateUser(ctx context.Context, obj in
 		case "updatedAt":
 			var err error
 			it.UpdatedAt, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateVolunteer(ctx context.Context, obj interface{}) (model.UpdateVolunteer, error) {
+	var it model.UpdateVolunteer
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "role":
+			var err error
+			it.Role, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9685,6 +10611,11 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "author_id":
+			out.Values[i] = ec._Event_author_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "createdBy":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -9707,6 +10638,19 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 				res = ec._Event_attendees(ctx, field, obj)
 				return res
 			})
+		case "tracks":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Event_tracks(ctx, field, obj)
+				return res
+			})
+		case "track_id":
+			out.Values[i] = ec._Event_track_id(ctx, field, obj)
 		case "teams":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -10290,33 +11234,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
-var responseImplementors = []string{"Response"}
-
-func (ec *executionContext) _Response(ctx context.Context, sel ast.SelectionSet, obj *model.Response) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, responseImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Response")
-		case "completed":
-			out.Values[i] = ec._Response_completed(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
 var sponsorImplementors = []string{"Sponsor"}
 
 func (ec *executionContext) _Sponsor(ctx context.Context, sel ast.SelectionSet, obj *model.Sponsor) graphql.Marshaler {
@@ -10389,43 +11306,83 @@ func (ec *executionContext) _Talk(ctx context.Context, sel ast.SelectionSet, obj
 		case "id":
 			out.Values[i] = ec._Talk_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "title":
 			out.Values[i] = ec._Talk_title(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
-		case "author":
-			out.Values[i] = ec._Talk_author(ctx, field, obj)
 		case "talkCoverUri":
 			out.Values[i] = ec._Talk_talkCoverUri(ctx, field, obj)
+		case "duration":
+			out.Values[i] = ec._Talk_duration(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "summary":
 			out.Values[i] = ec._Talk_summary(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "description":
 			out.Values[i] = ec._Talk_description(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
-		case "reviewers":
-			out.Values[i] = ec._Talk_reviewers(ctx, field, obj)
 		case "Archived":
 			out.Values[i] = ec._Talk_Archived(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "tags":
 			out.Values[i] = ec._Talk_tags(ctx, field, obj)
 		case "createdAt":
 			out.Values[i] = ec._Talk_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "updatedAt":
 			out.Values[i] = ec._Talk_updatedAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "event_id":
+			out.Values[i] = ec._Talk_event_id(ctx, field, obj)
+		case "reviewers_id":
+			out.Values[i] = ec._Talk_reviewers_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "speaker_id":
+			out.Values[i] = ec._Talk_speaker_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "event":
+			out.Values[i] = ec._Talk_event(ctx, field, obj)
+		case "speaker":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Talk_speaker(ctx, field, obj)
+				return res
+			})
+		case "reviewers":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Talk_reviewers(ctx, field, obj)
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10472,6 +11429,8 @@ func (ec *executionContext) _Tasks(ctx context.Context, sel ast.SelectionSet, ob
 			out.Values[i] = ec._Tasks_assignees(ctx, field, obj)
 		case "createdBy":
 			out.Values[i] = ec._Tasks_createdBy(ctx, field, obj)
+		case "event":
+			out.Values[i] = ec._Tasks_event(ctx, field, obj)
 		case "createdAt":
 			out.Values[i] = ec._Tasks_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -10479,6 +11438,11 @@ func (ec *executionContext) _Tasks(ctx context.Context, sel ast.SelectionSet, ob
 			}
 		case "updatedAt":
 			out.Values[i] = ec._Tasks_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "team_id":
+			out.Values[i] = ec._Tasks_team_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -10507,32 +11471,57 @@ func (ec *executionContext) _Team(ctx context.Context, sel ast.SelectionSet, obj
 		case "id":
 			out.Values[i] = ec._Team_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._Team_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "members":
-			out.Values[i] = ec._Team_members(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Team_members(ctx, field, obj)
+				return res
+			})
 		case "goal":
 			out.Values[i] = ec._Team_goal(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "createdBy":
-			out.Values[i] = ec._Team_createdBy(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Team_createdBy(ctx, field, obj)
+				return res
+			})
 		case "createdAt":
 			out.Values[i] = ec._Team_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "updatedAt":
 			out.Values[i] = ec._Team_updatedAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "event_id":
+			out.Values[i] = ec._Team_event_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "event":
+			out.Values[i] = ec._Team_event(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10558,48 +11547,71 @@ func (ec *executionContext) _Track(ctx context.Context, sel ast.SelectionSet, ob
 		case "id":
 			out.Values[i] = ec._Track_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._Track_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "trackImgUri":
 			out.Values[i] = ec._Track_trackImgUri(ctx, field, obj)
 		case "duration":
 			out.Values[i] = ec._Track_duration(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "talks":
-			out.Values[i] = ec._Track_talks(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Track_talks(ctx, field, obj)
+				return res
+			})
 		case "totalTalks":
 			out.Values[i] = ec._Track_totalTalks(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "createdBy":
-			out.Values[i] = ec._Track_createdBy(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Track_createdBy(ctx, field, obj)
+				return res
+			})
 		case "isCompleted":
 			out.Values[i] = ec._Track_isCompleted(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "Archived":
 			out.Values[i] = ec._Track_Archived(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "createdAt":
 			out.Values[i] = ec._Track_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "updatedAt":
 			out.Values[i] = ec._Track_updatedAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "event_id":
+			out.Values[i] = ec._Track_event_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -10650,6 +11662,17 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "talks":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_talks(ctx, field, obj)
+				return res
+			})
 		case "events":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -10661,6 +11684,11 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 				res = ec._User_events(ctx, field, obj)
 				return res
 			})
+		case "event_id":
+			out.Values[i] = ec._User_event_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "createdAt":
 			out.Values[i] = ec._User_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -10671,6 +11699,47 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var volunteerImplementors = []string{"Volunteer"}
+
+func (ec *executionContext) _Volunteer(ctx context.Context, sel ast.SelectionSet, obj *model.Volunteer) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, volunteerImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Volunteer")
+		case "id":
+			out.Values[i] = ec._Volunteer_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "user":
+			out.Values[i] = ec._Volunteer_user(ctx, field, obj)
+		case "role":
+			out.Values[i] = ec._Volunteer_role(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "availiability":
+			out.Values[i] = ec._Volunteer_availiability(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "team":
+			out.Values[i] = ec._Volunteer_team(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10975,32 +12044,28 @@ func (ec *executionContext) unmarshalNCreatePreference2githubᚗcomᚋvickywane�
 	return ec.unmarshalInputCreatePreference(ctx, v)
 }
 
+func (ec *executionContext) unmarshalNCreateSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateSponsor(ctx context.Context, v interface{}) (model.CreateSponsor, error) {
+	return ec.unmarshalInputCreateSponsor(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNCreateTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx context.Context, v interface{}) (model.CreateTalk, error) {
+	return ec.unmarshalInputCreateTalk(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNCreateTasks2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTasks(ctx context.Context, v interface{}) (model.CreateTasks, error) {
+	return ec.unmarshalInputCreateTasks(ctx, v)
+}
+
 func (ec *executionContext) unmarshalNCreateTeam2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTeam(ctx context.Context, v interface{}) (model.CreateTeam, error) {
 	return ec.unmarshalInputCreateTeam(ctx, v)
 }
 
-func (ec *executionContext) unmarshalNCreateUser2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx context.Context, v interface{}) (model.CreateUser, error) {
-	return ec.unmarshalInputCreateUser(ctx, v)
+func (ec *executionContext) unmarshalNCreateTrack2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTrack(ctx context.Context, v interface{}) (model.CreateTrack, error) {
+	return ec.unmarshalInputCreateTrack(ctx, v)
 }
 
-func (ec *executionContext) unmarshalNCreateUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx context.Context, v interface{}) ([]*model.CreateUser, error) {
-	var vSlice []interface{}
-	if v != nil {
-		if tmp1, ok := v.([]interface{}); ok {
-			vSlice = tmp1
-		} else {
-			vSlice = []interface{}{v}
-		}
-	}
-	var err error
-	res := make([]*model.CreateUser, len(vSlice))
-	for i := range vSlice {
-		res[i], err = ec.unmarshalOCreateUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
+func (ec *executionContext) unmarshalNCreateUser2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx context.Context, v interface{}) (model.CreateUser, error) {
+	return ec.unmarshalInputCreateUser(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNCreateUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx context.Context, v interface{}) (*model.CreateUser, error) {
@@ -11198,20 +12263,6 @@ func (ec *executionContext) marshalNPreference2ᚖgithubᚗcomᚋvickywaneᚋeve
 		return graphql.Null
 	}
 	return ec._Preference(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNResponse2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐResponse(ctx context.Context, sel ast.SelectionSet, v model.Response) graphql.Marshaler {
-	return ec._Response(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNResponse2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐResponse(ctx context.Context, sel ast.SelectionSet, v *model.Response) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Response(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐSponsor(ctx context.Context, sel ast.SelectionSet, v model.Sponsor) graphql.Marshaler {
@@ -11431,8 +12482,24 @@ func (ec *executionContext) unmarshalNUpdatePreference2githubᚗcomᚋvickywane�
 	return ec.unmarshalInputUpdatePreference(ctx, v)
 }
 
+func (ec *executionContext) unmarshalNUpdateSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateSponsor(ctx context.Context, v interface{}) (model.UpdateSponsor, error) {
+	return ec.unmarshalInputUpdateSponsor(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNUpdateTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTalk(ctx context.Context, v interface{}) (model.UpdateTalk, error) {
+	return ec.unmarshalInputUpdateTalk(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNUpdateTask2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTask(ctx context.Context, v interface{}) (model.UpdateTask, error) {
+	return ec.unmarshalInputUpdateTask(ctx, v)
+}
+
 func (ec *executionContext) unmarshalNUpdateTeam2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTeam(ctx context.Context, v interface{}) (model.UpdateTeam, error) {
 	return ec.unmarshalInputUpdateTeam(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNUpdateTrack2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTrack(ctx context.Context, v interface{}) (model.UpdateTrack, error) {
+	return ec.unmarshalInputUpdateTrack(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNUpdateUser2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateUser(ctx context.Context, v interface{}) (model.UpdateUser, error) {
@@ -11771,18 +12838,6 @@ func (ec *executionContext) unmarshalOCreateEvent2ᚖgithubᚗcomᚋvickywaneᚋ
 	return &res, err
 }
 
-func (ec *executionContext) unmarshalOCreateSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateSponsor(ctx context.Context, v interface{}) (model.CreateSponsor, error) {
-	return ec.unmarshalInputCreateSponsor(ctx, v)
-}
-
-func (ec *executionContext) unmarshalOCreateSponsor2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateSponsor(ctx context.Context, v interface{}) (*model.CreateSponsor, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalOCreateSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateSponsor(ctx, v)
-	return &res, err
-}
-
 func (ec *executionContext) unmarshalOCreateTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx context.Context, v interface{}) (model.CreateTalk, error) {
 	return ec.unmarshalInputCreateTalk(ctx, v)
 }
@@ -11812,18 +12867,6 @@ func (ec *executionContext) unmarshalOCreateTalk2ᚖgithubᚗcomᚋvickywaneᚋe
 		return nil, nil
 	}
 	res, err := ec.unmarshalOCreateTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx, v)
-	return &res, err
-}
-
-func (ec *executionContext) unmarshalOCreateTasks2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTasks(ctx context.Context, v interface{}) (model.CreateTasks, error) {
-	return ec.unmarshalInputCreateTasks(ctx, v)
-}
-
-func (ec *executionContext) unmarshalOCreateTasks2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTasks(ctx context.Context, v interface{}) (*model.CreateTasks, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalOCreateTasks2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTasks(ctx, v)
 	return &res, err
 }
 
@@ -11923,6 +12966,46 @@ func (ec *executionContext) marshalOEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋevent
 				defer wg.Done()
 			}
 			ret[i] = ec.marshalOEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Event) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -12206,6 +13289,10 @@ func (ec *executionContext) marshalOTasks2ᚕᚖgithubᚗcomᚋvickywaneᚋevent
 	return ret
 }
 
+func (ec *executionContext) marshalOTeam2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTeam(ctx context.Context, sel ast.SelectionSet, v model.Team) graphql.Marshaler {
+	return ec._Team(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalOTeam2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTeamᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Team) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -12246,6 +13333,13 @@ func (ec *executionContext) marshalOTeam2ᚕᚖgithubᚗcomᚋvickywaneᚋevent�
 	return ret
 }
 
+func (ec *executionContext) marshalOTeam2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTeam(ctx context.Context, sel ast.SelectionSet, v *model.Team) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Team(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
 	return graphql.UnmarshalTime(v)
 }
@@ -12269,52 +13363,55 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 	return ec.marshalOTime2timeᚐTime(ctx, sel, *v)
 }
 
-func (ec *executionContext) unmarshalOUpdateSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateSponsor(ctx context.Context, v interface{}) (model.UpdateSponsor, error) {
-	return ec.unmarshalInputUpdateSponsor(ctx, v)
+func (ec *executionContext) marshalOTrack2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx context.Context, sel ast.SelectionSet, v model.Track) graphql.Marshaler {
+	return ec._Track(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalOUpdateSponsor2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateSponsor(ctx context.Context, v interface{}) (*model.UpdateSponsor, error) {
+func (ec *executionContext) marshalOTrack2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx context.Context, sel ast.SelectionSet, v []*model.Track) graphql.Marshaler {
 	if v == nil {
-		return nil, nil
+		return graphql.Null
 	}
-	res, err := ec.unmarshalOUpdateSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateSponsor(ctx, v)
-	return &res, err
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
 }
 
-func (ec *executionContext) unmarshalOUpdateTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTalk(ctx context.Context, v interface{}) (model.UpdateTalk, error) {
-	return ec.unmarshalInputUpdateTalk(ctx, v)
-}
-
-func (ec *executionContext) unmarshalOUpdateTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTalk(ctx context.Context, v interface{}) (*model.UpdateTalk, error) {
+func (ec *executionContext) marshalOTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx context.Context, sel ast.SelectionSet, v *model.Track) graphql.Marshaler {
 	if v == nil {
-		return nil, nil
+		return graphql.Null
 	}
-	res, err := ec.unmarshalOUpdateTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTalk(ctx, v)
-	return &res, err
-}
-
-func (ec *executionContext) unmarshalOUpdateTask2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTask(ctx context.Context, v interface{}) (model.UpdateTask, error) {
-	return ec.unmarshalInputUpdateTask(ctx, v)
-}
-
-func (ec *executionContext) unmarshalOUpdateTask2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTask(ctx context.Context, v interface{}) (*model.UpdateTask, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalOUpdateTask2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTask(ctx, v)
-	return &res, err
-}
-
-func (ec *executionContext) unmarshalOUpdateTrack2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTrack(ctx context.Context, v interface{}) (model.UpdateTrack, error) {
-	return ec.unmarshalInputUpdateTrack(ctx, v)
-}
-
-func (ec *executionContext) unmarshalOUpdateTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTrack(ctx context.Context, v interface{}) (*model.UpdateTrack, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalOUpdateTrack2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateTrack(ctx, v)
-	return &res, err
+	return ec._Track(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOUser2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {

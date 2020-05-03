@@ -1,25 +1,29 @@
 type Talk {
     id : Int!
     title: String!
-    author: User
     talkCoverUri: String
+    duration : Int!
     summary: String!
     description: String!
-    reviewers: [User]
-    Archived: Boolean
+    Archived: Boolean!
     tags: [String]
     createdAt: Time!
     updatedAt: Time!
+    event_id : Int
+    reviewers_id: Int!
+    speaker_id: Int!
+    event: [Event]
+    speaker: [User]
+    reviewers: [User]
 }
 
 input CreateTalk {
     title: String!
-    author: CreateUser
     talkCoverUri: String
     summary: String!
     description: String!
-    reviewers: [CreateUser]
-    Archived: Boolean
+    Archived: Boolean!
+    duration : Int!
     tags: [String]
 }
 
@@ -28,7 +32,9 @@ input UpdateTalk {
     talkCoverUri: String
     summary: String!
     description: String!
+    # Reviewers would insert their id when accepting a talk
     reviewers: [CreateUser]
-    Archived: Boolean
+    Archived: Boolean!
+    duration : Int!
     tags: [String]
 }

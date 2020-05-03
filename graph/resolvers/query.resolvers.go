@@ -8,13 +8,17 @@ import (
 	"fmt"
 
 	"github.com/vickywane/event-server/graph/generated"
-	InternalMiddlewares "github.com/vickywane/event-server/graph/middlewares"
+	InternalMiddleware "github.com/vickywane/event-server/graph/middlewares"
 	"github.com/vickywane/event-server/graph/model"
 	CustomResponse "github.com/vickywane/event-server/graph/validators"
 )
 
 func (r *queryResolver) Event(ctx context.Context, id *int, name string) (*model.Event, error) {
 	event := model.Event{ID: *id, Name: name}
+	fmt.Println(event.AuthorID)
+	// if err := r.DB.Model(&event).Column("user").Relation("CreatedBy").Select(); err != nil {
+	// 	return  nil, err
+	// }
 
 	if err := r.DB.Select(&event); err != nil {
 		return nil, err
@@ -45,12 +49,15 @@ func (r *queryResolver) User(ctx context.Context, id *int, name string) (*model.
 	if err := r.DB.Select(&User); err != nil {
 		return nil, err
 	}
+	// if err := r.DB.Model(&User).Column("user.event_id").Relation("Events").Select(); err != nil {
+	// 	return nil, err
+	// }
 
 	return &User, nil
 }
 
 func (r *queryResolver) Users(ctx context.Context, limit *int) ([]*model.User, error) {
-	gc, CtxErr := InternalMiddlewares.GinContextFromContext(ctx)
+	gc, CtxErr := InternalMiddleware.GinContextFromContext(ctx)
 
 	if CtxErr != nil {
 		fmt.Println(gc, "context resolver")
@@ -179,19 +186,54 @@ func (r *queryResolver) Tasks(ctx context.Context, limit *int) ([]*model.Tasks, 
 }
 
 func (r *queryResolver) Talk(ctx context.Context, id int) (*model.Talk, error) {
-	panic(fmt.Errorf("not implemented"))
+	talk := model.Talk{ID: id}
+
+	if err := r.DB.Select(&talk); err != nil {
+		return nil, err
+	}
+
+	return &talk, nil
 }
 
 func (r *queryResolver) Talks(ctx context.Context, limit *int) ([]*model.Talk, error) {
-	panic(fmt.Errorf("not implemented"))
+	var talk []*model.Talk
+
+	if limit != nil {
+		QueryErr = r.DB.Model(&talk).Limit(*limit).Select()
+	} else {
+		QueryErr = r.DB.Model(&talk).Select()
+	}
+
+	if QueryErr != nil {
+		return nil, CustomResponse.QueryError
+	}
+
+	return talk, nil
 }
 
 func (r *queryResolver) Track(ctx context.Context, id int) (*model.Track, error) {
-	panic(fmt.Errorf("not implemented"))
+	track := model.Track{ID: id}
+
+	if err := r.DB.Select(&track); err != nil {
+		return nil, err
+	}
+
+	return &track, nil
 }
 
 func (r *queryResolver) Tracks(ctx context.Context, limit *int) ([]*model.Track, error) {
-	panic(fmt.Errorf("not implemented"))
+	var track []*model.Track
+
+	if limit != nil {
+		QueryErr = r.DB.Model(&track).Limit(*limit).Select()
+	} else {
+		QueryErr = r.DB.Model(&track).Select()
+	}
+
+	if QueryErr != nil {
+		return nil, CustomResponse.QueryError
+	}
+	return track, nil
 }
 
 // Query returns generated.QueryResolver implementation.

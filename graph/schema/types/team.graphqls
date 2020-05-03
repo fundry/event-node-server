@@ -3,21 +3,21 @@ type Team {
     name : String!
     members: [User!]
     goal: String!
-    createdBy: User
+    createdBy: [Event]
     createdAt: Time!
     updatedAt: Time!
+    event_id : Int! #event FK
+    event: [Event]
 }
 
 input CreateTeam {
     name : String!
     members: [CreateUser]
     goal: String!
-    createdBy: CreateUser
 }
 
 input UpdateTeam {
     name : String!
     members: [CreateUser]
     goal: String!
-    createdBy: CreateUser
 }

@@ -16,7 +16,7 @@ func createSchema(db *pg.DB) error {
         (*model.File)(nil), (*model.Team)(nil), (*model.Sponsor)(nil),
         (*model.Tasks)(nil), (*model.Track)(nil), (*model.Talk)(nil)} {
         err := db.CreateTable(models, &orm.CreateTableOptions{
-            IfNotExists: true,
+            IfNotExists: true, FKConstraints: true,
         })
         if err != nil {
             panic(err)
@@ -30,9 +30,7 @@ func Connect() *pg.DB {
 
     Envs, err := godotenv.Read(".env")
 
-    id := uuid.NewV4()
-    fmt.Println(id, "uuid number here")
-
+    _ = uuid.NewV4()
     db := pg.Connect(&pg.Options{
         User:            Envs["POSTGRES_USER"],
         Password:        Envs["POSTGRES_DB_PASSWORD"],

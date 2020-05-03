@@ -53,9 +53,13 @@ models:
         resolver: true
       teams:
         resolver: true
+      tracks:
+        resolver: true
   User:
     fields:
       events:
+        resolver: true
+      talks:
         resolver: true
   Preference:
     fields:
@@ -65,4 +69,33 @@ models:
     fields:
       event:
         resolver: true
+  Talk:
+    fields:
+      speaker:
+        resolver: true
+      reviewers:
+        resolver: true
+  Team:
+    fields:
+      members:
+        resolver: true
+      createdBy:
+        resolver: true
+  Track:
+    fields:
+      talks:
+        resolver: true
+      createdBy:
+        resolver: true
+  Task:
+    fields:
+      assignees:
+        resolver: true
+      createdBy:
+        resolver: true
+      event:
+        resolver: true
+
+
+
 

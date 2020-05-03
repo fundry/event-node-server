@@ -1,6 +1,7 @@
 package main
 
 import (
+    "fmt"
     "github.com/gin-gonic/gin"
 
     "github.com/99designs/gqlgen/graphql/handler"
@@ -15,7 +16,7 @@ import (
 
 var Key = "id"
 
-func graphqlHandler() gin.HandlerFunc  {
+func graphqlHandler() gin.HandlerFunc {
 
     // Todo: Push logs into a log file
     Database := db.Connect()
@@ -26,12 +27,14 @@ func graphqlHandler() gin.HandlerFunc  {
             DB: Database,
         }}))
 
+    InternalMiddleware.DataLoaderMiddleware(Database, h)
+
     return func(c *gin.Context) {
         h.ServeHTTP(c.Writer, c.Request)
     }
 }
 
-//Playground handler
+// Playground handler
 func playgroundHandler() gin.HandlerFunc {
     h := playground.Handler("GraphQL", "/query")
 
@@ -61,7 +64,8 @@ func main() {
     r.POST("/query",
         graphqlHandler(),
     )
+    fmt.Println("Playground running at http://localhost:4040")
 
     r.GET("/", playgroundHandler())
-    r.Run()
+    r.Run(":4040")
 }

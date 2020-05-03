@@ -4,24 +4,31 @@ package resolvers
 // will be copied through when generating and any unknown code will be moved to the end.
 
 import (
-	"context"
-	"fmt"
+    "context"
 
-	"github.com/vickywane/event-server/graph/generated"
-	"github.com/vickywane/event-server/graph/model"
+    "github.com/vickywane/event-server/graph/generated"
+    "github.com/vickywane/event-server/graph/model"
 )
 
+func (r *userResolver) Talks(ctx context.Context, obj *model.User) ([]*model.Talk, error) {
+    var talks []*model.Talk
+
+    if err := r.DB.Model(&talks).Where("speaker_id = ?", obj.ID).Order("id").Select(); err != nil {
+        return nil, err
+    }
+
+    return talks, nil
+}
+
 func (r *userResolver) Events(ctx context.Context, obj *model.User) ([]*model.Event, error) {
-	var events []*model.Event
+    var events []*model.Event
 
-	err := r.DB.Model(&events).Where("event_id = ?", obj.ID).Order("id").Select()
+    err := r.DB.Model(&events).Where("author_id = ?", obj.ID).Order("id").Select()
 
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-
-	return events, nil
+    if err != nil {
+        return nil, err
+    }
+    return events, nil
 }
 
 // User returns generated.UserResolver implementation.

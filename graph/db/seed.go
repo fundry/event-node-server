@@ -37,7 +37,7 @@ func SeedDatabase(db *pg.DB) {
 		IsArchived:  false,
 		IsLocked:    false,
 		Attendees:   nil,
-		CreatedBy:   nil,
+		// UserID:   nil,
 	}
 
 	preference := model.Preference{
@@ -74,21 +74,22 @@ func SeedDatabase(db *pg.DB) {
 	}
 
 	task := model.Tasks{
-		ID:             rand.Int(),
-		Name:           "Sketch and Create Event Media Assets",
-		Type:           "Design",
-		IsCompleted: 	false,
-		Assignees:   	nil,
+		ID:          rand.Int(),
+		Name:        "Sketch and Create Event Media Assets",
+		Type:        "Design",
+		IsCompleted: false,
+		Assignees:   nil,
 	}
 
 	talk := model.Talk{
 		ID:           rand.Int(),
 		Title:        "Building Modern Distributed Systems",
-		TalkCoverURI:  nil,
+		TalkCoverURI: nil,
 		Summary:      "Learn about Distributed systems and how they're built ",
 		Description:  "Come learn how building modern distributed systems can affect performance of a Software",
 		Reviewers:    nil,
-		Archived:     nil,
+		Archived:     false,
+		Duration:     20,
 		Tags:         nil,
 		CreatedAt:    time.Time{},
 		UpdatedAt:    time.Time{},
@@ -97,11 +98,8 @@ func SeedDatabase(db *pg.DB) {
 	track := model.Track{
 		ID:          rand.Int(),
 		Name:        "Design Track",
-		TrackImgURI: nil,
 		Duration:    "10am - 11pm",
-		Talks:       nil,
 		TotalTalks:  2,
-		CreatedBy:   nil,
 		IsCompleted: false,
 		Archived:    false,
 		CreatedAt:   time.Time{},

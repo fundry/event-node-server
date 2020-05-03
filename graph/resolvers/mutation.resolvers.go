@@ -14,9 +14,10 @@ import (
 	"github.com/vickywane/event-server/graph/validators"
 )
 
-func (r *mutationResolver) CreateEvent(ctx context.Context, input model.CreateEvent) (*model.Event, error) {
+func (r *mutationResolver) CreateEvent(ctx context.Context, input model.CreateEvent, userID int) (*model.Event, error) {
 	mockbucketLink := string(rand.Int())
-	fmt.Println(mockbucketLink, "mock link")
+	Time := time.Now()
+
 	event := model.Event{
 		ID:          rand.Int(),
 		Name:        input.Name,
@@ -28,11 +29,12 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.CreateEv
 		Website:     input.Website,
 		Venue:       input.Venue,
 		Date:        input.Date,
+		AuthorID:    userID,
 		BucketLink:  mockbucketLink,
 		IsArchived:  false,
 		IsLocked:    false,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		CreatedAt:   Time,
+		UpdatedAt:   Time,
 	}
 
 	if err := r.DB.Insert(&event); err != nil {
@@ -51,47 +53,42 @@ func (r *mutationResolver) UpdateEvent(ctx context.Context, id *int, input model
 
 	event, err = r.UpdateCurrentEvent(event)
 
-	// Todo Use Golang Switch statements here for brevity!
-	if len(event.Name) < 3 {
-		return nil, validators.ShortInput
-	} else {
-		event.Name = input.Name
-	}
+	validators.LengthChecker(event.Name, 5)
 
 	if len(event.Description) < 3 {
 		return nil, validators.ShortInput
 	} else {
-		event.Description = input.Description
+		event.Description = *input.Description
 	}
 
 	if len(event.Website) < 3 {
 		return nil, validators.ShortInput
 	} else {
-		event.Website = input.Website
+		event.Website = *input.Website
 	}
 
 	if len(event.Alias) < 1 {
 		return nil, validators.ShortInput
 	} else {
-		event.Alias = input.Alias
+		event.Alias = *input.Alias
 	}
 
 	if len(event.Summary) < 6 {
 		return nil, validators.ShortInput
 	} else {
-		event.Alias = input.Alias
+		event.Alias = *input.Alias
 	}
 
 	if len(event.Venue) < 4 {
 		return nil, validators.ShortInput
 	} else {
-		event.Venue = input.Venue
+		event.Venue = *input.Venue
 	}
 
 	if len(event.Website) < 6 {
 		return nil, validators.ShortInput
 	} else {
-		event.Website = input.Website
+		event.Website = *input.Website
 	}
 
 	if err != nil {
@@ -101,22 +98,20 @@ func (r *mutationResolver) UpdateEvent(ctx context.Context, id *int, input model
 	return event, nil
 }
 
-func (r *mutationResolver) DeleteEvent(ctx context.Context, id int) (*model.Response, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) DeleteEvent(ctx context.Context, id int) (bool, error) {
+	event, err := r.GetEventById(id)
+	if event != nil && err != nil {
+		return false, validators.NotFound
+	}
+	err = r.DeleteCurrentEvent(event)
+	return true, nil
 }
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUser) (*model.User, error) {
 	hashedPassword := HashPassword(input.Password)
 	mockbucketLink := string(rand.Int())
-	checkIfUserExists, derr := r.GetUserByEmail(input.Email)
-
-	if derr != nil {
-		fmt.Println(checkIfUserExists, "check")
-		fmt.Println("User exists")
-
-		return nil, derr
-	}
-
+	EventID := rand.Int()
+	// 1976235410884491574
 	user := model.User{
 		ID:         rand.Int(),
 		Name:       input.Name,
@@ -125,10 +120,12 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUse
 		Role:       input.Role,
 		Password:   hashedPassword,
 		BucketLink: mockbucketLink,
+		EventID:    EventID, // my event FK
 	}
 
 	if err := r.DB.Insert(&user); err != nil {
 		fmt.Println(err)
+		return nil, err
 	}
 
 	return &user, nil
@@ -170,8 +167,6 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id *int, input model.
 
 	if err != nil {
 		return nil, validators.ErrorUpdating
-	} else {
-		fmt.Println(user)
 	}
 
 	return user, nil
@@ -198,7 +193,7 @@ func (r *mutationResolver) CreatePreference(ctx context.Context, input model.Cre
 	}
 
 	if err := r.DB.Insert(&preference); err != nil {
-		fmt.Println(err)
+		return nil, validators.ErrorInserting
 	}
 
 	return &preference, nil
@@ -224,17 +219,18 @@ func (r *mutationResolver) DeleteFile(ctx context.Context, id int) (bool, error)
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CreateTeam(ctx context.Context, input model.CreateTeam) (*model.Team, error) {
+func (r *mutationResolver) CreateTeam(ctx context.Context, input model.CreateTeam, eventID int) (*model.Team, error) {
 	team := model.Team{
-		ID:   rand.Int(),
-		Name: input.Name,
-		Goal: input.Goal,
-		// CreatedAt: time.Time(),
-		// UpdatedAt: time.Time(),
+		ID:        rand.Int(),
+		Name:      input.Name,
+		Goal:      input.Goal,
+		EventID:   eventID,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	if err := r.DB.Insert(&team); err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 
 	return &team, nil
@@ -265,11 +261,11 @@ func (r *mutationResolver) DeleteTeam(ctx context.Context, id int) (bool, error)
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) CreateSponsor(ctx context.Context, input *model.CreateSponsor) (*model.Sponsor, error) {
+func (r *mutationResolver) CreateSponsor(ctx context.Context, input model.CreateSponsor) (*model.Sponsor, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *mutationResolver) UpdateSponsor(ctx context.Context, id *int, input *model.UpdateSponsor) (*model.Sponsor, error) {
+func (r *mutationResolver) UpdateSponsor(ctx context.Context, id *int, input model.UpdateSponsor) (*model.Sponsor, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
@@ -294,7 +290,7 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input model.LoginUser)
 	return auth, err
 }
 
-func (r *mutationResolver) CreateTask(ctx context.Context, input *model.CreateTasks) (*model.Tasks, error) {
+func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTasks) (*model.Tasks, error) {
 	task := model.Tasks{
 		ID:        rand.Int(),
 		Name:      input.Name,
@@ -309,7 +305,7 @@ func (r *mutationResolver) CreateTask(ctx context.Context, input *model.CreateTa
 	return &task, nil
 }
 
-func (r *mutationResolver) UpdateTask(ctx context.Context, id int, input *model.UpdateTask) (*model.Tasks, error) {
+func (r *mutationResolver) UpdateTask(ctx context.Context, id int, input model.UpdateTask) (*model.Tasks, error) {
 	task, err := r.GetTaskById(id)
 
 	if task != nil && err != nil {
@@ -343,28 +339,135 @@ func (r *mutationResolver) DeleteTask(ctx context.Context, id int) (bool, error)
 	return true, nil
 }
 
-func (r *mutationResolver) CreateTalk(ctx context.Context, input *model.CreateTalk) (*model.Talk, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) CreateTalk(ctx context.Context, input model.CreateTalk, userID int) (*model.Talk, error) {
+	Talk := model.Talk{
+		ID:           rand.Int(),
+		Title:        input.Title,
+		SpeakerID:    userID,
+		TalkCoverURI: nil,
+		Summary:      input.Summary,
+		Description:  input.Description,
+		Reviewers:    nil,
+		Archived:     false,
+		Duration:     input.Duration,
+		Tags:         nil,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+	}
+
+	if err := r.DB.Insert(&Talk); err != nil {
+		return nil, validators.ErrorInserting
+	}
+
+	return &Talk, nil
 }
 
-func (r *mutationResolver) UpdateTalk(ctx context.Context, id int, input *model.UpdateTalk) (*model.Talk, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) UpdateTalk(ctx context.Context, id int, input model.UpdateTalk) (*model.Talk, error) {
+	talk, err := r.GetTalkById(id)
+
+	if talk != nil && err != nil {
+		return nil, validators.NotFound
+	}
+
+	talk, err = r.UpdateCurrentTalk(talk)
+
+	if len(input.Title) < 3 {
+		return nil, validators.ShortInput
+	} else {
+		talk.Title = input.Title
+	}
+
+	if len(input.Summary) < 10 {
+		return nil, validators.ShortInput
+	} else {
+		talk.Summary = input.Summary
+	}
+
+	if len(input.Description) < 20 {
+		return nil, validators.ShortInput
+	} else {
+		talk.Description = input.Description
+	}
+
+	if input.Duration < 1 {
+		return nil, validators.ShortInput
+	} else {
+		talk.Description = input.Description
+	}
+
+	talk.Archived = input.Archived
+
+	return talk, nil
 }
 
 func (r *mutationResolver) DeleteTalk(ctx context.Context, id int) (bool, error) {
-	panic(fmt.Errorf("not implemented"))
+	talk, err := r.GetTalkById(id)
+
+	if talk != nil && err != nil {
+		return false, validators.NotFound
+	}
+
+	err = r.DeleteCurrentTalk(talk)
+
+	return true, nil
 }
 
-func (r *mutationResolver) CreateTrack(ctx context.Context, input *model.CreateTalk) (*model.Track, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) CreateTrack(ctx context.Context, input model.CreateTrack, eventID int) (*model.Track, error) {
+	track := model.Track{
+		ID:          rand.Int(),
+		Name:        input.Name,
+		Duration:    input.Duration,
+		TotalTalks:  input.TotalTalks,
+		IsCompleted: false,
+		Archived:    false,
+		EventID:     eventID,
+	}
+
+	if err := r.DB.Insert(track); err != nil {
+		return nil, err
+	}
+
+	return &track, nil
 }
 
-func (r *mutationResolver) UpdateTrack(ctx context.Context, id int, input *model.UpdateTrack) (*model.Track, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) UpdateTrack(ctx context.Context, id int, input model.UpdateTrack) (*model.Track, error) {
+	track, err := r.GetTrackById(id)
+
+	if track != nil && err != nil {
+		return nil, validators.NotFound
+	}
+
+	if len(input.Name) < 10 {
+		return nil, validators.ShortInput
+	} else {
+		track.Name = input.Name
+	}
+
+	if len(input.Duration) < 5 {
+		return nil, validators.ShortInput
+	} else {
+		track.Duration = input.Duration
+	}
+
+	track, err = r.UpdateCurrentTrack(track)
+
+	if err != nil {
+		return nil, validators.ErrorUpdating
+	}
+
+	return track, nil
 }
 
 func (r *mutationResolver) DeleteTrack(ctx context.Context, id int) (bool, error) {
-	panic(fmt.Errorf("not implemented"))
+	track, err := r.GetTrackById(id)
+
+	if track != nil && err != nil {
+		return false, validators.NotFound
+	}
+
+	err = r.DeleteCurrentTrack(track)
+
+	return true, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

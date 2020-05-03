@@ -6,11 +6,10 @@ import (
 	"github.com/joho/godotenv"
 	"time"
 
-
 	"github.com/vickywane/event-server/graph/model"
 )
 
-var Env , _ = godotenv.Read(".env")
+var Env, _ = godotenv.Read(".env")
 
 var Key = Env["SECRET_KEY"]
 

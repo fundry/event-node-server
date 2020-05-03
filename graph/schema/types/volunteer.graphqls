@@ -1,0 +1,19 @@
+type Volunteer {
+ id : Int!
+ user : User
+ role : String!
+ availiability : String!
+ team : Team
+}
+
+input CreateVolunteer {
+  user : CreateUser
+  role: String!
+  availiability: String
+  team: CreateTeam
+}
+
+input UpdateVolunteer {
+ role: String
+}
+
