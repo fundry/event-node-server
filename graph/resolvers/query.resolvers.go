@@ -211,8 +211,8 @@ func (r *queryResolver) Talks(ctx context.Context, limit *int) ([]*model.Talk, e
 	return talk, nil
 }
 
-func (r *queryResolver) Track(ctx context.Context, id int) (*model.Track, error) {
-	track := model.Track{ID: id}
+func (r *queryResolver) Track(ctx context.Context, id int) (*model.Tracks, error) {
+	track := model.Tracks{ID: id}
 
 	if err := r.DB.Select(&track); err != nil {
 		return nil, err
@@ -221,8 +221,8 @@ func (r *queryResolver) Track(ctx context.Context, id int) (*model.Track, error)
 	return &track, nil
 }
 
-func (r *queryResolver) Tracks(ctx context.Context, limit *int) ([]*model.Track, error) {
-	var track []*model.Track
+func (r *queryResolver) Tracks(ctx context.Context, limit *int) ([]*model.Tracks, error) {
+	var track []*model.Tracks
 
 	if limit != nil {
 		QueryErr = r.DB.Model(&track).Limit(*limit).Select()

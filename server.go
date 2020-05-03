@@ -46,13 +46,15 @@ func playgroundHandler() gin.HandlerFunc {
 func main() {
     r := gin.Default()
 
-    r.Use(cors.New(cors.Config{
-        AllowOrigins: []string{"http://localhost:3000", "http://localhost:8080"},
-        AllowMethods: []string{"GET", "PUT", "POST", "DELETE"},
-        AllowHeaders: []string{"content-type"},
-    }),
+    r.Use(
+        cors.New(cors.Config{
+            AllowOrigins: []string{"http://localhost:3000", "http://localhost:8080"},
+            AllowMethods: []string{"GET", "PUT", "POST", "DELETE"},
+            AllowHeaders: []string{"content-type"},
+        }),
         gin.Recovery(),
         InternalMiddleware.GinContextToContextMiddleware(),
+        InternalMiddleware.PlaygroundAuth(),
     )
 
     // test routes for auth from git samples

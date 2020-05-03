@@ -32,8 +32,8 @@ func (r *eventResolver) Attendees(ctx context.Context, obj *model.Event) ([]*mod
 	return attendees, nil
 }
 
-func (r *eventResolver) Tracks(ctx context.Context, obj *model.Event) ([]*model.Track, error) {
-	var tracks []*model.Track
+func (r *eventResolver) Tracks(ctx context.Context, obj *model.Event) ([]*model.Tracks, error) {
+	var tracks []*model.Tracks
 
 	if err := r.DB.Model(&tracks).Where("id = ?", obj.TrackID).Order("id").Select(); err != nil {
 		return nil, err

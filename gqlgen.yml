@@ -81,11 +81,13 @@ models:
         resolver: true
       createdBy:
         resolver: true
-  Track:
+  Tracks:
     fields:
       talks:
         resolver: true
       createdBy:
+        resolver: true
+      event:
         resolver: true
   Task:
     fields:

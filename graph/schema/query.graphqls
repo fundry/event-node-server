@@ -23,6 +23,6 @@ type Query {
     talk(id : Int!): Talk!
     talks(Limit: Int) : [Talk!]!
 
-    track(id : Int!): Track!
-    tracks(Limit: Int) : [Track!]!
+    track(id : Int!): Tracks!
+    tracks(Limit: Int) : [Tracks!]!
 }

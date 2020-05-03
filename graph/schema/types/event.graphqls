@@ -15,7 +15,7 @@ type Event {
     author_id : Int!
     createdBy: [User]  # just for testing . This shouldnt be an array
     attendees: [User]
-    tracks: [Track]
+    tracks: [Tracks]
     track_id: Int
     teams: [Team!]
     isArchived: Boolean! @default(value: false)

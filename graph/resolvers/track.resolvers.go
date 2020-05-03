@@ -10,25 +10,17 @@ import (
 	"github.com/vickywane/event-server/graph/model"
 )
 
-func (r *trackResolver) Talks(ctx context.Context, obj *model.Track) ([]*model.Talk, error) {
-	// var Talks []*model.Talk
-	//
-	// //Todo: find a way to get user id that matches event && user
-	// err := r.DB.Model(&Talks).Order("id").Select()
-	//
-	// /*	err := r.DB.Model(&Talks).Where("event.id = ?",
-	// 	obj.ID).Order("id").Select()
-	// */
-	//
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// return Talks, nil
-	//
-	panic("not done")
+func (r *tracksResolver) Talks(ctx context.Context, obj *model.Tracks) ([]*model.Talk, error) {
+	var Talk []*model.Talk
+
+	if err := r.DB.Model(&Talk).Order("id").Select(); err != nil {
+		return nil, err
+	}
+
+	return Talk, nil
 }
 
-func (r *trackResolver) CreatedBy(ctx context.Context, obj *model.Track) ([]*model.Event, error) {
+func (r *tracksResolver) CreatedBy(ctx context.Context, obj *model.Tracks) ([]*model.Event, error) {
 	var Event []*model.Event
 
 	if err := r.DB.Model(&Event).Order("id").Select(); err != nil {
@@ -38,7 +30,7 @@ func (r *trackResolver) CreatedBy(ctx context.Context, obj *model.Track) ([]*mod
 	return Event, nil
 }
 
-// Track returns generated.TrackResolver implementation.
-func (r *Resolver) Track() generated.TrackResolver { return &trackResolver{r} }
+// Tracks returns generated.TracksResolver implementation.
+func (r *Resolver) Tracks() generated.TracksResolver { return &tracksResolver{r} }
 
-type trackResolver struct{ *Resolver }
+type tracksResolver struct{ *Resolver }

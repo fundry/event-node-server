@@ -95,7 +95,7 @@ func SeedDatabase(db *pg.DB) {
 		UpdatedAt:    time.Time{},
 	}
 
-	track := model.Track{
+	track := model.Tracks{
 		ID:          rand.Int(),
 		Name:        "Design Track",
 		Duration:    "10am - 11pm",

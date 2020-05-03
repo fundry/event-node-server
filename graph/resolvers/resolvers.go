@@ -105,18 +105,18 @@ func (r *mutationResolver) DeleteCurrentTalk(Talk *model.Talk) error {
 	return nil
 }
 
-func (r *mutationResolver) GetTrackById(id int) (*model.Track, error) {
-	Track := model.Track{}
+func (r *mutationResolver) GetTrackById(id int) (*model.Tracks, error) {
+	Track := model.Tracks{}
 	err := r.DB.Model(&Track).Where("id = ?", id).First()
 	return &Track, err
 }
 
-func (r *mutationResolver) UpdateCurrentTrack(Track *model.Track) (*model.Track, error) {
+func (r *mutationResolver) UpdateCurrentTrack(Track *model.Tracks) (*model.Tracks, error) {
 	_, err := r.DB.Model(Track).Where("id = ?", Track.ID).Update()
 	return Track, err
 }
 
-func (r *mutationResolver) DeleteCurrentTrack(Track *model.Track) error {
+func (r *mutationResolver) DeleteCurrentTrack(Track *model.Tracks) error {
 	_, err := r.DB.Model(Track).Where("id =?", Track.ID).Delete()
 	if err != nil {
 		return nil

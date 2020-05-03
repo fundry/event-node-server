@@ -14,7 +14,7 @@ func createSchema(db *pg.DB) error {
     for _, models := range []interface{}{(*model.User)(nil),
         (*model.User)(nil), (*model.Event)(nil), (*model.Preference)(nil),
         (*model.File)(nil), (*model.Team)(nil), (*model.Sponsor)(nil),
-        (*model.Tasks)(nil), (*model.Track)(nil), (*model.Talk)(nil)} {
+        (*model.Tasks)(nil), (*model.Tracks)(nil), (*model.Talk)(nil)} {
         err := db.CreateTable(models, &orm.CreateTableOptions{
             IfNotExists: true, FKConstraints: true,
         })

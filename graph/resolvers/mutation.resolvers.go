@@ -344,13 +344,12 @@ func (r *mutationResolver) CreateTalk(ctx context.Context, input model.CreateTal
 		ID:           rand.Int(),
 		Title:        input.Title,
 		SpeakerID:    userID,
-		TalkCoverURI: nil,
+		TalkCoverURI: input.TalkCoverURI,
 		Summary:      input.Summary,
 		Description:  input.Description,
-		Reviewers:    nil,
 		Archived:     false,
 		Duration:     input.Duration,
-		Tags:         nil,
+		Tags:         input.Tags,
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 	}
@@ -412,8 +411,8 @@ func (r *mutationResolver) DeleteTalk(ctx context.Context, id int) (bool, error)
 	return true, nil
 }
 
-func (r *mutationResolver) CreateTrack(ctx context.Context, input model.CreateTrack, eventID int) (*model.Track, error) {
-	track := model.Track{
+func (r *mutationResolver) CreateTrack(ctx context.Context, input model.CreateTrack, eventID int) (*model.Tracks, error) {
+	track := model.Tracks{
 		ID:          rand.Int(),
 		Name:        input.Name,
 		Duration:    input.Duration,
@@ -421,16 +420,18 @@ func (r *mutationResolver) CreateTrack(ctx context.Context, input model.CreateTr
 		IsCompleted: false,
 		Archived:    false,
 		EventID:     eventID,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
 	}
-
-	if err := r.DB.Insert(track); err != nil {
+	// i  forgot to dereference this and it caused nightmares
+	if err := r.DB.Insert(&track); err != nil {
 		return nil, err
 	}
 
 	return &track, nil
 }
 
-func (r *mutationResolver) UpdateTrack(ctx context.Context, id int, input model.UpdateTrack) (*model.Track, error) {
+func (r *mutationResolver) UpdateTrack(ctx context.Context, id int, input model.UpdateTrack) (*model.Tracks, error) {
 	track, err := r.GetTrackById(id)
 
 	if track != nil && err != nil {
@@ -456,6 +457,7 @@ func (r *mutationResolver) UpdateTrack(ctx context.Context, id int, input model.
 	}
 
 	return track, nil
+	panic("likely err here")
 }
 
 func (r *mutationResolver) DeleteTrack(ctx context.Context, id int) (bool, error) {
@@ -468,6 +470,8 @@ func (r *mutationResolver) DeleteTrack(ctx context.Context, id int) (bool, error
 	err = r.DeleteCurrentTrack(track)
 
 	return true, nil
+
+	panic("likely err here")
 }
 
 // Mutation returns generated.MutationResolver implementation.

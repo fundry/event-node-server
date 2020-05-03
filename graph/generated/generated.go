@@ -43,7 +43,7 @@ type ResolverRoot interface {
 	Sponsor() SponsorResolver
 	Talk() TalkResolver
 	Team() TeamResolver
-	Track() TrackResolver
+	Tracks() TracksResolver
 	User() UserResolver
 }
 
@@ -205,7 +205,7 @@ type ComplexityRoot struct {
 		UpdatedAt func(childComplexity int) int
 	}
 
-	Track struct {
+	Tracks struct {
 		Archived    func(childComplexity int) int
 		CreatedAt   func(childComplexity int) int
 		CreatedBy   func(childComplexity int) int
@@ -246,7 +246,7 @@ type ComplexityRoot struct {
 type EventResolver interface {
 	CreatedBy(ctx context.Context, obj *model.Event) ([]*model.User, error)
 	Attendees(ctx context.Context, obj *model.Event) ([]*model.User, error)
-	Tracks(ctx context.Context, obj *model.Event) ([]*model.Track, error)
+	Tracks(ctx context.Context, obj *model.Event) ([]*model.Tracks, error)
 
 	Teams(ctx context.Context, obj *model.Event) ([]*model.Team, error)
 }
@@ -276,8 +276,8 @@ type MutationResolver interface {
 	CreateTalk(ctx context.Context, input model.CreateTalk, userID int) (*model.Talk, error)
 	UpdateTalk(ctx context.Context, id int, input model.UpdateTalk) (*model.Talk, error)
 	DeleteTalk(ctx context.Context, id int) (bool, error)
-	CreateTrack(ctx context.Context, input model.CreateTrack, eventID int) (*model.Track, error)
-	UpdateTrack(ctx context.Context, id int, input model.UpdateTrack) (*model.Track, error)
+	CreateTrack(ctx context.Context, input model.CreateTrack, eventID int) (*model.Tracks, error)
+	UpdateTrack(ctx context.Context, id int, input model.UpdateTrack) (*model.Tracks, error)
 	DeleteTrack(ctx context.Context, id int) (bool, error)
 }
 type QueryResolver interface {
@@ -297,8 +297,8 @@ type QueryResolver interface {
 	Tasks(ctx context.Context, limit *int) ([]*model.Tasks, error)
 	Talk(ctx context.Context, id int) (*model.Talk, error)
 	Talks(ctx context.Context, limit *int) ([]*model.Talk, error)
-	Track(ctx context.Context, id int) (*model.Track, error)
-	Tracks(ctx context.Context, limit *int) ([]*model.Track, error)
+	Track(ctx context.Context, id int) (*model.Tracks, error)
+	Tracks(ctx context.Context, limit *int) ([]*model.Tracks, error)
 }
 type SponsorResolver interface {
 	Event(ctx context.Context, obj *model.Sponsor) (*model.Event, error)
@@ -312,10 +312,9 @@ type TeamResolver interface {
 
 	CreatedBy(ctx context.Context, obj *model.Team) ([]*model.Event, error)
 }
-type TrackResolver interface {
-	Talks(ctx context.Context, obj *model.Track) ([]*model.Talk, error)
-
-	CreatedBy(ctx context.Context, obj *model.Track) ([]*model.Event, error)
+type TracksResolver interface {
+	Talks(ctx context.Context, obj *model.Tracks) ([]*model.Talk, error)
+	CreatedBy(ctx context.Context, obj *model.Tracks) ([]*model.Event, error)
 }
 type UserResolver interface {
 	Talks(ctx context.Context, obj *model.User) ([]*model.Talk, error)
@@ -1423,89 +1422,89 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Team.UpdatedAt(childComplexity), true
 
-	case "Track.Archived":
-		if e.complexity.Track.Archived == nil {
+	case "Tracks.Archived":
+		if e.complexity.Tracks.Archived == nil {
 			break
 		}
 
-		return e.complexity.Track.Archived(childComplexity), true
+		return e.complexity.Tracks.Archived(childComplexity), true
 
-	case "Track.createdAt":
-		if e.complexity.Track.CreatedAt == nil {
+	case "Tracks.createdAt":
+		if e.complexity.Tracks.CreatedAt == nil {
 			break
 		}
 
-		return e.complexity.Track.CreatedAt(childComplexity), true
+		return e.complexity.Tracks.CreatedAt(childComplexity), true
 
-	case "Track.createdBy":
-		if e.complexity.Track.CreatedBy == nil {
+	case "Tracks.createdBy":
+		if e.complexity.Tracks.CreatedBy == nil {
 			break
 		}
 
-		return e.complexity.Track.CreatedBy(childComplexity), true
+		return e.complexity.Tracks.CreatedBy(childComplexity), true
 
-	case "Track.duration":
-		if e.complexity.Track.Duration == nil {
+	case "Tracks.duration":
+		if e.complexity.Tracks.Duration == nil {
 			break
 		}
 
-		return e.complexity.Track.Duration(childComplexity), true
+		return e.complexity.Tracks.Duration(childComplexity), true
 
-	case "Track.event_id":
-		if e.complexity.Track.EventID == nil {
+	case "Tracks.event_id":
+		if e.complexity.Tracks.EventID == nil {
 			break
 		}
 
-		return e.complexity.Track.EventID(childComplexity), true
+		return e.complexity.Tracks.EventID(childComplexity), true
 
-	case "Track.id":
-		if e.complexity.Track.ID == nil {
+	case "Tracks.id":
+		if e.complexity.Tracks.ID == nil {
 			break
 		}
 
-		return e.complexity.Track.ID(childComplexity), true
+		return e.complexity.Tracks.ID(childComplexity), true
 
-	case "Track.isCompleted":
-		if e.complexity.Track.IsCompleted == nil {
+	case "Tracks.isCompleted":
+		if e.complexity.Tracks.IsCompleted == nil {
 			break
 		}
 
-		return e.complexity.Track.IsCompleted(childComplexity), true
+		return e.complexity.Tracks.IsCompleted(childComplexity), true
 
-	case "Track.name":
-		if e.complexity.Track.Name == nil {
+	case "Tracks.name":
+		if e.complexity.Tracks.Name == nil {
 			break
 		}
 
-		return e.complexity.Track.Name(childComplexity), true
+		return e.complexity.Tracks.Name(childComplexity), true
 
-	case "Track.talks":
-		if e.complexity.Track.Talks == nil {
+	case "Tracks.talks":
+		if e.complexity.Tracks.Talks == nil {
 			break
 		}
 
-		return e.complexity.Track.Talks(childComplexity), true
+		return e.complexity.Tracks.Talks(childComplexity), true
 
-	case "Track.totalTalks":
-		if e.complexity.Track.TotalTalks == nil {
+	case "Tracks.totalTalks":
+		if e.complexity.Tracks.TotalTalks == nil {
 			break
 		}
 
-		return e.complexity.Track.TotalTalks(childComplexity), true
+		return e.complexity.Tracks.TotalTalks(childComplexity), true
 
-	case "Track.trackImgUri":
-		if e.complexity.Track.TrackImgURI == nil {
+	case "Tracks.trackImgUri":
+		if e.complexity.Tracks.TrackImgURI == nil {
 			break
 		}
 
-		return e.complexity.Track.TrackImgURI(childComplexity), true
+		return e.complexity.Tracks.TrackImgURI(childComplexity), true
 
-	case "Track.updatedAt":
-		if e.complexity.Track.UpdatedAt == nil {
+	case "Tracks.updatedAt":
+		if e.complexity.Tracks.UpdatedAt == nil {
 			break
 		}
 
-		return e.complexity.Track.UpdatedAt(childComplexity), true
+		return e.complexity.Tracks.UpdatedAt(childComplexity), true
 
 	case "User.bucketLink":
 		if e.complexity.User.BucketLink == nil {
@@ -1742,8 +1741,8 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
     updateTalk(id: ID! , input: UpdateTalk!) : Talk!
     deleteTalk(id: ID!) : Boolean!
 
-    createTrack(input: CreateTrack!, EventID: Int!) : Track!
-    updateTrack(id: ID! , input: UpdateTrack!) : Track!
+    createTrack(input: CreateTrack!, EventID: Int!) : Tracks!
+    updateTrack(id: ID! , input: UpdateTrack!) : Tracks!
     deleteTrack(id: ID!) : Boolean!
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/query.graphqls", Input: `type Query {
@@ -1771,8 +1770,8 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
     talk(id : Int!): Talk!
     talks(Limit: Int) : [Talk!]!
 
-    track(id : Int!): Track!
-    tracks(Limit: Int) : [Track!]!
+    track(id : Int!): Tracks!
+    tracks(Limit: Int) : [Tracks!]!
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/scalar.graphqls", Input: `# My custom defined types https://github.com/99designs/gqlgen/blob/master/docs/content/reference/scalars.md
 
@@ -1816,7 +1815,7 @@ input LoginUser {
     author_id : Int!
     createdBy: [User]  # just for testing . This shouldnt be an array
     attendees: [User]
-    tracks: [Track]
+    tracks: [Tracks]
     track_id: Int
     teams: [Team!]
     isArchived: Boolean! @default(value: false)
@@ -2020,28 +2019,28 @@ input UpdateTeam {
     members: [CreateUser]
     goal: String!
 }`, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/track.graphqls", Input: `type Track {
+	&ast.Source{Name: "graph/schema/types/track.graphqls", Input: `type Tracks {
     id : Int!
     name: String!
-    trackImgUri: String
+    trackImgUri: String!
     duration: String!
-    talks: [Talk]
     totalTalks: Int!
-    createdBy: [Event] # testing purposes!! this should be single later
     isCompleted: Boolean!
     Archived: Boolean!
     createdAt: Time!
     updatedAt: Time!
     event_id: Int! #my event FK
+    talks: [Talk]
+    createdBy: [Event]# testing purposes!! this should be single later
 }
 
 input CreateTrack {
     name: String!
     trackImgUri: String
     duration: String!
-    talks: [CreateTalk]
+    talks: String
     totalTalks: Int!
-    createdBy: CreateEvent
+    createdBy:  String
     isCompleted: Boolean!
     Archived: Boolean!
 }
@@ -2050,10 +2049,11 @@ input UpdateTrack {
     name: String!
     trackImgUri: String
     duration: String!
-    talks: [CreateTalk]
+    #    talks: [CreateTalk]
     totalTalks: Int!
     isCompleted: Boolean!
     Archived: Boolean!
+    updatedAt: Time!
 }
 
 
@@ -3591,9 +3591,9 @@ func (ec *executionContext) _Event_tracks(ctx context.Context, field graphql.Col
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Track)
+	res := resTmp.([]*model.Tracks)
 	fc.Result = res
-	return ec.marshalOTrack2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx, field.Selections, res)
+	return ec.marshalOTracks2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTracks(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Event_track_id(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
@@ -5073,9 +5073,9 @@ func (ec *executionContext) _Mutation_createTrack(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Track)
+	res := resTmp.(*model.Tracks)
 	fc.Result = res
-	return ec.marshalNTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx, field.Selections, res)
+	return ec.marshalNTracks2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTracks(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_updateTrack(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -5114,9 +5114,9 @@ func (ec *executionContext) _Mutation_updateTrack(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Track)
+	res := resTmp.(*model.Tracks)
 	fc.Result = res
-	return ec.marshalNTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx, field.Selections, res)
+	return ec.marshalNTracks2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTracks(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_deleteTrack(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6043,9 +6043,9 @@ func (ec *executionContext) _Query_track(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Track)
+	res := resTmp.(*model.Tracks)
 	fc.Result = res
-	return ec.marshalNTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx, field.Selections, res)
+	return ec.marshalNTracks2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTracks(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_tracks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6084,9 +6084,9 @@ func (ec *executionContext) _Query_tracks(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Track)
+	res := resTmp.([]*model.Tracks)
 	fc.Result = res
-	return ec.marshalNTrack2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrackᚄ(ctx, field.Selections, res)
+	return ec.marshalNTracks2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTracksᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -7537,7 +7537,7 @@ func (ec *executionContext) _Team_event(ctx context.Context, field graphql.Colle
 	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Track_id(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+func (ec *executionContext) _Tracks_id(ctx context.Context, field graphql.CollectedField, obj *model.Tracks) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7545,7 +7545,7 @@ func (ec *executionContext) _Track_id(ctx context.Context, field graphql.Collect
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "Track",
+		Object:   "Tracks",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -7571,7 +7571,7 @@ func (ec *executionContext) _Track_id(ctx context.Context, field graphql.Collect
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Track_name(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+func (ec *executionContext) _Tracks_name(ctx context.Context, field graphql.CollectedField, obj *model.Tracks) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7579,7 +7579,7 @@ func (ec *executionContext) _Track_name(ctx context.Context, field graphql.Colle
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "Track",
+		Object:   "Tracks",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -7605,7 +7605,7 @@ func (ec *executionContext) _Track_name(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Track_trackImgUri(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+func (ec *executionContext) _Tracks_trackImgUri(ctx context.Context, field graphql.CollectedField, obj *model.Tracks) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7613,7 +7613,7 @@ func (ec *executionContext) _Track_trackImgUri(ctx context.Context, field graphq
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "Track",
+		Object:   "Tracks",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -7629,14 +7629,17 @@ func (ec *executionContext) _Track_trackImgUri(ctx context.Context, field graphq
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Track_duration(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+func (ec *executionContext) _Tracks_duration(ctx context.Context, field graphql.CollectedField, obj *model.Tracks) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7644,7 +7647,7 @@ func (ec *executionContext) _Track_duration(ctx context.Context, field graphql.C
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "Track",
+		Object:   "Tracks",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -7670,7 +7673,7 @@ func (ec *executionContext) _Track_duration(ctx context.Context, field graphql.C
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Track_talks(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+func (ec *executionContext) _Tracks_totalTalks(ctx context.Context, field graphql.CollectedField, obj *model.Tracks) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7678,38 +7681,7 @@ func (ec *executionContext) _Track_talks(ctx context.Context, field graphql.Coll
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "Track",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Track().Talks(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Talk)
-	fc.Result = res
-	return ec.marshalOTalk2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalk(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Track_totalTalks(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Track",
+		Object:   "Tracks",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -7735,7 +7707,7 @@ func (ec *executionContext) _Track_totalTalks(ctx context.Context, field graphql
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Track_createdBy(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+func (ec *executionContext) _Tracks_isCompleted(ctx context.Context, field graphql.CollectedField, obj *model.Tracks) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7743,38 +7715,7 @@ func (ec *executionContext) _Track_createdBy(ctx context.Context, field graphql.
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "Track",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Track().CreatedBy(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Event)
-	fc.Result = res
-	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Track_isCompleted(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Track",
+		Object:   "Tracks",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -7800,7 +7741,7 @@ func (ec *executionContext) _Track_isCompleted(ctx context.Context, field graphq
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Track_Archived(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+func (ec *executionContext) _Tracks_Archived(ctx context.Context, field graphql.CollectedField, obj *model.Tracks) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7808,7 +7749,7 @@ func (ec *executionContext) _Track_Archived(ctx context.Context, field graphql.C
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "Track",
+		Object:   "Tracks",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -7834,7 +7775,7 @@ func (ec *executionContext) _Track_Archived(ctx context.Context, field graphql.C
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Track_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+func (ec *executionContext) _Tracks_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Tracks) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7842,7 +7783,7 @@ func (ec *executionContext) _Track_createdAt(ctx context.Context, field graphql.
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "Track",
+		Object:   "Tracks",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -7868,7 +7809,7 @@ func (ec *executionContext) _Track_createdAt(ctx context.Context, field graphql.
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Track_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+func (ec *executionContext) _Tracks_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Tracks) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7876,7 +7817,7 @@ func (ec *executionContext) _Track_updatedAt(ctx context.Context, field graphql.
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "Track",
+		Object:   "Tracks",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -7902,7 +7843,7 @@ func (ec *executionContext) _Track_updatedAt(ctx context.Context, field graphql.
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Track_event_id(ctx context.Context, field graphql.CollectedField, obj *model.Track) (ret graphql.Marshaler) {
+func (ec *executionContext) _Tracks_event_id(ctx context.Context, field graphql.CollectedField, obj *model.Tracks) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -7910,7 +7851,7 @@ func (ec *executionContext) _Track_event_id(ctx context.Context, field graphql.C
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "Track",
+		Object:   "Tracks",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -7934,6 +7875,68 @@ func (ec *executionContext) _Track_event_id(ctx context.Context, field graphql.C
 	res := resTmp.(int)
 	fc.Result = res
 	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Tracks_talks(ctx context.Context, field graphql.CollectedField, obj *model.Tracks) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Tracks",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Tracks().Talks(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Talk)
+	fc.Result = res
+	return ec.marshalOTalk2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalk(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Tracks_createdBy(ctx context.Context, field graphql.CollectedField, obj *model.Tracks) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Tracks",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Tracks().CreatedBy(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Event)
+	fc.Result = res
+	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
@@ -9900,7 +9903,7 @@ func (ec *executionContext) unmarshalInputCreateTrack(ctx context.Context, obj i
 			}
 		case "talks":
 			var err error
-			it.Talks, err = ec.unmarshalOCreateTalk2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx, v)
+			it.Talks, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9912,7 +9915,7 @@ func (ec *executionContext) unmarshalInputCreateTrack(ctx context.Context, obj i
 			}
 		case "createdBy":
 			var err error
-			it.CreatedBy, err = ec.unmarshalOCreateEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx, v)
+			it.CreatedBy, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10402,12 +10405,6 @@ func (ec *executionContext) unmarshalInputUpdateTrack(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
-		case "talks":
-			var err error
-			it.Talks, err = ec.unmarshalOCreateTalk2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "totalTalks":
 			var err error
 			it.TotalTalks, err = ec.unmarshalNInt2int(ctx, v)
@@ -10423,6 +10420,12 @@ func (ec *executionContext) unmarshalInputUpdateTrack(ctx context.Context, obj i
 		case "Archived":
 			var err error
 			it.Archived, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "updatedAt":
+			var err error
+			it.UpdatedAt, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11533,31 +11536,64 @@ func (ec *executionContext) _Team(ctx context.Context, sel ast.SelectionSet, obj
 	return out
 }
 
-var trackImplementors = []string{"Track"}
+var tracksImplementors = []string{"Tracks"}
 
-func (ec *executionContext) _Track(ctx context.Context, sel ast.SelectionSet, obj *model.Track) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, trackImplementors)
+func (ec *executionContext) _Tracks(ctx context.Context, sel ast.SelectionSet, obj *model.Tracks) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tracksImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("Track")
+			out.Values[i] = graphql.MarshalString("Tracks")
 		case "id":
-			out.Values[i] = ec._Track_id(ctx, field, obj)
+			out.Values[i] = ec._Tracks_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
-			out.Values[i] = ec._Track_name(ctx, field, obj)
+			out.Values[i] = ec._Tracks_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "trackImgUri":
-			out.Values[i] = ec._Track_trackImgUri(ctx, field, obj)
+			out.Values[i] = ec._Tracks_trackImgUri(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "duration":
-			out.Values[i] = ec._Track_duration(ctx, field, obj)
+			out.Values[i] = ec._Tracks_duration(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "totalTalks":
+			out.Values[i] = ec._Tracks_totalTalks(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "isCompleted":
+			out.Values[i] = ec._Tracks_isCompleted(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "Archived":
+			out.Values[i] = ec._Tracks_Archived(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "createdAt":
+			out.Values[i] = ec._Tracks_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "updatedAt":
+			out.Values[i] = ec._Tracks_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "event_id":
+			out.Values[i] = ec._Tracks_event_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
@@ -11569,14 +11605,9 @@ func (ec *executionContext) _Track(ctx context.Context, sel ast.SelectionSet, ob
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Track_talks(ctx, field, obj)
+				res = ec._Tracks_talks(ctx, field, obj)
 				return res
 			})
-		case "totalTalks":
-			out.Values[i] = ec._Track_totalTalks(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "createdBy":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -11585,34 +11616,9 @@ func (ec *executionContext) _Track(ctx context.Context, sel ast.SelectionSet, ob
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Track_createdBy(ctx, field, obj)
+				res = ec._Tracks_createdBy(ctx, field, obj)
 				return res
 			})
-		case "isCompleted":
-			out.Values[i] = ec._Track_isCompleted(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
-		case "Archived":
-			out.Values[i] = ec._Track_Archived(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
-		case "createdAt":
-			out.Values[i] = ec._Track_createdAt(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
-		case "updatedAt":
-			out.Values[i] = ec._Track_updatedAt(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
-		case "event_id":
-			out.Values[i] = ec._Track_event_id(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12423,11 +12429,11 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalNTrack2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx context.Context, sel ast.SelectionSet, v model.Track) graphql.Marshaler {
-	return ec._Track(ctx, sel, &v)
+func (ec *executionContext) marshalNTracks2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTracks(ctx context.Context, sel ast.SelectionSet, v model.Tracks) graphql.Marshaler {
+	return ec._Tracks(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNTrack2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrackᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Track) graphql.Marshaler {
+func (ec *executionContext) marshalNTracks2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTracksᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Tracks) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -12451,7 +12457,7 @@ func (ec *executionContext) marshalNTrack2ᚕᚖgithubᚗcomᚋvickywaneᚋevent
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx, sel, v[i])
+			ret[i] = ec.marshalNTracks2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTracks(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -12464,14 +12470,14 @@ func (ec *executionContext) marshalNTrack2ᚕᚖgithubᚗcomᚋvickywaneᚋevent
 	return ret
 }
 
-func (ec *executionContext) marshalNTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx context.Context, sel ast.SelectionSet, v *model.Track) graphql.Marshaler {
+func (ec *executionContext) marshalNTracks2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTracks(ctx context.Context, sel ast.SelectionSet, v *model.Tracks) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
 		}
 		return graphql.Null
 	}
-	return ec._Track(ctx, sel, v)
+	return ec._Tracks(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNUpdateEvent2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateEvent(ctx context.Context, v interface{}) (model.UpdateEvent, error) {
@@ -12835,38 +12841,6 @@ func (ec *executionContext) unmarshalOCreateEvent2ᚖgithubᚗcomᚋvickywaneᚋ
 		return nil, nil
 	}
 	res, err := ec.unmarshalOCreateEvent2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx, v)
-	return &res, err
-}
-
-func (ec *executionContext) unmarshalOCreateTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx context.Context, v interface{}) (model.CreateTalk, error) {
-	return ec.unmarshalInputCreateTalk(ctx, v)
-}
-
-func (ec *executionContext) unmarshalOCreateTalk2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx context.Context, v interface{}) ([]*model.CreateTalk, error) {
-	var vSlice []interface{}
-	if v != nil {
-		if tmp1, ok := v.([]interface{}); ok {
-			vSlice = tmp1
-		} else {
-			vSlice = []interface{}{v}
-		}
-	}
-	var err error
-	res := make([]*model.CreateTalk, len(vSlice))
-	for i := range vSlice {
-		res[i], err = ec.unmarshalOCreateTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) unmarshalOCreateTalk2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx context.Context, v interface{}) (*model.CreateTalk, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalOCreateTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx, v)
 	return &res, err
 }
 
@@ -13363,11 +13337,11 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 	return ec.marshalOTime2timeᚐTime(ctx, sel, *v)
 }
 
-func (ec *executionContext) marshalOTrack2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx context.Context, sel ast.SelectionSet, v model.Track) graphql.Marshaler {
-	return ec._Track(ctx, sel, &v)
+func (ec *executionContext) marshalOTracks2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTracks(ctx context.Context, sel ast.SelectionSet, v model.Tracks) graphql.Marshaler {
+	return ec._Tracks(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOTrack2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx context.Context, sel ast.SelectionSet, v []*model.Track) graphql.Marshaler {
+func (ec *executionContext) marshalOTracks2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTracks(ctx context.Context, sel ast.SelectionSet, v []*model.Tracks) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -13394,7 +13368,7 @@ func (ec *executionContext) marshalOTrack2ᚕᚖgithubᚗcomᚋvickywaneᚋevent
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx, sel, v[i])
+			ret[i] = ec.marshalOTracks2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTracks(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -13407,11 +13381,11 @@ func (ec *executionContext) marshalOTrack2ᚕᚖgithubᚗcomᚋvickywaneᚋevent
 	return ret
 }
 
-func (ec *executionContext) marshalOTrack2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTrack(ctx context.Context, sel ast.SelectionSet, v *model.Track) graphql.Marshaler {
+func (ec *executionContext) marshalOTracks2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTracks(ctx context.Context, sel ast.SelectionSet, v *model.Tracks) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return ec._Track(ctx, sel, v)
+	return ec._Tracks(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOUser2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {

@@ -33,7 +33,7 @@ type Mutation {
     updateTalk(id: ID! , input: UpdateTalk!) : Talk!
     deleteTalk(id: ID!) : Boolean!
 
-    createTrack(input: CreateTrack!, EventID: Int!) : Track!
-    updateTrack(id: ID! , input: UpdateTrack!) : Track!
+    createTrack(input: CreateTrack!, EventID: Int!) : Tracks!
+    updateTrack(id: ID! , input: UpdateTrack!) : Tracks!
     deleteTrack(id: ID!) : Boolean!
 }

@@ -78,14 +78,14 @@ type CreateTeam struct {
 }
 
 type CreateTrack struct {
-	Name        string        `json:"name"`
-	TrackImgURI *string       `json:"trackImgUri"`
-	Duration    string        `json:"duration"`
-	Talks       []*CreateTalk `json:"talks"`
-	TotalTalks  int           `json:"totalTalks"`
-	CreatedBy   *CreateEvent  `json:"createdBy"`
-	IsCompleted bool          `json:"isCompleted"`
-	Archived    bool          `json:"Archived"`
+	Name        string  `json:"name"`
+	TrackImgURI *string `json:"trackImgUri"`
+	Duration    string  `json:"duration"`
+	Talks       *string `json:"talks"`
+	TotalTalks  int     `json:"totalTalks"`
+	CreatedBy   *string `json:"createdBy"`
+	IsCompleted bool    `json:"isCompleted"`
+	Archived    bool    `json:"Archived"`
 }
 
 type CreateUser struct {
@@ -125,7 +125,7 @@ type Event struct {
 	AuthorID    int       `json:"author_id"`
 	CreatedBy   []*User   `json:"createdBy"`
 	Attendees   []*User   `json:"attendees"`
-	Tracks      []*Track  `json:"tracks"`
+	Tracks      []*Tracks `json:"tracks"`
 	TrackID     *int      `json:"track_id"`
 	Teams       []*Team   `json:"teams"`
 	IsArchived  bool      `json:"isArchived"`
@@ -209,19 +209,19 @@ type Team struct {
 	Event     []*Event  `json:"event"`
 }
 
-type Track struct {
+type Tracks struct {
 	ID          int       `json:"id"`
 	Name        string    `json:"name"`
-	TrackImgURI *string   `json:"trackImgUri"`
+	TrackImgURI string    `json:"trackImgUri"`
 	Duration    string    `json:"duration"`
-	Talks       []*Talk   `json:"talks"`
 	TotalTalks  int       `json:"totalTalks"`
-	CreatedBy   []*Event  `json:"createdBy"`
 	IsCompleted bool      `json:"isCompleted"`
 	Archived    bool      `json:"Archived"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 	EventID     int       `json:"event_id"`
+	Talks       []*Talk   `json:"talks"`
+	CreatedBy   []*Event  `json:"createdBy"`
 }
 
 type UpdateEvent struct {
@@ -284,13 +284,13 @@ type UpdateTeam struct {
 }
 
 type UpdateTrack struct {
-	Name        string        `json:"name"`
-	TrackImgURI *string       `json:"trackImgUri"`
-	Duration    string        `json:"duration"`
-	Talks       []*CreateTalk `json:"talks"`
-	TotalTalks  int           `json:"totalTalks"`
-	IsCompleted bool          `json:"isCompleted"`
-	Archived    bool          `json:"Archived"`
+	Name        string    `json:"name"`
+	TrackImgURI *string   `json:"trackImgUri"`
+	Duration    string    `json:"duration"`
+	TotalTalks  int       `json:"totalTalks"`
+	IsCompleted bool      `json:"isCompleted"`
+	Archived    bool      `json:"Archived"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 type UpdateUser struct {
