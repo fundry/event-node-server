@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.56.0 // indirect
 	github.com/99designs/gqlgen v0.11.3
 	github.com/appleboy/gin-jwt/v2 v2.6.3
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.6.2
 	github.com/go-pg/migrations/v7 v7.1.9
@@ -22,6 +23,6 @@ require (
 	golang.org/x/sys v0.0.0-20200413165638-669c56c373c4 // indirect
 	golang.org/x/tools v0.0.0-20200420001825-978e26b7c37c // indirect
 	google.golang.org/api v0.21.0 // indirect
-	google.golang.org/genproto v0.0.0-20200417142217-fb6d0575620b // indirect
+	google.golang.org/genproto v0.0.0-20200417142217-fb6d0575620b
 	google.golang.org/grpc v1.28.1 // indirect
 )

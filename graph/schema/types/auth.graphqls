@@ -1,9 +1,11 @@
-type AuthResponse {
+ type AuthResponse {
+    id : Int!
     token : String!
-    expiredAt: String
+    expiredAt : Time!
+    user : User!
 }
 
-input LoginUser {
-    Email : String!
-    Password: String!
+input LoginInput {
+    email : String!
+    password : String!
 }

@@ -1,10 +1,16 @@
 package middlewares
 
 import (
-	jwt "github.com/appleboy/gin-jwt/v2"
+	"context"
+	"errors"
+	"fmt"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go/request"
 	"github.com/gin-gonic/gin"
+	"github.com/go-pg/pg/v9"
 	"github.com/joho/godotenv"
-	"time"
+	"net/http"
+	"strings"
 
 	"github.com/vickywane/event-server/graph/model"
 )
@@ -13,51 +19,86 @@ var Env, _ = godotenv.Read(".env")
 
 var Key = Env["SECRET_KEY"]
 
-func LoginHandler(c *gin.Context) {
-	claims := jwt.ExtractClaims(c)
-	user, _ := c.Get(Key)
-	c.JSON(200, gin.H{
-		"userID":   claims[Key],
-		"userName": user.(*model.User).Name,
-	})
+type Resolver struct {
+	DB *pg.DB
 }
 
-var AuthMiddleware, err = jwt.New(&jwt.GinJWTMiddleware{
-	Realm:       "test zone",
-	Key:         []byte("secret key"),
-	Timeout:     time.Hour,
-	MaxRefresh:  time.Hour,
-	IdentityKey: Key,
-	PayloadFunc: func(data interface{}) jwt.MapClaims {
-		// if v, ok := data.(*model.User); ok {
-		// 	return jwt.MapClaims{
-		// 		identityKey: v.Name,
-		// 	}
-		// }
-		return jwt.MapClaims{}
-	},
+// used by auth middleware to get current user from ctx
+func (r *Resolver) GetAUserById(id string) (*model.User, error) {
+	user := model.User{}
+	err := r.DB.Model(&user).Where("id = ?", id).First()
+	return &user, err
+}
 
-	IdentityHandler: func(c *gin.Context) interface{} {
-		claims := jwt.ExtractClaims(c)
-		return &model.User{
-			Name: claims[Key].(string),
+func JWT() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		Req := c.Request
+		token, Terr := parseToken(Req)
+		if Terr != nil {
+			// http.Handler.ServeHTTP(c.Request, c.Writer)
+			fmt.Println("an error with JWT middleware")
+			return
 		}
-	},
-
-	Authenticator: func(c *gin.Context) (interface{}, error) {
-		var UserDetails *model.User
-		if err := c.ShouldBind(&UserDetails); err != nil {
-			return "", jwt.ErrMissingLoginValues
+		claims, ok := token.Claims.(jwt.MapClaims)
+		fmt.Println(claims)
+		if ok || !token.Valid {
+			return
 		}
-		userID := "admin"
-		password := "admin"
-
-		if (userID == "admin" && password == "admin") || (userID == "test" && password == "test") {
-			return &model.User{
-				Name: userID,
-			}, nil
+		user, err := "", ""
+		if err != "" {
+			return
 		}
 
-		return nil, jwt.ErrFailedAuthentication
-	},
-})
+		ctx := context.WithValue(Req.Context(), ContextKey, user)
+		fmt.Println(ctx, "look ctx")
+		// gin error
+		// http.Handler.ServeHTTP(c.Writer, Req.WithContext(ctx))
+	}
+}
+
+var headerExtractor = &request.PostExtractionFilter{
+	Extractor: request.HeaderExtractor{"Authorization"},
+	Filter:    getBearFromTokenPayload,
+}
+
+func getBearFromTokenPayload(token string) (string, error) {
+	bearer := "BEARER"
+
+	if strings.ToUpper(token[0:len(bearer)]) == bearer {
+		// trying to get the token after the BEARER keyword + a whitespace
+		return token[len(bearer)+1:], nil
+	}
+
+	return token, nil
+}
+
+var extractor = &request.MultiExtractor{
+	headerExtractor,
+	request.ArgumentExtractor{"access_token"},
+}
+
+func parseToken(Req *http.Request) (*jwt.Token, error) {
+	jwtToken, err := request.ParseFromRequest(Req, extractor, func(token *jwt.Token) (interface{}, error) {
+		jwtSecret := Env["SECRET_KEY"]
+		return jwtSecret, nil
+	})
+
+	if err != nil {
+		return nil, errors.New("shit happened")
+	}
+
+	return jwtToken, nil
+}
+
+func ExtractCurrentUserFromContext(ctx context.Context) (*model.User, error) {
+	User, ok := ctx.Value(ContextKey).(*model.User)
+	if ctx.Value(ContextKey) == nil {
+		return nil, errors.New("user Context Empty. No User here")
+	}
+
+	if !ok || User.ID == 0 {
+		return nil, errors.New("user Context Empty. No User here")
+	}
+
+	return User, nil
+}

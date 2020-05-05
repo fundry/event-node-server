@@ -1,9 +1,11 @@
 type Mutation {
+    loginUser(input: LoginInput!): AuthResponse!
+
     createEvent(input: CreateEvent!, UserID: Int!): Event!
     updateEvent(id: ID, input: UpdateEvent!): Event!
     deleteEvent(id: ID!) : Boolean!
 
-    createUser(input: CreateUser!): User!
+    createUser(input: CreateUser!): AuthResponse
     updateUser(id: ID, input: UpdateUser! ): User!
     deleteUser(id: ID!) : Boolean!
 
@@ -22,8 +24,6 @@ type Mutation {
     createSponsor(input: CreateSponsor!): Sponsor!
     updateSponsor(id: ID, input: UpdateSponsor!):Sponsor!
     deleteSponsor(id: ID!) : Boolean!
-
-    loginUser(input: LoginUser!): AuthResponse!
 
     createTask(input: CreateTasks!) : Tasks!
     updateTask(id: ID! , input: UpdateTask!) : Tasks!

@@ -7,8 +7,10 @@ import (
 )
 
 type AuthResponse struct {
-	Token     string  `json:"token"`
-	ExpiredAt *string `json:"expiredAt"`
+	ID        int       `json:"id"`
+	Token     string    `json:"token"`
+	ExpiredAt time.Time `json:"expiredAt"`
+	User      *User     `json:"user"`
 }
 
 type CreateEvent struct {
@@ -142,9 +144,9 @@ type File struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-type LoginUser struct {
-	Email    string `json:"Email"`
-	Password string `json:"Password"`
+type LoginInput struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type Preference struct {
