@@ -1,0 +1,22 @@
+type Preference {
+    id : Int!
+    name: String!
+    color: String!
+    Event: Event!
+    createdAt: Time!
+    updatedAt: Time!
+}
+
+
+input CreatePreference {
+    name: String!
+    color: String!
+    Event: CreateEvent!
+}
+
+input UpdatePreference {
+    name: String!
+    color: String!
+    Event: CreateEvent!
+    updatedAt: Time!
+}

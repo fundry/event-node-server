@@ -1,0 +1,28 @@
+type Query {
+    event(id: Int name: String!) : Event!
+    events(Limit: Int): [Event!]!
+
+    user(id: Int, name: String!) : User!
+    users(Limit: Int) : [User!]!
+
+    preference(id: Int, name: String!) : Preference!
+    preferences(Limit: Int) : [Preference!]!
+
+    file(id: Int, name: String!) : File!
+    files: [File!]!
+
+    team(id: Int , name: String!): Team!
+    teams(Limit: Int): [Team!]!
+
+    sponsor(id: Int , name : String): Sponsor!
+    sponsors(Limit: Int): [Sponsor!]
+
+    task(id: Int) : Tasks!
+    tasks(Limit: Int) : [Tasks!]
+
+    talk(id : Int!): Talk!
+    talks(Limit: Int) : [Talk!]!
+
+    track(id : Int!): Tracks!
+    tracks(Limit: Int) : [Tracks!]!
+}

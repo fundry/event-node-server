@@ -1,0 +1,30 @@
+type User {
+    id : Int!
+    name: String!
+    role: String
+    email: String!
+    password: String!
+    bucketLink: String!
+    talks: [Talk]
+    events: [Event!]
+    event_id: Int!
+    createdAt: Time!
+    updatedAt: Time!
+}
+
+input CreateUser {
+    name: String!
+    role: String
+    email: String!
+    password: String!
+    events: [CreateEvent]
+}
+
+input UpdateUser {
+    name: String
+    role: String
+    email: String
+    password: String
+    events: [CreateEvent]
+    updatedAt: Time
+}

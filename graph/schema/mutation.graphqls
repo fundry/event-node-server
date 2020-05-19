@@ -1,0 +1,39 @@
+type Mutation {
+    loginUser(input: LoginInput!): AuthResponse!
+
+    createEvent(input: CreateEvent!, UserID: Int!): Event!
+    updateEvent(id: ID, input: UpdateEvent!): Event!
+    deleteEvent(id: ID!) : Boolean!
+
+    createUser(input: CreateUser!): AuthResponse
+    updateUser(id: ID, input: UpdateUser! ): User!
+    deleteUser(id: ID!) : Boolean!
+
+    createPreference(input: CreatePreference!): Preference!
+    updatePreference(id: ID, input: UpdatePreference!): Preference!
+    deletePreference(id: ID!) : Boolean!
+
+    createTeam(input: CreateTeam!, EventID: Int! ): Team!
+    updateTeam(id: ID, input: UpdateTeam!): Team!
+    deleteTeam(id: ID!) : Boolean!
+
+    createSponsor(input: CreateSponsor!): Sponsor!
+    updateSponsor(id: ID, input: UpdateSponsor!):Sponsor!
+    deleteSponsor(id: ID!) : Boolean!
+
+    createTask(input: CreateTasks!) : Tasks!
+    updateTask(id: ID! , input: UpdateTask!) : Tasks!
+    deleteTask(id: ID!) : Boolean!
+
+    createTalk(input: CreateTalk!, UserID: Int!) : Talk!
+    updateTalk(id: ID! , input: UpdateTalk!) : Talk!
+    deleteTalk(id: ID!) : Boolean!
+
+    createTrack(input: CreateTrack!, EventID: Int!) : Tracks!
+    updateTrack(id: ID! , input: UpdateTrack!) : Tracks!
+    deleteTrack(id: ID!) : Boolean!
+
+    uploadSingleFile(req: UploadFile!) : File!
+    uploadMultipleFiles(req: [UploadFile!]!) : [File!]!
+    deleteFile(id: ID!) : Boolean!
+}

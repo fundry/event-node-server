@@ -1,0 +1,39 @@
+type Tracks {
+    id : Int!
+    name: String!
+    trackImgUri: String!
+    duration: String!
+    totalTalks: Int!
+    isCompleted: Boolean!
+    Archived: Boolean!
+    createdAt: Time!
+    updatedAt: Time!
+    event_id: Int! #my event FK
+    talks: [Talk]
+    createdBy: [Event]# testing purposes!! this should be single later
+}
+
+input CreateTrack {
+    name: String!
+    trackImgUri: String
+    duration: String!
+    talks: String
+    totalTalks: Int!
+    createdBy:  String
+    isCompleted: Boolean!
+    Archived: Boolean!
+}
+
+input UpdateTrack {
+    name: String!
+    trackImgUri: String
+    duration: String!
+    #    talks: [CreateTalk]
+    totalTalks: Int!
+    isCompleted: Boolean!
+    Archived: Boolean!
+    updatedAt: Time!
+}
+
+
+

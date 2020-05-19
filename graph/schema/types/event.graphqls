@@ -1,0 +1,60 @@
+type Event {
+    id : Int!
+    name: String!
+    description: String!
+    summary: String!
+    alias: String!
+    Email: String!
+    confirmedEmail: Boolean!
+    website: String!
+    bucketLink : String!
+    venue: String!
+    eventType: String!
+    Date: Int!
+    createdAt: Time!
+    updatedAt: Time!
+    author_id : Int!
+    createdBy: [User]  # just for testing . This shouldnt be an array
+    attendees: [User]
+    tracks: [Tracks]
+    track_id: Int
+    teams: [Team!]
+    isArchived: Boolean! @default(value: false)
+    isLocked: Boolean!  @default(value: false)
+}
+
+input CreateEvent {
+    name: String!
+    summary: String!
+    alias: String!
+    Date: Int!
+    description: String!
+    website: String!
+    Email: String!
+    eventType: String!
+    isArchived: Boolean
+    isLocked: Boolean
+    CreatedBy: CreateUser
+    attendees: [CreateUser]
+    venue: String!
+}
+
+input UpdateEvent {
+    name: String
+    type: String
+    summary: String
+    alias: String
+    bucketLink : String
+    description: String
+    eventType: String
+    isArchived: Boolean
+    isLocked: Boolean
+    Email: String
+    website: String
+    track_id: Int
+    updatedAt: Time
+    attendees: [CreateUser]
+    venue: String
+    Date: Int!
+    team: CreateTeam
+}

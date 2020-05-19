@@ -1,0 +1,16 @@
+type File {
+    id: ID!
+    file: Upload!
+    file_uri: String!
+    timestamp: Time!
+}
+
+input UploadFile {
+    file: Upload!
+    file_uri: String!
+}
+
+input DeleteFile {
+    id: ID!
+    uri: String
+}

@@ -1,0 +1,40 @@
+type Talk {
+    id : Int!
+    title: String!
+    talkCoverUri: String
+    duration : Int!
+    summary: String!
+    description: String!
+    Archived: Boolean!
+    tags: [String]
+    createdAt: Time!
+    updatedAt: Time!
+    event_id : Int
+    reviewers_id: Int!
+    speaker_id: Int!
+    event: [Event]
+    speaker: [User]
+    reviewers: [User]
+}
+
+input CreateTalk {
+    title: String!
+    talkCoverUri: String
+    summary: String!
+    description: String!
+    Archived: Boolean!
+    duration : Int!
+    tags: [String]
+}
+
+input UpdateTalk {
+    title: String!
+    talkCoverUri: String
+    summary: String!
+    description: String!
+    # Reviewers would insert their id when accepting a talk
+    reviewers: [CreateUser]
+    Archived: Boolean!
+    duration : Int!
+    tags: [String]
+}

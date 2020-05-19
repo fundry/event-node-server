@@ -1,0 +1,103 @@
+schema:
+  - graph/schema/**/*.graphqls
+
+exec:
+  filename: graph/generated/generated.go
+  package: generated
+
+# Uncomment to enable federation
+# federation:
+#   filename: graph/generated/federation.go
+#   package: generated
+
+# Where should any generated models go?
+model:
+  filename: graph/model/models.go
+  package: model
+
+# Where should the resolver implementations go?
+resolver:
+  layout: follow-schema
+  dir: graph/resolvers
+  filename: graph/resolvers/resolvers.go
+  package: resolvers
+
+# Optional: turn on to use []Thing instead of []*Thing
+# omit_slice_element_pointers: false
+
+# Optional: set to speed up generation time by not performing a final validation pass.
+# skip_validation: true
+
+autobind:
+  - "github.com/vickywane/event-server/graph/model"
+
+models:
+  ID:
+    model:
+      - github.com/99designs/gqlgen/graphql.IntID #added by me
+      - github.com/99designs/gqlgen/graphql.ID
+      - github.com/99designs/gqlgen/graphql.Int
+      - github.com/99designs/gqlgen/graphql.Int64
+      - github.com/99designs/gqlgen/graphql.Int32
+  Int:
+    model:
+      - github.com/99designs/gqlgen/graphql.Int
+      - github.com/99designs/gqlgen/graphql.Int64
+      - github.com/99designs/gqlgen/graphql.Int32
+
+  Event:
+    fields:
+      createdBy:
+        resolver: true
+      attendees:
+        resolver: true
+      teams:
+        resolver: true
+      tracks:
+        resolver: true
+  User:
+    fields:
+      events:
+        resolver: true
+      talks:
+        resolver: true
+  Preference:
+    fields:
+      event:
+        resolver: true
+  Sponsor:
+    fields:
+      event:
+        resolver: true
+  Talk:
+    fields:
+      speaker:
+        resolver: true
+      reviewers:
+        resolver: true
+  Team:
+    fields:
+      members:
+        resolver: true
+      createdBy:
+        resolver: true
+  Tracks:
+    fields:
+      talks:
+        resolver: true
+      createdBy:
+        resolver: true
+      event:
+        resolver: true
+  Task:
+    fields:
+      assignees:
+        resolver: true
+      createdBy:
+        resolver: true
+      event:
+        resolver: true
+
+
+
+
