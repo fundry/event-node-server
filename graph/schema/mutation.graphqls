@@ -13,10 +13,6 @@ type Mutation {
     updatePreference(id: ID, input: UpdatePreference!): Preference!
     deletePreference(id: ID!) : Boolean!
 
-    createFile(input: CreateFile!) : File!
-    updateFile(id: ID, input: DeleteFile!): File!
-    deleteFile(id: ID!) : Boolean!
-
     createTeam(input: CreateTeam!, EventID: Int! ): Team!
     updateTeam(id: ID, input: UpdateTeam!): Team!
     deleteTeam(id: ID!) : Boolean!
@@ -36,4 +32,8 @@ type Mutation {
     createTrack(input: CreateTrack!, EventID: Int!) : Tracks!
     updateTrack(id: ID! , input: UpdateTrack!) : Tracks!
     deleteTrack(id: ID!) : Boolean!
+
+    uploadSingleFile(req: UploadFile!) : File!
+    uploadMultipleFiles(req: [UploadFile!]!) : [File!]!
+    deleteFile(id: ID!) : Boolean!
 }

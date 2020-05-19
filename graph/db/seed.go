@@ -57,11 +57,8 @@ func SeedDatabase(db *pg.DB) {
 
 	file := model.File{
 		ID:       rand.Int(),
-		Filename: "Image",
-		Mimetype: "img",
-		Size:     "240gb",
-		URI:      "https://test.cloud.com",
-		Encoding: "UTf8",
+		FileURI: "https://test.cloud.com",
+		Timestamp: time.Now(),
 	}
 
 	sponsor := model.Sponsor{

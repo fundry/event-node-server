@@ -108,7 +108,7 @@ func (r *queryResolver) Preferences(ctx context.Context, limit *int) ([]*model.P
 }
 
 func (r *queryResolver) File(ctx context.Context, id *int, name string) (*model.File, error) {
-	File := model.File{ID: *id, Filename: name}
+	File := model.File{ID: *id, FileURI: name}
 
 	if err := r.DB.Select(&File); err != nil {
 		return nil, err

@@ -10,6 +10,12 @@ import (
 	"github.com/vickywane/event-server/graph/model"
 )
 
+// Hierarchy of execution of functions here is important.
+// Wrong placement panics the system
+// --> Establishing db connection comes before creating ORM models
+// ---> Seeding the db comes next
+// -----> Checking db health last!
+
 func createSchema(db *pg.DB) error {
 	for _, models := range []interface{}{(*model.User)(nil),
 		(*model.User)(nil), (*model.Event)(nil), (*model.Preference)(nil),
@@ -43,17 +49,16 @@ func Connect() *pg.DB {
 		fmt.Println(db)
 	}
 
-	if _, DBStatus := db.Exec("SELECT 1"); DBStatus != nil {
-		panic("PostgreSQL is down")
-	}
-
 	error := createSchema(db)
 	if error != nil {
 		panic(err)
 	}
-
-	// NOTE!! this func might likely try to reseed on every restart
 	SeedDatabase(db)
+
+	if _, DBStatus := db.Exec("SELECT 1"); DBStatus != nil {
+		panic("PostgreSQL is down")
+	}
+	// NOTE!! this func might likely try to reseed on every restart
 
 	return db
 }

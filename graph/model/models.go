@@ -4,6 +4,8 @@ package model
 
 import (
 	"time"
+
+	"github.com/99designs/gqlgen/graphql"
 )
 
 type AuthResponse struct {
@@ -27,16 +29,6 @@ type CreateEvent struct {
 	CreatedBy   *CreateUser   `json:"CreatedBy"`
 	Attendees   []*CreateUser `json:"attendees"`
 	Venue       string        `json:"venue"`
-}
-
-type CreateFile struct {
-	ID        int       `json:"id"`
-	Filename  string    `json:"filename"`
-	Mimetype  string    `json:"mimetype"`
-	Size      string    `json:"size"`
-	URI       string    `json:"uri"`
-	Encoding  string    `json:"encoding"`
-	Timestamp time.Time `json:"timestamp"`
 }
 
 type CreatePreference struct {
@@ -111,37 +103,35 @@ type DeleteFile struct {
 }
 
 type Event struct {
-	ID          int       `json:"id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	Summary     string    `json:"summary"`
-	Alias       string    `json:"alias"`
-	Email       string    `json:"Email"`
-	Website     string    `json:"website"`
-	BucketLink  string    `json:"bucketLink"`
-	Venue       string    `json:"venue"`
-	EventType   string    `json:"eventType"`
-	Date        int       `json:"Date"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
-	AuthorID    int       `json:"author_id"`
-	CreatedBy   []*User   `json:"createdBy"`
-	Attendees   []*User   `json:"attendees"`
-	Tracks      []*Tracks `json:"tracks"`
-	TrackID     *int      `json:"track_id"`
-	Teams       []*Team   `json:"teams"`
-	IsArchived  bool      `json:"isArchived"`
-	IsLocked    bool      `json:"isLocked"`
+	ID             int       `json:"id"`
+	Name           string    `json:"name"`
+	Description    string    `json:"description"`
+	Summary        string    `json:"summary"`
+	Alias          string    `json:"alias"`
+	Email          string    `json:"Email"`
+	ConfirmedEmail bool      `json:"confirmedEmail"`
+	Website        string    `json:"website"`
+	BucketLink     string    `json:"bucketLink"`
+	Venue          string    `json:"venue"`
+	EventType      string    `json:"eventType"`
+	Date           int       `json:"Date"`
+	CreatedAt      time.Time `json:"createdAt"`
+	UpdatedAt      time.Time `json:"updatedAt"`
+	AuthorID       int       `json:"author_id"`
+	CreatedBy      []*User   `json:"createdBy"`
+	Attendees      []*User   `json:"attendees"`
+	Tracks         []*Tracks `json:"tracks"`
+	TrackID        *int      `json:"track_id"`
+	Teams          []*Team   `json:"teams"`
+	IsArchived     bool      `json:"isArchived"`
+	IsLocked       bool      `json:"isLocked"`
 }
 
 type File struct {
-	ID        int       `json:"id"`
-	Filename  string    `json:"filename"`
-	Mimetype  string    `json:"mimetype"`
-	Size      string    `json:"size"`
-	URI       string    `json:"uri"`
-	Encoding  string    `json:"encoding"`
-	Timestamp time.Time `json:"timestamp"`
+	ID        int            `json:"id"`
+	File      graphql.Upload `json:"file"`
+	FileURI   string         `json:"file_uri"`
+	Timestamp time.Time      `json:"timestamp"`
 }
 
 type LoginInput struct {
@@ -306,6 +296,11 @@ type UpdateUser struct {
 
 type UpdateVolunteer struct {
 	Role *string `json:"role"`
+}
+
+type UploadFile struct {
+	File    graphql.Upload `json:"file"`
+	FileURI string         `json:"file_uri"`
 }
 
 type User struct {

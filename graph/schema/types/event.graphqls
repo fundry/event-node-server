@@ -5,6 +5,7 @@ type Event {
     summary: String!
     alias: String!
     Email: String!
+    confirmedEmail: Boolean!
     website: String!
     bucketLink : String!
     venue: String!

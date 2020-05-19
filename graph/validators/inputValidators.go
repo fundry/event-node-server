@@ -18,6 +18,7 @@ var (
     NameTaken            = errors.New("Name already in use")
     TokenGenerationError = errors.New("Error Generating token")
     Unauthorized         = errors.New("Unauthorized access. Login or create account first ")
+    ParseToken           = errors.New("Error occurred while parsing token")
 )
 
 /*

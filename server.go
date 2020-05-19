@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 
 	"github.com/vickywane/event-server/graph/db"
 	"github.com/vickywane/event-server/graph/generated"
@@ -44,8 +43,8 @@ func playgroundHandler() gin.HandlerFunc {
 }
 
 func main() {
-	r := gin.Default()
 
+	r := gin.Default()
 	r.Use(
 		cors.New(cors.Config{ // Todo am facing CORS issues now!
 			// AllowOrigins: []string{"http://localhost:3000/", "http://localhost:4040",
@@ -60,7 +59,8 @@ func main() {
 		//  InternalMiddleware.PlaygroundAuth(),
 	)
 
-	r.POST("/query", InternalMiddleware.JWT(),
+	r.POST("/query",
+		InternalMiddleware.JWT(InternalMiddleware.User{Database}),
 		graphqlHandler(),
 	)
 	fmt.Println("Playground running at http://localhost:4040")

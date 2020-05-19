@@ -17,8 +17,10 @@ func HashPassword(password string) string {
     if err != nil {
         fmt.Println("Error from hashPassword func")
     }
+
     convertedToString := string(passwordHash)
     return convertedToString
+
 }
 
 func GenToken(id string) (string, error) {

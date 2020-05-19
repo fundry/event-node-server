@@ -1,21 +1,13 @@
 type File {
     id: ID!
-    filename: String!
-    mimetype: String!
-    size: String!
-    uri: String!
-    encoding: String!
+    file: Upload!
+    file_uri: String!
     timestamp: Time!
 }
 
-input CreateFile {
-    id: ID!
-    filename: String!
-    mimetype: String!
-    size: String!
-    uri: String!
-    encoding: String!
-    timestamp: Time!
+input UploadFile {
+    file: Upload!
+    file_uri: String!
 }
 
 input DeleteFile {
