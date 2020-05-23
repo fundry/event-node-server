@@ -2,6 +2,7 @@ type Tracks {
     id : Int!
     name: String!
     trackImgUri: String!
+    summary : String!
     duration: String!
     totalTalks: Int!
     isCompleted: Boolean!
@@ -20,6 +21,7 @@ input CreateTrack {
     talks: String
     totalTalks: Int!
     createdBy:  String
+    summary : String!
     isCompleted: Boolean!
     Archived: Boolean!
 }
@@ -28,6 +30,7 @@ input UpdateTrack {
     name: String!
     trackImgUri: String
     duration: String!
+    summary : String!
     #    talks: [CreateTalk]
     totalTalks: Int!
     isCompleted: Boolean!

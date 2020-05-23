@@ -471,6 +471,7 @@ func (r *mutationResolver) CreateTrack(ctx context.Context, input model.CreateTr
 		ID:          time.Now().Nanosecond(),
 		Name:        input.Name,
 		Duration:    input.Duration,
+		Summary:     input.Summary,
 		TotalTalks:  input.TotalTalks,
 		IsCompleted: false,
 		Archived:    false,
@@ -478,7 +479,7 @@ func (r *mutationResolver) CreateTrack(ctx context.Context, input model.CreateTr
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}
-	// i  forgot to dereference this and it caused nightmares
+
 	if err := r.DB.Insert(&track); err != nil {
 		return nil, err
 	}

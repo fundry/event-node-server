@@ -52,7 +52,7 @@ func JWT(U User) gin.HandlerFunc {
         Req := c.Request // contains http req details
         token, Terr := parseToken(Req)
         if Terr != nil {
-            http.Handler.ServeHTTP(c.Writer, c.Request)
+            // http.Handler.ServeHTTP(c.Writer, c.Request)
             fmt.Println("an error with JWT middleware")
             return
         }
@@ -72,7 +72,7 @@ func JWT(U User) gin.HandlerFunc {
         fmt.Println(ctx, "ctx value")
 
         // // gin error
-        http.Handler.ServeHTTP(c.Writer, Req.WithContext(ctx))
+        // http.Handler.ServeHTTP(c.Writer, Req.WithContext(ctx))
     }
 }
 

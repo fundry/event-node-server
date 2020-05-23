@@ -78,6 +78,7 @@ type CreateTrack struct {
 	Talks       *string `json:"talks"`
 	TotalTalks  int     `json:"totalTalks"`
 	CreatedBy   *string `json:"createdBy"`
+	Summary     string  `json:"summary"`
 	IsCompleted bool    `json:"isCompleted"`
 	Archived    bool    `json:"Archived"`
 }
@@ -205,6 +206,7 @@ type Tracks struct {
 	ID          int       `json:"id"`
 	Name        string    `json:"name"`
 	TrackImgURI string    `json:"trackImgUri"`
+	Summary     string    `json:"summary"`
 	Duration    string    `json:"duration"`
 	TotalTalks  int       `json:"totalTalks"`
 	IsCompleted bool      `json:"isCompleted"`
@@ -279,6 +281,7 @@ type UpdateTrack struct {
 	Name        string    `json:"name"`
 	TrackImgURI *string   `json:"trackImgUri"`
 	Duration    string    `json:"duration"`
+	Summary     string    `json:"summary"`
 	TotalTalks  int       `json:"totalTalks"`
 	IsCompleted bool      `json:"isCompleted"`
 	Archived    bool      `json:"Archived"`

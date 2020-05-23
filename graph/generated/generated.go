@@ -214,6 +214,7 @@ type ComplexityRoot struct {
 		ID          func(childComplexity int) int
 		IsCompleted func(childComplexity int) int
 		Name        func(childComplexity int) int
+		Summary     func(childComplexity int) int
 		Talks       func(childComplexity int) int
 		TotalTalks  func(childComplexity int) int
 		TrackImgURI func(childComplexity int) int
@@ -1478,6 +1479,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tracks.Name(childComplexity), true
 
+	case "Tracks.summary":
+		if e.complexity.Tracks.Summary == nil {
+			break
+		}
+
+		return e.complexity.Tracks.Summary(childComplexity), true
+
 	case "Tracks.talks":
 		if e.complexity.Tracks.Talks == nil {
 			break
@@ -2019,6 +2027,7 @@ input UpdateTeam {
     id : Int!
     name: String!
     trackImgUri: String!
+    summary : String!
     duration: String!
     totalTalks: Int!
     isCompleted: Boolean!
@@ -2037,6 +2046,7 @@ input CreateTrack {
     talks: String
     totalTalks: Int!
     createdBy:  String
+    summary : String!
     isCompleted: Boolean!
     Archived: Boolean!
 }
@@ -2045,6 +2055,7 @@ input UpdateTrack {
     name: String!
     trackImgUri: String
     duration: String!
+    summary : String!
     #    talks: [CreateTalk]
     totalTalks: Int!
     isCompleted: Boolean!
@@ -7627,6 +7638,40 @@ func (ec *executionContext) _Tracks_trackImgUri(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Tracks_summary(ctx context.Context, field graphql.CollectedField, obj *model.Tracks) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Tracks",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Summary, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Tracks_duration(ctx context.Context, field graphql.CollectedField, obj *model.Tracks) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -9853,6 +9898,12 @@ func (ec *executionContext) unmarshalInputCreateTrack(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
+		case "summary":
+			var err error
+			it.Summary, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "isCompleted":
 			var err error
 			it.IsCompleted, err = ec.unmarshalNBoolean2bool(ctx, v)
@@ -10336,6 +10387,12 @@ func (ec *executionContext) unmarshalInputUpdateTrack(ctx context.Context, obj i
 		case "duration":
 			var err error
 			it.Duration, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "summary":
+			var err error
+			it.Summary, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11517,6 +11574,11 @@ func (ec *executionContext) _Tracks(ctx context.Context, sel ast.SelectionSet, o
 			}
 		case "trackImgUri":
 			out.Values[i] = ec._Tracks_trackImgUri(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "summary":
+			out.Values[i] = ec._Tracks_summary(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
