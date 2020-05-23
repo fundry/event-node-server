@@ -36,4 +36,8 @@ type Mutation {
     uploadSingleFile(req: UploadFile!) : File!
     uploadMultipleFiles(req: [UploadFile!]!) : [File!]!
     deleteFile(id: ID!) : Boolean!
+
+    createVolunteer(input: CreateVolunteer!, UserID: Int!, EventID: Int!) : Volunteer!
+    updateVolunteer(id: ID! , input: UpdateVolunteer!) : Volunteer!
+    deleteVolunteer(id: ID!) : Boolean!
 }

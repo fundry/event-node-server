@@ -56,8 +56,8 @@ func SeedDatabase(db *pg.DB) {
 	}
 
 	file := model.File{
-		ID:       rand.Int(),
-		FileURI: "https://test.cloud.com",
+		ID:        rand.Int(),
+		FileURI:   "https://test.cloud.com",
 		Timestamp: time.Now(),
 	}
 

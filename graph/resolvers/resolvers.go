@@ -14,7 +14,7 @@ type Resolver struct {
 // my custom func
 // Todo compress funcs here
 func (r *mutationResolver) GetUserField(field, value string) (*model.User, error) {
-	 user := model.User{}
+	user := model.User{}
 
 	err := r.DB.Model(&user).Where(fmt.Sprintf("%v = ?", field), value).First()
 
@@ -37,8 +37,6 @@ func (r *mutationResolver) UpdateCurrentUser(user *model.User) (*model.User, err
 	_, err := r.DB.Model(user).Where("id = ?", user.ID).Update()
 	return user, err
 }
-
-
 
 func (r *mutationResolver) DeleteCurrentUser(user *model.User) error {
 	_, err := r.DB.Model(user).Where("id =?", user.ID).Delete()
@@ -129,3 +127,23 @@ func (r *mutationResolver) DeleteCurrentTrack(Track *model.Tracks) error {
 	}
 	return nil
 }
+
+func (r *mutationResolver) GetVolunteerById(id int) (*model.Volunteer, error) {
+	Volunteer := model.Volunteer{}
+	err := r.DB.Model(&Volunteer).Where("id = ?", id).First()
+	return &Volunteer, err
+}
+
+func (r *mutationResolver) UpdateCurrentVolunteer(Volunteer *model.Volunteer) (*model.Volunteer, error) {
+	_, err := r.DB.Model(Volunteer).Where("id = ?", Volunteer.ID).Update()
+	return Volunteer, err
+}
+
+func (r *mutationResolver) DeleteCurrentVolunteer(Volunteer *model.Volunteer) error {
+	_, err := r.DB.Model(Volunteer).Where("id =?", Volunteer.ID).Delete()
+	if err != nil {
+		return nil
+	}
+	return nil
+}
+

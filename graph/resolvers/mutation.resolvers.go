@@ -556,6 +556,45 @@ func (r *mutationResolver) DeleteFile(ctx context.Context, id int) (bool, error)
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *mutationResolver) CreateVolunteer(ctx context.Context, input model.CreateVolunteer, userID int, eventID int) (*model.Volunteer, error) {
+	volunteer := model.Volunteer{
+		ID:         time.Now().Nanosecond(),
+		Role:       input.Role,
+		Duration:   *input.Duration,
+		IsApproved: false,
+		EventID:    eventID,
+		UserID:     userID,
+	}
+
+	return &volunteer, nil
+}
+
+func (r *mutationResolver) UpdateVolunteer(ctx context.Context, id int, input model.UpdateVolunteer) (*model.Volunteer, error) {
+	volunteer, err := r.GetVolunteerById(id)
+
+	if volunteer != nil && err != nil {
+		return nil, validators.NotFound
+	}
+
+	if volunteer, err = r.UpdateCurrentVolunteer(volunteer); err != nil {
+		return nil, validators.ErrorUpdating
+	}
+
+	return volunteer, nil
+}
+
+func (r *mutationResolver) DeleteVolunteer(ctx context.Context, id int) (bool, error) {
+	// volunteer, err := r.GetVolunteerById(id)
+	// if volunteer != nil && err != nil {
+	// 	return false, validators.NotFound
+	// }
+	//
+	// volunteer = r.DeleteCurrentVolunteer(volunteer)
+	// return true, nil
+
+	panic("HAVING SLIGHT ERRS")
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

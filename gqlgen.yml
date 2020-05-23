@@ -97,7 +97,14 @@ models:
         resolver: true
       event:
         resolver: true
-
+  Volunteer:
+    fields:
+      user:
+        resolver: true
+      event:
+        resolver: true
+      team:
+        resolver: true
 
 
 

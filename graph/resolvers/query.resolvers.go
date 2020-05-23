@@ -236,6 +236,31 @@ func (r *queryResolver) Tracks(ctx context.Context, limit *int) ([]*model.Tracks
 	return track, nil
 }
 
+func (r *queryResolver) Volunteer(ctx context.Context, id int) (*model.Volunteer, error) {
+	volunteer := model.Volunteer{ID: id}
+
+	if err := r.DB.Select(&volunteer); err != nil {
+		return nil, err
+	}
+
+	return &volunteer, nil
+}
+
+func (r *queryResolver) Volunteers(ctx context.Context, limit *int) ([]*model.Volunteer, error) {
+	var Volunteer []*model.Volunteer
+
+	// if Volunteer != nil {
+	// 	QueryErr = r.DB.Model(&Volunteer).Limit(*Volunteer).Select()
+	// } else {
+	// 	QueryErr = r.DB.Model(&Volunteer).Select()
+	// }
+
+	if QueryErr != nil {
+		return nil, CustomResponse.QueryError
+	}
+	return Volunteer, nil
+}
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 

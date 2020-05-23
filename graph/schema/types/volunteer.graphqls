@@ -1,19 +1,30 @@
 type Volunteer {
- id : Int!
- user : User
- role : String!
- availiability : String!
- team : Team
+    id : Int!
+    role : String!
+    duration : String!
+    team : Team
+    team_id : Int
+    isApproved : Boolean!
+    event: Event!
+    event_id : Int!
+    user : User!
+    user_id: Int!
 }
 
 input CreateVolunteer {
-  user : CreateUser
-  role: String!
-  availiability: String
-  team: CreateTeam
+    role: String!
+    duration: String
+    isApproved : Boolean
+    user: CreateUser
+    event: CreateEvent
+    event_id: Int
 }
 
 input UpdateVolunteer {
- role: String
+    role: String
+    isApproved: Int
+    duration: String
+    team: CreateTeam
+    team_id : Int
 }
 

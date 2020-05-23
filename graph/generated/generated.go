@@ -45,6 +45,7 @@ type ResolverRoot interface {
 	Team() TeamResolver
 	Tracks() TracksResolver
 	User() UserResolver
+	Volunteer() VolunteerResolver
 }
 
 type DirectiveRoot struct {
@@ -100,6 +101,7 @@ type ComplexityRoot struct {
 		CreateTeam          func(childComplexity int, input model.CreateTeam, eventID int) int
 		CreateTrack         func(childComplexity int, input model.CreateTrack, eventID int) int
 		CreateUser          func(childComplexity int, input model.CreateUser) int
+		CreateVolunteer     func(childComplexity int, input model.CreateVolunteer, userID int, eventID int) int
 		DeleteEvent         func(childComplexity int, id int) int
 		DeleteFile          func(childComplexity int, id int) int
 		DeletePreference    func(childComplexity int, id int) int
@@ -109,6 +111,7 @@ type ComplexityRoot struct {
 		DeleteTeam          func(childComplexity int, id int) int
 		DeleteTrack         func(childComplexity int, id int) int
 		DeleteUser          func(childComplexity int, id int) int
+		DeleteVolunteer     func(childComplexity int, id int) int
 		LoginUser           func(childComplexity int, input model.LoginInput) int
 		UpdateEvent         func(childComplexity int, id *int, input model.UpdateEvent) int
 		UpdatePreference    func(childComplexity int, id *int, input model.UpdatePreference) int
@@ -118,6 +121,7 @@ type ComplexityRoot struct {
 		UpdateTeam          func(childComplexity int, id *int, input model.UpdateTeam) int
 		UpdateTrack         func(childComplexity int, id int, input model.UpdateTrack) int
 		UpdateUser          func(childComplexity int, id *int, input model.UpdateUser) int
+		UpdateVolunteer     func(childComplexity int, id int, input model.UpdateVolunteer) int
 		UploadMultipleFiles func(childComplexity int, req []*model.UploadFile) int
 		UploadSingleFile    func(childComplexity int, req model.UploadFile) int
 	}
@@ -150,6 +154,8 @@ type ComplexityRoot struct {
 		Tracks      func(childComplexity int, limit *int) int
 		User        func(childComplexity int, id *int, name string) int
 		Users       func(childComplexity int, limit *int) int
+		Volunteer   func(childComplexity int, id int) int
+		Volunteers  func(childComplexity int, limit *int) int
 	}
 
 	Sponsor struct {
@@ -235,11 +241,16 @@ type ComplexityRoot struct {
 	}
 
 	Volunteer struct {
-		Availiability func(childComplexity int) int
-		ID            func(childComplexity int) int
-		Role          func(childComplexity int) int
-		Team          func(childComplexity int) int
-		User          func(childComplexity int) int
+		Duration   func(childComplexity int) int
+		Event      func(childComplexity int) int
+		EventID    func(childComplexity int) int
+		ID         func(childComplexity int) int
+		IsApproved func(childComplexity int) int
+		Role       func(childComplexity int) int
+		Team       func(childComplexity int) int
+		TeamID     func(childComplexity int) int
+		User       func(childComplexity int) int
+		UserID     func(childComplexity int) int
 	}
 }
 
@@ -279,6 +290,9 @@ type MutationResolver interface {
 	UploadSingleFile(ctx context.Context, req model.UploadFile) (*model.File, error)
 	UploadMultipleFiles(ctx context.Context, req []*model.UploadFile) ([]*model.File, error)
 	DeleteFile(ctx context.Context, id int) (bool, error)
+	CreateVolunteer(ctx context.Context, input model.CreateVolunteer, userID int, eventID int) (*model.Volunteer, error)
+	UpdateVolunteer(ctx context.Context, id int, input model.UpdateVolunteer) (*model.Volunteer, error)
+	DeleteVolunteer(ctx context.Context, id int) (bool, error)
 }
 type QueryResolver interface {
 	Event(ctx context.Context, id *int, name string) (*model.Event, error)
@@ -299,6 +313,8 @@ type QueryResolver interface {
 	Talks(ctx context.Context, limit *int) ([]*model.Talk, error)
 	Track(ctx context.Context, id int) (*model.Tracks, error)
 	Tracks(ctx context.Context, limit *int) ([]*model.Tracks, error)
+	Volunteer(ctx context.Context, id int) (*model.Volunteer, error)
+	Volunteers(ctx context.Context, limit *int) ([]*model.Volunteer, error)
 }
 type SponsorResolver interface {
 	Event(ctx context.Context, obj *model.Sponsor) (*model.Event, error)
@@ -319,6 +335,13 @@ type TracksResolver interface {
 type UserResolver interface {
 	Talks(ctx context.Context, obj *model.User) ([]*model.Talk, error)
 	Events(ctx context.Context, obj *model.User) ([]*model.Event, error)
+}
+type VolunteerResolver interface {
+	Team(ctx context.Context, obj *model.Volunteer) (*model.Team, error)
+
+	Event(ctx context.Context, obj *model.Volunteer) (*model.Event, error)
+
+	User(ctx context.Context, obj *model.Volunteer) (*model.User, error)
 }
 
 type executableSchema struct {
@@ -642,6 +665,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(model.CreateUser)), true
 
+	case "Mutation.createVolunteer":
+		if e.complexity.Mutation.CreateVolunteer == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createVolunteer_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateVolunteer(childComplexity, args["input"].(model.CreateVolunteer), args["UserID"].(int), args["EventID"].(int)), true
+
 	case "Mutation.deleteEvent":
 		if e.complexity.Mutation.DeleteEvent == nil {
 			break
@@ -750,6 +785,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeleteUser(childComplexity, args["id"].(int)), true
 
+	case "Mutation.deleteVolunteer":
+		if e.complexity.Mutation.DeleteVolunteer == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteVolunteer_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteVolunteer(childComplexity, args["id"].(int)), true
+
 	case "Mutation.loginUser":
 		if e.complexity.Mutation.LoginUser == nil {
 			break
@@ -857,6 +904,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateUser(childComplexity, args["id"].(*int), args["input"].(model.UpdateUser)), true
+
+	case "Mutation.updateVolunteer":
+		if e.complexity.Mutation.UpdateVolunteer == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateVolunteer_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateVolunteer(childComplexity, args["id"].(int), args["input"].(model.UpdateVolunteer)), true
 
 	case "Mutation.uploadMultipleFiles":
 		if e.complexity.Mutation.UploadMultipleFiles == nil {
@@ -1134,6 +1193,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Users(childComplexity, args["Limit"].(*int)), true
+
+	case "Query.volunteer":
+		if e.complexity.Query.Volunteer == nil {
+			break
+		}
+
+		args, err := ec.field_Query_volunteer_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Volunteer(childComplexity, args["id"].(int)), true
+
+	case "Query.volunteers":
+		if e.complexity.Query.Volunteers == nil {
+			break
+		}
+
+		args, err := ec.field_Query_volunteers_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Volunteers(childComplexity, args["Limit"].(*int)), true
 
 	case "Sponsor.amount":
 		if e.complexity.Sponsor.Amount == nil {
@@ -1583,12 +1666,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.UpdatedAt(childComplexity), true
 
-	case "Volunteer.availiability":
-		if e.complexity.Volunteer.Availiability == nil {
+	case "Volunteer.duration":
+		if e.complexity.Volunteer.Duration == nil {
 			break
 		}
 
-		return e.complexity.Volunteer.Availiability(childComplexity), true
+		return e.complexity.Volunteer.Duration(childComplexity), true
+
+	case "Volunteer.event":
+		if e.complexity.Volunteer.Event == nil {
+			break
+		}
+
+		return e.complexity.Volunteer.Event(childComplexity), true
+
+	case "Volunteer.event_id":
+		if e.complexity.Volunteer.EventID == nil {
+			break
+		}
+
+		return e.complexity.Volunteer.EventID(childComplexity), true
 
 	case "Volunteer.id":
 		if e.complexity.Volunteer.ID == nil {
@@ -1596,6 +1693,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Volunteer.ID(childComplexity), true
+
+	case "Volunteer.isApproved":
+		if e.complexity.Volunteer.IsApproved == nil {
+			break
+		}
+
+		return e.complexity.Volunteer.IsApproved(childComplexity), true
 
 	case "Volunteer.role":
 		if e.complexity.Volunteer.Role == nil {
@@ -1611,12 +1715,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Volunteer.Team(childComplexity), true
 
+	case "Volunteer.team_id":
+		if e.complexity.Volunteer.TeamID == nil {
+			break
+		}
+
+		return e.complexity.Volunteer.TeamID(childComplexity), true
+
 	case "Volunteer.user":
 		if e.complexity.Volunteer.User == nil {
 			break
 		}
 
 		return e.complexity.Volunteer.User(childComplexity), true
+
+	case "Volunteer.user_id":
+		if e.complexity.Volunteer.UserID == nil {
+			break
+		}
+
+		return e.complexity.Volunteer.UserID(childComplexity), true
 
 	}
 	return 0, false
@@ -1744,6 +1862,10 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
     uploadSingleFile(req: UploadFile!) : File!
     uploadMultipleFiles(req: [UploadFile!]!) : [File!]!
     deleteFile(id: ID!) : Boolean!
+
+    createVolunteer(input: CreateVolunteer!, UserID: Int!, EventID: Int!) : Volunteer!
+    updateVolunteer(id: ID! , input: UpdateVolunteer!) : Volunteer!
+    deleteVolunteer(id: ID!) : Boolean!
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/query.graphqls", Input: `type Query {
     event(id: Int name: String!) : Event!
@@ -1772,6 +1894,9 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
 
     track(id : Int!): Tracks!
     tracks(Limit: Int) : [Tracks!]!
+
+    volunteer(id: Int!): Volunteer!
+    volunteers(Limit: Int): [Volunteer!]!
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/scalar.graphqls", Input: `# My custom defined types https://github.com/99designs/gqlgen/blob/master/docs/content/reference/scalars.md
 
@@ -2086,22 +2211,33 @@ input UpdateUser {
     updatedAt: Time
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/types/volunteer.graphqls", Input: `type Volunteer {
- id : Int!
- user : User
- role : String!
- availiability : String!
- team : Team
+    id : Int!
+    role : String!
+    duration : String!
+    team : Team
+    team_id : Int
+    isApproved : Boolean!
+    event: Event!
+    event_id : Int!
+    user : User!
+    user_id: Int!
 }
 
 input CreateVolunteer {
-  user : CreateUser
-  role: String!
-  availiability: String
-  team: CreateTeam
+    role: String!
+    duration: String
+    isApproved : Boolean
+    user: CreateUser
+    event: CreateEvent
+    event_id: Int
 }
 
 input UpdateVolunteer {
- role: String
+    role: String
+    isApproved: Int
+    duration: String
+    team: CreateTeam
+    team_id : Int
 }
 
 `, BuiltIn: false},
@@ -2270,6 +2406,36 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createVolunteer_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.CreateVolunteer
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNCreateVolunteer2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateVolunteer(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["UserID"]; ok {
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["UserID"] = arg1
+	var arg2 int
+	if tmp, ok := rawArgs["EventID"]; ok {
+		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["EventID"] = arg2
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_deleteEvent_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2383,6 +2549,20 @@ func (ec *executionContext) field_Mutation_deleteTrack_args(ctx context.Context,
 }
 
 func (ec *executionContext) field_Mutation_deleteUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteVolunteer_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 int
@@ -2578,6 +2758,28 @@ func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, 
 	var arg1 model.UpdateUser
 	if tmp, ok := rawArgs["input"]; ok {
 		arg1, err = ec.unmarshalNUpdateUser2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateUser(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateVolunteer_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 model.UpdateVolunteer
+	if tmp, ok := rawArgs["input"]; ok {
+		arg1, err = ec.unmarshalNUpdateVolunteer2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateVolunteer(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2901,6 +3103,34 @@ func (ec *executionContext) field_Query_user_args(ctx context.Context, rawArgs m
 }
 
 func (ec *executionContext) field_Query_users_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["Limit"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["Limit"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_volunteer_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_volunteers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *int
@@ -5148,6 +5378,129 @@ func (ec *executionContext) _Mutation_deleteFile(ctx context.Context, field grap
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_createVolunteer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createVolunteer_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateVolunteer(rctx, args["input"].(model.CreateVolunteer), args["UserID"].(int), args["EventID"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Volunteer)
+	fc.Result = res
+	return ec.marshalNVolunteer2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateVolunteer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateVolunteer_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateVolunteer(rctx, args["id"].(int), args["input"].(model.UpdateVolunteer))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Volunteer)
+	fc.Result = res
+	return ec.marshalNVolunteer2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteVolunteer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteVolunteer_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteVolunteer(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Preference_id(ctx context.Context, field graphql.CollectedField, obj *model.Preference) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6075,6 +6428,88 @@ func (ec *executionContext) _Query_tracks(ctx context.Context, field graphql.Col
 	res := resTmp.([]*model.Tracks)
 	fc.Result = res
 	return ec.marshalNTracks2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTracksᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_volunteer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_volunteer_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Volunteer(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Volunteer)
+	fc.Result = res
+	return ec.marshalNVolunteer2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_volunteers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_volunteers_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Volunteers(rctx, args["Limit"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Volunteer)
+	fc.Result = res
+	return ec.marshalNVolunteer2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteerᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -8326,37 +8761,6 @@ func (ec *executionContext) _Volunteer_id(ctx context.Context, field graphql.Col
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Volunteer_user(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Volunteer",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.User, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.User)
-	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Volunteer_role(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -8391,7 +8795,7 @@ func (ec *executionContext) _Volunteer_role(ctx context.Context, field graphql.C
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Volunteer_availiability(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
+func (ec *executionContext) _Volunteer_duration(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -8408,7 +8812,7 @@ func (ec *executionContext) _Volunteer_availiability(ctx context.Context, field 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Availiability, nil
+		return obj.Duration, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -8436,13 +8840,13 @@ func (ec *executionContext) _Volunteer_team(ctx context.Context, field graphql.C
 		Object:   "Volunteer",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Team, nil
+		return ec.resolvers.Volunteer().Team(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -8454,6 +8858,207 @@ func (ec *executionContext) _Volunteer_team(ctx context.Context, field graphql.C
 	res := resTmp.(*model.Team)
 	fc.Result = res
 	return ec.marshalOTeam2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTeam(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Volunteer_team_id(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Volunteer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TeamID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Volunteer_isApproved(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Volunteer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsApproved, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Volunteer_event(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Volunteer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Volunteer().Event(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Event)
+	fc.Result = res
+	return ec.marshalNEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Volunteer_event_id(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Volunteer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EventID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Volunteer_user(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Volunteer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Volunteer().User(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Volunteer_user_id(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Volunteer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -9919,27 +10524,39 @@ func (ec *executionContext) unmarshalInputCreateVolunteer(ctx context.Context, o
 
 	for k, v := range asMap {
 		switch k {
-		case "user":
-			var err error
-			it.User, err = ec.unmarshalOCreateUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "role":
 			var err error
 			it.Role, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "availiability":
+		case "duration":
 			var err error
-			it.Availiability, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.Duration, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "team":
+		case "isApproved":
 			var err error
-			it.Team, err = ec.unmarshalOCreateTeam2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTeam(ctx, v)
+			it.IsApproved, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "user":
+			var err error
+			it.User, err = ec.unmarshalOCreateUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "event":
+			var err error
+			it.Event, err = ec.unmarshalOCreateEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "event_id":
+			var err error
+			it.EventID, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10429,6 +11046,30 @@ func (ec *executionContext) unmarshalInputUpdateVolunteer(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
+		case "isApproved":
+			var err error
+			it.IsApproved, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "duration":
+			var err error
+			it.Duration, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "team":
+			var err error
+			it.Team, err = ec.unmarshalOCreateTeam2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTeam(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "team_id":
+			var err error
+			it.TeamID, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -10856,6 +11497,21 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "createVolunteer":
+			out.Values[i] = ec._Mutation_createVolunteer(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateVolunteer":
+			out.Values[i] = ec._Mutation_updateVolunteer(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteVolunteer":
+			out.Values[i] = ec._Mutation_deleteVolunteer(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -11175,6 +11831,34 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_tracks(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "volunteer":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_volunteer(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "volunteers":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_volunteers(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -11688,22 +12372,74 @@ func (ec *executionContext) _Volunteer(ctx context.Context, sel ast.SelectionSet
 		case "id":
 			out.Values[i] = ec._Volunteer_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
-		case "user":
-			out.Values[i] = ec._Volunteer_user(ctx, field, obj)
 		case "role":
 			out.Values[i] = ec._Volunteer_role(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
-		case "availiability":
-			out.Values[i] = ec._Volunteer_availiability(ctx, field, obj)
+		case "duration":
+			out.Values[i] = ec._Volunteer_duration(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "team":
-			out.Values[i] = ec._Volunteer_team(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Volunteer_team(ctx, field, obj)
+				return res
+			})
+		case "team_id":
+			out.Values[i] = ec._Volunteer_team_id(ctx, field, obj)
+		case "isApproved":
+			out.Values[i] = ec._Volunteer_isApproved(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "event":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Volunteer_event(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "event_id":
+			out.Values[i] = ec._Volunteer_event_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "user":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Volunteer_user(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "user_id":
+			out.Values[i] = ec._Volunteer_user_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12034,6 +12770,10 @@ func (ec *executionContext) unmarshalNCreateUser2ᚖgithubᚗcomᚋvickywaneᚋe
 	}
 	res, err := ec.unmarshalNCreateUser2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
 	return &res, err
+}
+
+func (ec *executionContext) unmarshalNCreateVolunteer2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateVolunteer(ctx context.Context, v interface{}) (model.CreateVolunteer, error) {
+	return ec.unmarshalInputCreateVolunteer(ctx, v)
 }
 
 func (ec *executionContext) marshalNEvent2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx context.Context, sel ast.SelectionSet, v model.Event) graphql.Marshaler {
@@ -12462,6 +13202,10 @@ func (ec *executionContext) unmarshalNUpdateUser2githubᚗcomᚋvickywaneᚋeven
 	return ec.unmarshalInputUpdateUser(ctx, v)
 }
 
+func (ec *executionContext) unmarshalNUpdateVolunteer2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateVolunteer(ctx context.Context, v interface{}) (model.UpdateVolunteer, error) {
+	return ec.unmarshalInputUpdateVolunteer(ctx, v)
+}
+
 func (ec *executionContext) unmarshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, v interface{}) (graphql.Upload, error) {
 	return graphql.UnmarshalUpload(v)
 }
@@ -12557,6 +13301,57 @@ func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑs
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNVolunteer2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteer(ctx context.Context, sel ast.SelectionSet, v model.Volunteer) graphql.Marshaler {
+	return ec._Volunteer(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNVolunteer2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteerᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Volunteer) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNVolunteer2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteer(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNVolunteer2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteer(ctx context.Context, sel ast.SelectionSet, v *model.Volunteer) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Volunteer(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

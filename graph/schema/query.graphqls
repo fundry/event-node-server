@@ -25,4 +25,7 @@ type Query {
 
     track(id : Int!): Tracks!
     tracks(Limit: Int) : [Tracks!]!
+
+    volunteer(id: Int!): Volunteer!
+    volunteers(Limit: Int): [Volunteer!]!
 }

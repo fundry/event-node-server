@@ -91,10 +91,12 @@ type CreateUser struct {
 }
 
 type CreateVolunteer struct {
-	User          *CreateUser `json:"user"`
-	Role          string      `json:"role"`
-	Availiability *string     `json:"availiability"`
-	Team          *CreateTeam `json:"team"`
+	Role       string       `json:"role"`
+	Duration   *string      `json:"duration"`
+	IsApproved *bool        `json:"isApproved"`
+	User       *CreateUser  `json:"user"`
+	Event      *CreateEvent `json:"event"`
+	EventID    *int         `json:"event_id"`
 }
 
 type DeleteFile struct {
@@ -295,7 +297,11 @@ type UpdateUser struct {
 }
 
 type UpdateVolunteer struct {
-	Role *string `json:"role"`
+	Role       *string     `json:"role"`
+	IsApproved *int        `json:"isApproved"`
+	Duration   *string     `json:"duration"`
+	Team       *CreateTeam `json:"team"`
+	TeamID     *int        `json:"team_id"`
 }
 
 type UploadFile struct {
@@ -318,9 +324,14 @@ type User struct {
 }
 
 type Volunteer struct {
-	ID            int    `json:"id"`
-	User          *User  `json:"user"`
-	Role          string `json:"role"`
-	Availiability string `json:"availiability"`
-	Team          *Team  `json:"team"`
+	ID         int    `json:"id"`
+	Role       string `json:"role"`
+	Duration   string `json:"duration"`
+	Team       *Team  `json:"team"`
+	TeamID     *int   `json:"team_id"`
+	IsApproved bool   `json:"isApproved"`
+	Event      *Event `json:"event"`
+	EventID    int    `json:"event_id"`
+	User       *User  `json:"user"`
+	UserID     int    `json:"user_id"`
 }
