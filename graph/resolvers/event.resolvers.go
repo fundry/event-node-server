@@ -5,6 +5,7 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/vickywane/event-server/graph/generated"
 	"github.com/vickywane/event-server/graph/model"
@@ -50,6 +51,10 @@ func (r *eventResolver) Teams(ctx context.Context, obj *model.Event) ([]*model.T
 	}
 
 	return teams, nil
+}
+
+func (r *eventResolver) Volunteer(ctx context.Context, obj *model.Event) ([]*model.Volunteer, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 // Event returns generated.EventResolver implementation.

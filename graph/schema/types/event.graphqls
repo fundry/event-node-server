@@ -19,6 +19,8 @@ type Event {
     tracks: [Tracks]
     track_id: Int
     teams: [Team!]
+    volunteer_id: Int
+    volunteer: [Volunteer!]
     isArchived: Boolean! @default(value: false)
     isLocked: Boolean!  @default(value: false)
 }
@@ -37,6 +39,8 @@ input CreateEvent {
     CreatedBy: CreateUser
     attendees: [CreateUser]
     venue: String!
+    volunteer_id: Int
+    volunteering: [CreateVolunteer!]
 }
 
 input UpdateEvent {
@@ -57,4 +61,6 @@ input UpdateEvent {
     venue: String
     Date: Int!
     team: CreateTeam
+    volunteer_id: Int
+    volunteering: [CreateVolunteer!]
 }

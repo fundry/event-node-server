@@ -23,7 +23,7 @@ func createSchema(db *pg.DB) error {
         (*model.Tasks)(nil), (*model.Tracks)(nil), (*model.Talk)(nil),
         (*model.Volunteer)(nil)} {
         err := db.CreateTable(models, &orm.CreateTableOptions{
-            IfNotExists: true, FKConstraints: true,
+            IfNotExists: true, FKConstraints: false, // turned this off because of VOLUNTEER table. Check out later!!
         })
         if err != nil {
             panic(err)

@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -41,6 +42,7 @@ type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Sponsor() SponsorResolver
+	Subscription() SubscriptionResolver
 	Talk() TalkResolver
 	Team() TeamResolver
 	Tracks() TracksResolver
@@ -82,6 +84,8 @@ type ComplexityRoot struct {
 		Tracks         func(childComplexity int) int
 		UpdatedAt      func(childComplexity int) int
 		Venue          func(childComplexity int) int
+		Volunteer      func(childComplexity int) int
+		VolunteerID    func(childComplexity int) int
 		Website        func(childComplexity int) int
 	}
 
@@ -167,6 +171,10 @@ type ComplexityRoot struct {
 		Type           func(childComplexity int) int
 	}
 
+	Subscription struct {
+		VolunteerCreated func(childComplexity int, role *string) int
+	}
+
 	Talk struct {
 		Archived     func(childComplexity int) int
 		CreatedAt    func(childComplexity int) int
@@ -227,17 +235,19 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
-		BucketLink func(childComplexity int) int
-		CreatedAt  func(childComplexity int) int
-		Email      func(childComplexity int) int
-		EventID    func(childComplexity int) int
-		Events     func(childComplexity int) int
-		ID         func(childComplexity int) int
-		Name       func(childComplexity int) int
-		Password   func(childComplexity int) int
-		Role       func(childComplexity int) int
-		Talks      func(childComplexity int) int
-		UpdatedAt  func(childComplexity int) int
+		BucketLink   func(childComplexity int) int
+		CreatedAt    func(childComplexity int) int
+		Email        func(childComplexity int) int
+		EventID      func(childComplexity int) int
+		Events       func(childComplexity int) int
+		ID           func(childComplexity int) int
+		Name         func(childComplexity int) int
+		Password     func(childComplexity int) int
+		Role         func(childComplexity int) int
+		Talks        func(childComplexity int) int
+		UpdatedAt    func(childComplexity int) int
+		VolunteerID  func(childComplexity int) int
+		Volunteering func(childComplexity int) int
 	}
 
 	Volunteer struct {
@@ -260,6 +270,8 @@ type EventResolver interface {
 	Tracks(ctx context.Context, obj *model.Event) ([]*model.Tracks, error)
 
 	Teams(ctx context.Context, obj *model.Event) ([]*model.Team, error)
+
+	Volunteer(ctx context.Context, obj *model.Event) ([]*model.Volunteer, error)
 }
 type MutationResolver interface {
 	LoginUser(ctx context.Context, input model.LoginInput) (*model.AuthResponse, error)
@@ -319,6 +331,9 @@ type QueryResolver interface {
 type SponsorResolver interface {
 	Event(ctx context.Context, obj *model.Sponsor) (*model.Event, error)
 }
+type SubscriptionResolver interface {
+	VolunteerCreated(ctx context.Context, role *string) (<-chan *model.Volunteer, error)
+}
 type TalkResolver interface {
 	Speaker(ctx context.Context, obj *model.Talk) ([]*model.User, error)
 	Reviewers(ctx context.Context, obj *model.Talk) ([]*model.User, error)
@@ -335,13 +350,15 @@ type TracksResolver interface {
 type UserResolver interface {
 	Talks(ctx context.Context, obj *model.User) ([]*model.Talk, error)
 	Events(ctx context.Context, obj *model.User) ([]*model.Event, error)
+
+	Volunteering(ctx context.Context, obj *model.User) ([]*model.Volunteer, error)
 }
 type VolunteerResolver interface {
-	Team(ctx context.Context, obj *model.Volunteer) (*model.Team, error)
+	Team(ctx context.Context, obj *model.Volunteer) ([]*model.Team, error)
 
-	Event(ctx context.Context, obj *model.Volunteer) (*model.Event, error)
+	Event(ctx context.Context, obj *model.Volunteer) ([]*model.Event, error)
 
-	User(ctx context.Context, obj *model.Volunteer) (*model.User, error)
+	User(ctx context.Context, obj *model.Volunteer) ([]*model.User, error)
 }
 
 type executableSchema struct {
@@ -533,6 +550,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Event.Venue(childComplexity), true
+
+	case "Event.volunteer":
+		if e.complexity.Event.Volunteer == nil {
+			break
+		}
+
+		return e.complexity.Event.Volunteer(childComplexity), true
+
+	case "Event.volunteer_id":
+		if e.complexity.Event.VolunteerID == nil {
+			break
+		}
+
+		return e.complexity.Event.VolunteerID(childComplexity), true
 
 	case "Event.website":
 		if e.complexity.Event.Website == nil {
@@ -1260,6 +1291,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Sponsor.Type(childComplexity), true
 
+	case "Subscription.volunteerCreated":
+		if e.complexity.Subscription.VolunteerCreated == nil {
+			break
+		}
+
+		args, err := ec.field_Subscription_volunteerCreated_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Subscription.VolunteerCreated(childComplexity, args["role"].(*string)), true
+
 	case "Talk.Archived":
 		if e.complexity.Talk.Archived == nil {
 			break
@@ -1666,6 +1709,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.UpdatedAt(childComplexity), true
 
+	case "User.volunteer_id":
+		if e.complexity.User.VolunteerID == nil {
+			break
+		}
+
+		return e.complexity.User.VolunteerID(childComplexity), true
+
+	case "User.volunteering":
+		if e.complexity.User.Volunteering == nil {
+			break
+		}
+
+		return e.complexity.User.Volunteering(childComplexity), true
+
 	case "Volunteer.duration":
 		if e.complexity.Volunteer.Duration == nil {
 			break
@@ -1768,6 +1825,23 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			first = false
 			data := ec._Mutation(ctx, rc.Operation.SelectionSet)
 			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+
+			return &graphql.Response{
+				Data: buf.Bytes(),
+			}
+		}
+	case ast.Subscription:
+		next := ec._Subscription(ctx, rc.Operation.SelectionSet)
+
+		var buf bytes.Buffer
+		return func(ctx context.Context) *graphql.Response {
+			buf.Reset()
+			data := next()
+
+			if data == nil {
+				return nil
+			}
 			data.MarshalGQL(&buf)
 
 			return &graphql.Response{
@@ -1915,6 +1989,9 @@ scalar Any
 # resolves to Upload struct
 scalar Upload
 `, BuiltIn: false},
+	&ast.Source{Name: "graph/schema/subscription.graphqls", Input: `type Subscription {
+    volunteerCreated(role : String): Volunteer
+}`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/types/auth.graphqls", Input: ` type AuthResponse {
     id : Int!
     token : String!
@@ -1947,6 +2024,8 @@ input LoginInput {
     tracks: [Tracks]
     track_id: Int
     teams: [Team!]
+    volunteer_id: Int
+    volunteer: [Volunteer!]
     isArchived: Boolean! @default(value: false)
     isLocked: Boolean!  @default(value: false)
 }
@@ -1965,6 +2044,8 @@ input CreateEvent {
     CreatedBy: CreateUser
     attendees: [CreateUser]
     venue: String!
+    volunteer_id: Int
+    volunteering: [CreateVolunteer!]
 }
 
 input UpdateEvent {
@@ -1985,6 +2066,8 @@ input UpdateEvent {
     venue: String
     Date: Int!
     team: CreateTeam
+    volunteer_id: Int
+    volunteering: [CreateVolunteer!]
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/types/file.graphqls", Input: `type File {
     id: ID!
@@ -2189,6 +2272,8 @@ input UpdateTrack {
     bucketLink: String!
     talks: [Talk]
     events: [Event!]
+    volunteer_id: Int!
+    volunteering: [Volunteer!]
     event_id: Int!
     createdAt: Time!
     updatedAt: Time!
@@ -2199,6 +2284,7 @@ input CreateUser {
     role: String
     email: String!
     password: String!
+    volunteering: [CreateVolunteer!]
     events: [CreateEvent]
 }
 
@@ -2207,6 +2293,7 @@ input UpdateUser {
     role: String
     email: String
     password: String
+    volunteering: [CreateVolunteer!]
     events: [CreateEvent]
     updatedAt: Time
 }`, BuiltIn: false},
@@ -2214,13 +2301,13 @@ input UpdateUser {
     id : Int!
     role : String!
     duration : String!
-    team : Team
-    team_id : Int
     isApproved : Boolean!
-    event: Event!
-    event_id : Int!
-    user : User!
-    user_id: Int!
+    team : [Team]
+    team_id : Int # FK
+    event: [Event]!
+    event_id : Int! # FK
+    user : [User]!
+    user_id: Int! # FK
 }
 
 input CreateVolunteer {
@@ -2229,7 +2316,6 @@ input CreateVolunteer {
     isApproved : Boolean
     user: CreateUser
     event: CreateEvent
-    event_id: Int
 }
 
 input UpdateVolunteer {
@@ -3144,6 +3230,20 @@ func (ec *executionContext) field_Query_volunteers_args(ctx context.Context, raw
 	return args, nil
 }
 
+func (ec *executionContext) field_Subscription_volunteerCreated_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["role"]; ok {
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["role"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field___Type_enumValues_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -3979,6 +4079,68 @@ func (ec *executionContext) _Event_teams(ctx context.Context, field graphql.Coll
 	res := resTmp.([]*model.Team)
 	fc.Result = res
 	return ec.marshalOTeam2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTeamᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Event_volunteer_id(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.VolunteerID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Event_volunteer(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Event().Volunteer(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Volunteer)
+	fc.Result = res
+	return ec.marshalOVolunteer2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteerᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Event_isArchived(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
@@ -6806,6 +6968,54 @@ func (ec *executionContext) _Sponsor_isOrganization(ctx context.Context, field g
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Subscription_volunteerCreated(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Subscription",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Subscription_volunteerCreated_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().VolunteerCreated(rctx, args["role"].(*string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func() graphql.Marshaler {
+		res, ok := <-resTmp.(<-chan *model.Volunteer)
+		if !ok {
+			return nil
+		}
+		return graphql.WriterFunc(func(w io.Writer) {
+			w.Write([]byte{'{'})
+			graphql.MarshalString(field.Alias).MarshalGQL(w)
+			w.Write([]byte{':'})
+			ec.marshalOVolunteer2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteer(ctx, field.Selections, res).MarshalGQL(w)
+			w.Write([]byte{'}'})
+		})
+	}
+}
+
 func (ec *executionContext) _Talk_id(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -8625,6 +8835,71 @@ func (ec *executionContext) _User_events(ctx context.Context, field graphql.Coll
 	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _User_volunteer_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.VolunteerID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_volunteering(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.User().Volunteering(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Volunteer)
+	fc.Result = res
+	return ec.marshalOVolunteer2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteerᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _User_event_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -8829,68 +9104,6 @@ func (ec *executionContext) _Volunteer_duration(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Volunteer_team(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Volunteer",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Volunteer().Team(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Team)
-	fc.Result = res
-	return ec.marshalOTeam2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTeam(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Volunteer_team_id(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Volunteer",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.TeamID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*int)
-	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Volunteer_isApproved(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -8925,6 +9138,68 @@ func (ec *executionContext) _Volunteer_isApproved(ctx context.Context, field gra
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Volunteer_team(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Volunteer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Volunteer().Team(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Team)
+	fc.Result = res
+	return ec.marshalOTeam2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTeam(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Volunteer_team_id(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Volunteer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TeamID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Volunteer_event(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -8954,9 +9229,9 @@ func (ec *executionContext) _Volunteer_event(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Event)
+	res := resTmp.([]*model.Event)
 	fc.Result = res
-	return ec.marshalNEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
+	return ec.marshalNEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Volunteer_event_id(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
@@ -9022,9 +9297,9 @@ func (ec *executionContext) _Volunteer_user(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.User)
+	res := resTmp.([]*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Volunteer_user_id(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
@@ -10200,6 +10475,18 @@ func (ec *executionContext) unmarshalInputCreateEvent(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
+		case "volunteer_id":
+			var err error
+			it.VolunteerID, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "volunteering":
+			var err error
+			it.Volunteering, err = ec.unmarshalOCreateVolunteer2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateVolunteerᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -10506,6 +10793,12 @@ func (ec *executionContext) unmarshalInputCreateUser(ctx context.Context, obj in
 			if err != nil {
 				return it, err
 			}
+		case "volunteering":
+			var err error
+			it.Volunteering, err = ec.unmarshalOCreateVolunteer2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateVolunteerᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "events":
 			var err error
 			it.Events, err = ec.unmarshalOCreateEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx, v)
@@ -10551,12 +10844,6 @@ func (ec *executionContext) unmarshalInputCreateVolunteer(ctx context.Context, o
 		case "event":
 			var err error
 			it.Event, err = ec.unmarshalOCreateEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "event_id":
-			var err error
-			it.EventID, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10719,6 +11006,18 @@ func (ec *executionContext) unmarshalInputUpdateEvent(ctx context.Context, obj i
 		case "team":
 			var err error
 			it.Team, err = ec.unmarshalOCreateTeam2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTeam(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "volunteer_id":
+			var err error
+			it.VolunteerID, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "volunteering":
+			var err error
+			it.Volunteering, err = ec.unmarshalOCreateVolunteer2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateVolunteerᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11016,6 +11315,12 @@ func (ec *executionContext) unmarshalInputUpdateUser(ctx context.Context, obj in
 			if err != nil {
 				return it, err
 			}
+		case "volunteering":
+			var err error
+			it.Volunteering, err = ec.unmarshalOCreateVolunteer2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateVolunteerᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "events":
 			var err error
 			it.Events, err = ec.unmarshalOCreateEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx, v)
@@ -11280,6 +11585,19 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 					}
 				}()
 				res = ec._Event_teams(ctx, field, obj)
+				return res
+			})
+		case "volunteer_id":
+			out.Values[i] = ec._Event_volunteer_id(ctx, field, obj)
+		case "volunteer":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Event_volunteer(ctx, field, obj)
 				return res
 			})
 		case "isArchived":
@@ -11937,6 +12255,26 @@ func (ec *executionContext) _Sponsor(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
+var subscriptionImplementors = []string{"Subscription"}
+
+func (ec *executionContext) _Subscription(ctx context.Context, sel ast.SelectionSet) func() graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, subscriptionImplementors)
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Subscription",
+	})
+	if len(fields) != 1 {
+		ec.Errorf(ctx, "must subscribe to exactly one stream")
+		return nil
+	}
+
+	switch fields[0].Name {
+	case "volunteerCreated":
+		return ec._Subscription_volunteerCreated(ctx, fields[0])
+	default:
+		panic("unknown field " + strconv.Quote(fields[0].Name))
+	}
+}
+
 var talkImplementors = []string{"Talk"}
 
 func (ec *executionContext) _Talk(ctx context.Context, sel ast.SelectionSet, obj *model.Talk) graphql.Marshaler {
@@ -12332,6 +12670,22 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 				res = ec._User_events(ctx, field, obj)
 				return res
 			})
+		case "volunteer_id":
+			out.Values[i] = ec._User_volunteer_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "volunteering":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_volunteering(ctx, field, obj)
+				return res
+			})
 		case "event_id":
 			out.Values[i] = ec._User_event_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -12384,6 +12738,11 @@ func (ec *executionContext) _Volunteer(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "isApproved":
+			out.Values[i] = ec._Volunteer_isApproved(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "team":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -12397,11 +12756,6 @@ func (ec *executionContext) _Volunteer(ctx context.Context, sel ast.SelectionSet
 			})
 		case "team_id":
 			out.Values[i] = ec._Volunteer_team_id(ctx, field, obj)
-		case "isApproved":
-			out.Values[i] = ec._Volunteer_isApproved(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "event":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -12776,8 +13130,53 @@ func (ec *executionContext) unmarshalNCreateVolunteer2githubᚗcomᚋvickywane�
 	return ec.unmarshalInputCreateVolunteer(ctx, v)
 }
 
+func (ec *executionContext) unmarshalNCreateVolunteer2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateVolunteer(ctx context.Context, v interface{}) (*model.CreateVolunteer, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalNCreateVolunteer2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateVolunteer(ctx, v)
+	return &res, err
+}
+
 func (ec *executionContext) marshalNEvent2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx context.Context, sel ast.SelectionSet, v model.Event) graphql.Marshaler {
 	return ec._Event(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx context.Context, sel ast.SelectionSet, v []*model.Event) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
 }
 
 func (ec *executionContext) marshalNEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Event) graphql.Marshaler {
@@ -13256,6 +13655,43 @@ func (ec *executionContext) marshalNUser2githubᚗcomᚋvickywaneᚋeventᚑserv
 	return ec._User(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
 func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -13710,6 +14146,26 @@ func (ec *executionContext) unmarshalOCreateUser2ᚖgithubᚗcomᚋvickywaneᚋe
 	return &res, err
 }
 
+func (ec *executionContext) unmarshalOCreateVolunteer2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateVolunteerᚄ(ctx context.Context, v interface{}) ([]*model.CreateVolunteer, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*model.CreateVolunteer, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalNCreateVolunteer2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateVolunteer(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
 func (ec *executionContext) marshalOEvent2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx context.Context, sel ast.SelectionSet, v model.Event) graphql.Marshaler {
 	return ec._Event(ctx, sel, &v)
 }
@@ -14069,6 +14525,46 @@ func (ec *executionContext) marshalOTeam2githubᚗcomᚋvickywaneᚋeventᚑserv
 	return ec._Team(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalOTeam2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTeam(ctx context.Context, sel ast.SelectionSet, v []*model.Team) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOTeam2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTeam(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
 func (ec *executionContext) marshalOTeam2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTeamᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Team) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -14279,6 +14775,57 @@ func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑs
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOVolunteer2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteer(ctx context.Context, sel ast.SelectionSet, v model.Volunteer) graphql.Marshaler {
+	return ec._Volunteer(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOVolunteer2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteerᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Volunteer) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNVolunteer2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteer(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOVolunteer2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteer(ctx context.Context, sel ast.SelectionSet, v *model.Volunteer) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Volunteer(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

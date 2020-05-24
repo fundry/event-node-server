@@ -2,13 +2,13 @@ type Volunteer {
     id : Int!
     role : String!
     duration : String!
-    team : Team
-    team_id : Int
     isApproved : Boolean!
-    event: Event!
-    event_id : Int!
-    user : User!
-    user_id: Int!
+    team : [Team]
+    team_id : Int # FK
+    event: [Event]!
+    event_id : Int! # FK
+    user : [User]!
+    user_id: Int! # FK
 }
 
 input CreateVolunteer {
@@ -17,7 +17,6 @@ input CreateVolunteer {
     isApproved : Boolean
     user: CreateUser
     event: CreateEvent
-    event_id: Int
 }
 
 input UpdateVolunteer {

@@ -55,11 +55,15 @@ models:
         resolver: true
       tracks:
         resolver: true
+      volunteer:
+        resolver: true
   User:
     fields:
       events:
         resolver: true
       talks:
+        resolver: true
+      volunteering:
         resolver: true
   Preference:
     fields:

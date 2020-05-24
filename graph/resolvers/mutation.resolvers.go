@@ -557,13 +557,30 @@ func (r *mutationResolver) DeleteFile(ctx context.Context, id int) (bool, error)
 }
 
 func (r *mutationResolver) CreateVolunteer(ctx context.Context, input model.CreateVolunteer, userID int, eventID int) (*model.Volunteer, error) {
+	VolunteerTableId := time.Now().Nanosecond()
 	volunteer := model.Volunteer{
-		ID:         time.Now().Nanosecond(),
+		ID:         VolunteerTableId,
 		Role:       input.Role,
 		Duration:   *input.Duration,
 		IsApproved: false,
 		EventID:    eventID,
 		UserID:     userID,
+	}
+
+	// update user with VolunteerId field
+	user, err := r.GetUserById(userID)
+
+	if user != nil && err != nil {
+		return nil, validators.NotFound
+	}
+
+	user.VolunteerID = VolunteerTableId
+
+	user, err = r.UpdateCurrentUser(user)
+	// =================================>
+
+	if err := r.DB.Insert(&volunteer); err != nil {
+		return nil, err
 	}
 
 	return &volunteer, nil

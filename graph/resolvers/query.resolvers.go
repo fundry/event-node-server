@@ -249,11 +249,11 @@ func (r *queryResolver) Volunteer(ctx context.Context, id int) (*model.Volunteer
 func (r *queryResolver) Volunteers(ctx context.Context, limit *int) ([]*model.Volunteer, error) {
 	var Volunteer []*model.Volunteer
 
-	// if Volunteer != nil {
-	// 	QueryErr = r.DB.Model(&Volunteer).Limit(*Volunteer).Select()
-	// } else {
-	// 	QueryErr = r.DB.Model(&Volunteer).Select()
-	// }
+	if limit != nil {
+		QueryErr = r.DB.Model(&Volunteer).Limit(*limit).Select()
+	} else {
+		QueryErr = r.DB.Model(&Volunteer).Select()
+	}
 
 	if QueryErr != nil {
 		return nil, CustomResponse.QueryError

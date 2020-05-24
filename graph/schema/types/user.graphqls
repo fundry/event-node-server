@@ -7,6 +7,8 @@ type User {
     bucketLink: String!
     talks: [Talk]
     events: [Event!]
+    volunteer_id: Int!
+    volunteering: [Volunteer!]
     event_id: Int!
     createdAt: Time!
     updatedAt: Time!
@@ -17,6 +19,7 @@ input CreateUser {
     role: String
     email: String!
     password: String!
+    volunteering: [CreateVolunteer!]
     events: [CreateEvent]
 }
 
@@ -25,6 +28,7 @@ input UpdateUser {
     role: String
     email: String
     password: String
+    volunteering: [CreateVolunteer!]
     events: [CreateEvent]
     updatedAt: Time
 }

@@ -31,6 +31,17 @@ func (r *userResolver) Events(ctx context.Context, obj *model.User) ([]*model.Ev
 	return events, nil
 }
 
+func (r *userResolver) Volunteering(ctx context.Context, obj *model.User) ([]*model.Volunteer, error) {
+	var volunteer []*model.Volunteer
+
+	err := r.DB.Model(&volunteer).Where("id = ?", obj.VolunteerID).Order("id").Select()
+
+	if err != nil {
+		return nil, err
+	}
+	return volunteer, nil
+}
+
 // User returns generated.UserResolver implementation.
 func (r *Resolver) User() generated.UserResolver { return &userResolver{r} }
 
