@@ -1,0 +1,17 @@
+type Attendee {
+    id : Int!
+    dateJoined : String!
+    user : [User!]
+    user_id : Int!
+    event : [Event!]
+    event_id : Int!
+}
+
+input CreateAttendee {
+    user : [CreateUser!]
+    event : [CreateEvent]!
+}
+
+input UpdateAttendee {
+    user : [CreateUser!]
+}

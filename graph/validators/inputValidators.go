@@ -21,6 +21,10 @@ var (
 	ParseToken           = errors.New("Error occurred while parsing token")
 )
 
+func FieldTaken(field string) error {
+	 return errors.Errorf("%v field value already stored" , field )
+}
+
 /*
 Todo: This currently doesnt work.
  I want it to break the execution of the function invoking it, so i can clean up the mutations and reuse this block

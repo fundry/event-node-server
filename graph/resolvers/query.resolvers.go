@@ -246,7 +246,7 @@ func (r *queryResolver) Volunteer(ctx context.Context, id int) (*model.Volunteer
 	return &volunteer, nil
 }
 
-func (r *queryResolver) Volunteers(ctx context.Context, limit *int) ([]*model.Volunteer, error) {
+func (r *queryResolver) Volunteers(ctx context.Context, limit *int, eventID int) ([]*model.Volunteer, error) {
 	var Volunteer []*model.Volunteer
 
 	if limit != nil {

@@ -34,7 +34,7 @@ func (r *userResolver) Events(ctx context.Context, obj *model.User) ([]*model.Ev
 func (r *userResolver) Volunteering(ctx context.Context, obj *model.User) ([]*model.Volunteer, error) {
 	var volunteer []*model.Volunteer
 
-	err := r.DB.Model(&volunteer).Where("id = ?", obj.VolunteerID).Order("id").Select()
+	err := r.DB.Model(&volunteer).Where("user_id = ?", obj.ID).Order("id").Select()
 
 	if err != nil {
 		return nil, err

@@ -103,6 +103,13 @@ func SeedDatabase(db *pg.DB) {
 		UpdatedAt:   time.Time{},
 	}
 
+	betaTester := model.BetaTester{
+		ID:          rand.Int(),
+		Name:        "John Doe",
+		Email:       "johndoe@gmail.com",
+		DateApplied: time.Now().Format("01-02-2006"),
+	}
+
 	db.Insert(&user)
 	db.Insert(&event)
 	db.Insert(&preference)
@@ -112,4 +119,5 @@ func SeedDatabase(db *pg.DB) {
 	db.Insert(&task)
 	db.Insert(&talk)
 	db.Insert(&track)
+	db.Insert(&betaTester)
 }

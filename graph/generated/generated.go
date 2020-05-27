@@ -38,6 +38,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Attendee() AttendeeResolver
 	Event() EventResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
@@ -55,6 +56,15 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	Attendee struct {
+		DateJoined func(childComplexity int) int
+		Event      func(childComplexity int) int
+		EventID    func(childComplexity int) int
+		ID         func(childComplexity int) int
+		User       func(childComplexity int) int
+		UserID     func(childComplexity int) int
+	}
+
 	AuthResponse struct {
 		ExpiredAt func(childComplexity int) int
 		ID        func(childComplexity int) int
@@ -80,6 +90,7 @@ type ComplexityRoot struct {
 		Name           func(childComplexity int) int
 		Summary        func(childComplexity int) int
 		Teams          func(childComplexity int) int
+		TotalAttendees func(childComplexity int) int
 		TrackID        func(childComplexity int) int
 		Tracks         func(childComplexity int) int
 		UpdatedAt      func(childComplexity int) int
@@ -97,6 +108,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		AttendEvent         func(childComplexity int, eventID int, userID int) int
 		CreateEvent         func(childComplexity int, input model.CreateEvent, userID int) int
 		CreatePreference    func(childComplexity int, input model.CreatePreference) int
 		CreateSponsor       func(childComplexity int, input model.CreateSponsor) int
@@ -118,6 +130,7 @@ type ComplexityRoot struct {
 		DeleteVolunteer     func(childComplexity int, id int) int
 		LoginUser           func(childComplexity int, input model.LoginInput) int
 		UpdateEvent         func(childComplexity int, id *int, input model.UpdateEvent) int
+		UpdateEventAttendee func(childComplexity int, eventID int, userID int) int
 		UpdatePreference    func(childComplexity int, id *int, input model.UpdatePreference) int
 		UpdateSponsor       func(childComplexity int, id *int, input model.UpdateSponsor) int
 		UpdateTalk          func(childComplexity int, id int, input model.UpdateTalk) int
@@ -159,7 +172,7 @@ type ComplexityRoot struct {
 		User        func(childComplexity int, id *int, name string) int
 		Users       func(childComplexity int, limit *int) int
 		Volunteer   func(childComplexity int, id int) int
-		Volunteers  func(childComplexity int, limit *int) int
+		Volunteers  func(childComplexity int, limit *int, eventID int) int
 	}
 
 	Sponsor struct {
@@ -251,19 +264,26 @@ type ComplexityRoot struct {
 	}
 
 	Volunteer struct {
-		Duration   func(childComplexity int) int
-		Event      func(childComplexity int) int
-		EventID    func(childComplexity int) int
-		ID         func(childComplexity int) int
-		IsApproved func(childComplexity int) int
-		Role       func(childComplexity int) int
-		Team       func(childComplexity int) int
-		TeamID     func(childComplexity int) int
-		User       func(childComplexity int) int
-		UserID     func(childComplexity int) int
+		ApprovalStatus    func(childComplexity int) int
+		DateApplied       func(childComplexity int) int
+		Duration          func(childComplexity int) int
+		Event             func(childComplexity int) int
+		EventID           func(childComplexity int) int
+		ID                func(childComplexity int) int
+		Role              func(childComplexity int) int
+		Team              func(childComplexity int) int
+		TeamID            func(childComplexity int) int
+		User              func(childComplexity int) int
+		UserID            func(childComplexity int) int
+		VolunteerProposal func(childComplexity int) int
 	}
 }
 
+type AttendeeResolver interface {
+	User(ctx context.Context, obj *model.Attendee) ([]*model.User, error)
+
+	Event(ctx context.Context, obj *model.Attendee) ([]*model.Event, error)
+}
 type EventResolver interface {
 	CreatedBy(ctx context.Context, obj *model.Event) ([]*model.User, error)
 	Attendees(ctx context.Context, obj *model.Event) ([]*model.User, error)
@@ -277,6 +297,8 @@ type MutationResolver interface {
 	LoginUser(ctx context.Context, input model.LoginInput) (*model.AuthResponse, error)
 	CreateEvent(ctx context.Context, input model.CreateEvent, userID int) (*model.Event, error)
 	UpdateEvent(ctx context.Context, id *int, input model.UpdateEvent) (*model.Event, error)
+	AttendEvent(ctx context.Context, eventID int, userID int) (*model.Attendee, error)
+	UpdateEventAttendee(ctx context.Context, eventID int, userID int) (*model.Attendee, error)
 	DeleteEvent(ctx context.Context, id int) (bool, error)
 	CreateUser(ctx context.Context, input model.CreateUser) (*model.AuthResponse, error)
 	UpdateUser(ctx context.Context, id *int, input model.UpdateUser) (*model.User, error)
@@ -326,7 +348,7 @@ type QueryResolver interface {
 	Track(ctx context.Context, id int) (*model.Tracks, error)
 	Tracks(ctx context.Context, limit *int) ([]*model.Tracks, error)
 	Volunteer(ctx context.Context, id int) (*model.Volunteer, error)
-	Volunteers(ctx context.Context, limit *int) ([]*model.Volunteer, error)
+	Volunteers(ctx context.Context, limit *int, eventID int) ([]*model.Volunteer, error)
 }
 type SponsorResolver interface {
 	Event(ctx context.Context, obj *model.Sponsor) (*model.Event, error)
@@ -375,6 +397,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Attendee.dateJoined":
+		if e.complexity.Attendee.DateJoined == nil {
+			break
+		}
+
+		return e.complexity.Attendee.DateJoined(childComplexity), true
+
+	case "Attendee.event":
+		if e.complexity.Attendee.Event == nil {
+			break
+		}
+
+		return e.complexity.Attendee.Event(childComplexity), true
+
+	case "Attendee.event_id":
+		if e.complexity.Attendee.EventID == nil {
+			break
+		}
+
+		return e.complexity.Attendee.EventID(childComplexity), true
+
+	case "Attendee.id":
+		if e.complexity.Attendee.ID == nil {
+			break
+		}
+
+		return e.complexity.Attendee.ID(childComplexity), true
+
+	case "Attendee.user":
+		if e.complexity.Attendee.User == nil {
+			break
+		}
+
+		return e.complexity.Attendee.User(childComplexity), true
+
+	case "Attendee.user_id":
+		if e.complexity.Attendee.UserID == nil {
+			break
+		}
+
+		return e.complexity.Attendee.UserID(childComplexity), true
 
 	case "AuthResponse.expiredAt":
 		if e.complexity.AuthResponse.ExpiredAt == nil {
@@ -523,6 +587,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Event.Teams(childComplexity), true
 
+	case "Event.totalAttendees":
+		if e.complexity.Event.TotalAttendees == nil {
+			break
+		}
+
+		return e.complexity.Event.TotalAttendees(childComplexity), true
+
 	case "Event.track_id":
 		if e.complexity.Event.TrackID == nil {
 			break
@@ -599,6 +670,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.File.Timestamp(childComplexity), true
+
+	case "Mutation.attendEvent":
+		if e.complexity.Mutation.AttendEvent == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_attendEvent_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AttendEvent(childComplexity, args["EventID"].(int), args["UserID"].(int)), true
 
 	case "Mutation.createEvent":
 		if e.complexity.Mutation.CreateEvent == nil {
@@ -851,6 +934,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateEvent(childComplexity, args["id"].(*int), args["input"].(model.UpdateEvent)), true
+
+	case "Mutation.updateEventAttendee":
+		if e.complexity.Mutation.UpdateEventAttendee == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateEventAttendee_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateEventAttendee(childComplexity, args["EventID"].(int), args["UserID"].(int)), true
 
 	case "Mutation.updatePreference":
 		if e.complexity.Mutation.UpdatePreference == nil {
@@ -1247,7 +1342,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Volunteers(childComplexity, args["Limit"].(*int)), true
+		return e.complexity.Query.Volunteers(childComplexity, args["Limit"].(*int), args["EventID"].(int)), true
 
 	case "Sponsor.amount":
 		if e.complexity.Sponsor.Amount == nil {
@@ -1723,6 +1818,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.Volunteering(childComplexity), true
 
+	case "Volunteer.approvalStatus":
+		if e.complexity.Volunteer.ApprovalStatus == nil {
+			break
+		}
+
+		return e.complexity.Volunteer.ApprovalStatus(childComplexity), true
+
+	case "Volunteer.dateApplied":
+		if e.complexity.Volunteer.DateApplied == nil {
+			break
+		}
+
+		return e.complexity.Volunteer.DateApplied(childComplexity), true
+
 	case "Volunteer.duration":
 		if e.complexity.Volunteer.Duration == nil {
 			break
@@ -1750,13 +1859,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Volunteer.ID(childComplexity), true
-
-	case "Volunteer.isApproved":
-		if e.complexity.Volunteer.IsApproved == nil {
-			break
-		}
-
-		return e.complexity.Volunteer.IsApproved(childComplexity), true
 
 	case "Volunteer.role":
 		if e.complexity.Volunteer.Role == nil {
@@ -1792,6 +1894,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Volunteer.UserID(childComplexity), true
+
+	case "Volunteer.volunteer_proposal":
+		if e.complexity.Volunteer.VolunteerProposal == nil {
+			break
+		}
+
+		return e.complexity.Volunteer.VolunteerProposal(childComplexity), true
 
 	}
 	return 0, false
@@ -1903,6 +2012,8 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
 
     createEvent(input: CreateEvent!, UserID: Int!): Event!
     updateEvent(id: ID, input: UpdateEvent!): Event!
+    attendEvent(EventID: ID!, UserID : ID!): Attendee!
+    updateEventAttendee(EventID: ID!, UserID : ID!): Attendee!
     deleteEvent(id: ID!) : Boolean!
 
     createUser(input: CreateUser!): AuthResponse
@@ -1970,7 +2081,7 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
     tracks(Limit: Int) : [Tracks!]!
 
     volunteer(id: Int!): Volunteer!
-    volunteers(Limit: Int): [Volunteer!]!
+    volunteers(Limit: Int , EventID : Int!): [Volunteer!]!
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/scalar.graphqls", Input: `# My custom defined types https://github.com/99designs/gqlgen/blob/master/docs/content/reference/scalars.md
 
@@ -1992,6 +2103,24 @@ scalar Upload
 	&ast.Source{Name: "graph/schema/subscription.graphqls", Input: `type Subscription {
     volunteerCreated(role : String): Volunteer
 }`, BuiltIn: false},
+	&ast.Source{Name: "graph/schema/types/attendee.graphqls", Input: `type Attendee {
+    id : Int!
+    dateJoined : String!
+    user : [User!]
+    user_id : Int!
+    event : [Event!]
+    event_id : Int!
+}
+
+input CreateAttendee {
+    user : [CreateUser!]
+    event : [CreateEvent]!
+}
+
+input UpdateAttendee {
+    user : [CreateUser!]
+}
+`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/types/auth.graphqls", Input: ` type AuthResponse {
     id : Int!
     token : String!
@@ -2026,6 +2155,7 @@ input LoginInput {
     teams: [Team!]
     volunteer_id: Int
     volunteer: [Volunteer!]
+    totalAttendees: Int!
     isArchived: Boolean! @default(value: false)
     isLocked: Boolean!  @default(value: false)
 }
@@ -2057,6 +2187,7 @@ input UpdateEvent {
     description: String
     eventType: String
     isArchived: Boolean
+    totalAttendees: Int
     isLocked: Boolean
     Email: String
     website: String
@@ -2301,7 +2432,9 @@ input UpdateUser {
     id : Int!
     role : String!
     duration : String!
-    isApproved : Boolean!
+    approvalStatus : String!
+    volunteer_proposal: String!
+    dateApplied: String!
     team : [Team]
     team_id : Int # FK
     event: [Event]!
@@ -2313,17 +2446,18 @@ input UpdateUser {
 input CreateVolunteer {
     role: String!
     duration: String
-    isApproved : Boolean
     user: CreateUser
     event: CreateEvent
+    volunteer_proposal: String!
 }
 
 input UpdateVolunteer {
     role: String
-    isApproved: Int
+    approvalStatus : String!
     duration: String
     team: CreateTeam
     team_id : Int
+    volunteer_proposal: String!
 }
 
 `, BuiltIn: false},
@@ -2345,6 +2479,28 @@ func (ec *executionContext) dir_default_args(ctx context.Context, rawArgs map[st
 		}
 	}
 	args["value"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_attendEvent_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["EventID"]; ok {
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["EventID"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["UserID"]; ok {
+		arg1, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["UserID"] = arg1
 	return args, nil
 }
 
@@ -2673,6 +2829,28 @@ func (ec *executionContext) field_Mutation_loginUser_args(ctx context.Context, r
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateEventAttendee_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["EventID"]; ok {
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["EventID"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["UserID"]; ok {
+		arg1, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["UserID"] = arg1
 	return args, nil
 }
 
@@ -3227,6 +3405,14 @@ func (ec *executionContext) field_Query_volunteers_args(ctx context.Context, raw
 		}
 	}
 	args["Limit"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["EventID"]; ok {
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["EventID"] = arg1
 	return args, nil
 }
 
@@ -3279,6 +3465,204 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _Attendee_id(ctx context.Context, field graphql.CollectedField, obj *model.Attendee) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Attendee",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Attendee_dateJoined(ctx context.Context, field graphql.CollectedField, obj *model.Attendee) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Attendee",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DateJoined, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Attendee_user(ctx context.Context, field graphql.CollectedField, obj *model.Attendee) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Attendee",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Attendee().User(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUserᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Attendee_user_id(ctx context.Context, field graphql.CollectedField, obj *model.Attendee) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Attendee",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Attendee_event(ctx context.Context, field graphql.CollectedField, obj *model.Attendee) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Attendee",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Attendee().Event(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Event)
+	fc.Result = res
+	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Attendee_event_id(ctx context.Context, field graphql.CollectedField, obj *model.Attendee) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Attendee",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EventID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
 
 func (ec *executionContext) _AuthResponse_id(ctx context.Context, field graphql.CollectedField, obj *model.AuthResponse) (ret graphql.Marshaler) {
 	defer func() {
@@ -4143,6 +4527,40 @@ func (ec *executionContext) _Event_volunteer(ctx context.Context, field graphql.
 	return ec.marshalOVolunteer2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteerᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Event_totalAttendees(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalAttendees, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Event_isArchived(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -4516,6 +4934,88 @@ func (ec *executionContext) _Mutation_updateEvent(ctx context.Context, field gra
 	res := resTmp.(*model.Event)
 	fc.Result = res
 	return ec.marshalNEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_attendEvent(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_attendEvent_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AttendEvent(rctx, args["EventID"].(int), args["UserID"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Attendee)
+	fc.Result = res
+	return ec.marshalNAttendee2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAttendee(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateEventAttendee(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateEventAttendee_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateEventAttendee(rctx, args["EventID"].(int), args["UserID"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Attendee)
+	fc.Result = res
+	return ec.marshalNAttendee2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAttendee(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_deleteEvent(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6657,7 +7157,7 @@ func (ec *executionContext) _Query_volunteers(ctx context.Context, field graphql
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Volunteers(rctx, args["Limit"].(*int))
+		return ec.resolvers.Query().Volunteers(rctx, args["Limit"].(*int), args["EventID"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -9104,7 +9604,7 @@ func (ec *executionContext) _Volunteer_duration(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Volunteer_isApproved(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
+func (ec *executionContext) _Volunteer_approvalStatus(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -9121,7 +9621,7 @@ func (ec *executionContext) _Volunteer_isApproved(ctx context.Context, field gra
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.IsApproved, nil
+		return obj.ApprovalStatus, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -9133,9 +9633,77 @@ func (ec *executionContext) _Volunteer_isApproved(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Volunteer_volunteer_proposal(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Volunteer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.VolunteerProposal, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Volunteer_dateApplied(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Volunteer",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DateApplied, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Volunteer_team(ctx context.Context, field graphql.CollectedField, obj *model.Volunteer) (ret graphql.Marshaler) {
@@ -10391,6 +10959,30 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputCreateAttendee(ctx context.Context, obj interface{}) (model.CreateAttendee, error) {
+	var it model.CreateAttendee
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "user":
+			var err error
+			it.User, err = ec.unmarshalOCreateUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUserᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "event":
+			var err error
+			it.Event, err = ec.unmarshalNCreateEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateEvent(ctx context.Context, obj interface{}) (model.CreateEvent, error) {
 	var it model.CreateEvent
 	var asMap = obj.(map[string]interface{})
@@ -10829,12 +11421,6 @@ func (ec *executionContext) unmarshalInputCreateVolunteer(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
-		case "isApproved":
-			var err error
-			it.IsApproved, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "user":
 			var err error
 			it.User, err = ec.unmarshalOCreateUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
@@ -10844,6 +11430,12 @@ func (ec *executionContext) unmarshalInputCreateVolunteer(ctx context.Context, o
 		case "event":
 			var err error
 			it.Event, err = ec.unmarshalOCreateEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "volunteer_proposal":
+			var err error
+			it.VolunteerProposal, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10892,6 +11484,24 @@ func (ec *executionContext) unmarshalInputLoginInput(ctx context.Context, obj in
 		case "password":
 			var err error
 			it.Password, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateAttendee(ctx context.Context, obj interface{}) (model.UpdateAttendee, error) {
+	var it model.UpdateAttendee
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "user":
+			var err error
+			it.User, err = ec.unmarshalOCreateUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUserᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10952,6 +11562,12 @@ func (ec *executionContext) unmarshalInputUpdateEvent(ctx context.Context, obj i
 		case "isArchived":
 			var err error
 			it.IsArchived, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "totalAttendees":
+			var err error
+			it.TotalAttendees, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11351,9 +11967,9 @@ func (ec *executionContext) unmarshalInputUpdateVolunteer(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
-		case "isApproved":
+		case "approvalStatus":
 			var err error
-			it.IsApproved, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			it.ApprovalStatus, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11372,6 +11988,12 @@ func (ec *executionContext) unmarshalInputUpdateVolunteer(ctx context.Context, o
 		case "team_id":
 			var err error
 			it.TeamID, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "volunteer_proposal":
+			var err error
+			it.VolunteerProposal, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11412,6 +12034,70 @@ func (ec *executionContext) unmarshalInputUploadFile(ctx context.Context, obj in
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var attendeeImplementors = []string{"Attendee"}
+
+func (ec *executionContext) _Attendee(ctx context.Context, sel ast.SelectionSet, obj *model.Attendee) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, attendeeImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Attendee")
+		case "id":
+			out.Values[i] = ec._Attendee_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "dateJoined":
+			out.Values[i] = ec._Attendee_dateJoined(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "user":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Attendee_user(ctx, field, obj)
+				return res
+			})
+		case "user_id":
+			out.Values[i] = ec._Attendee_user_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "event":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Attendee_event(ctx, field, obj)
+				return res
+			})
+		case "event_id":
+			out.Values[i] = ec._Attendee_event_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
 
 var authResponseImplementors = []string{"AuthResponse"}
 
@@ -11600,6 +12286,11 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 				res = ec._Event_volunteer(ctx, field, obj)
 				return res
 			})
+		case "totalAttendees":
+			out.Values[i] = ec._Event_totalAttendees(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "isArchived":
 			out.Values[i] = ec._Event_isArchived(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -11690,6 +12381,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "updateEvent":
 			out.Values[i] = ec._Mutation_updateEvent(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "attendEvent":
+			out.Values[i] = ec._Mutation_attendEvent(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateEventAttendee":
+			out.Values[i] = ec._Mutation_updateEventAttendee(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -12738,8 +13439,18 @@ func (ec *executionContext) _Volunteer(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "isApproved":
-			out.Values[i] = ec._Volunteer_isApproved(ctx, field, obj)
+		case "approvalStatus":
+			out.Values[i] = ec._Volunteer_approvalStatus(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "volunteer_proposal":
+			out.Values[i] = ec._Volunteer_volunteer_proposal(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "dateApplied":
+			out.Values[i] = ec._Volunteer_dateApplied(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
@@ -13050,6 +13761,20 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) marshalNAttendee2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAttendee(ctx context.Context, sel ast.SelectionSet, v model.Attendee) graphql.Marshaler {
+	return ec._Attendee(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAttendee2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAttendee(ctx context.Context, sel ast.SelectionSet, v *model.Attendee) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Attendee(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNAuthResponse2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAuthResponse(ctx context.Context, sel ast.SelectionSet, v model.AuthResponse) graphql.Marshaler {
 	return ec._AuthResponse(ctx, sel, &v)
 }
@@ -13080,6 +13805,26 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 
 func (ec *executionContext) unmarshalNCreateEvent2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx context.Context, v interface{}) (model.CreateEvent, error) {
 	return ec.unmarshalInputCreateEvent(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNCreateEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx context.Context, v interface{}) ([]*model.CreateEvent, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*model.CreateEvent, len(vSlice))
+	for i := range vSlice {
+		res[i], err = ec.unmarshalOCreateEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
 func (ec *executionContext) unmarshalNCreateEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx context.Context, v interface{}) (*model.CreateEvent, error) {

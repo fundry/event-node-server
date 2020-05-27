@@ -21,6 +21,7 @@ type Event {
     teams: [Team!]
     volunteer_id: Int
     volunteer: [Volunteer!]
+    totalAttendees: Int!
     isArchived: Boolean! @default(value: false)
     isLocked: Boolean!  @default(value: false)
 }
@@ -52,6 +53,7 @@ input UpdateEvent {
     description: String
     eventType: String
     isArchived: Boolean
+    totalAttendees: Int
     isLocked: Boolean
     Email: String
     website: String

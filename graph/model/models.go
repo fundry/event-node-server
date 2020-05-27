@@ -8,11 +8,25 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 )
 
+type Attendee struct {
+	ID         int      `json:"id"`
+	DateJoined string   `json:"dateJoined"`
+	User       []*User  `json:"user"`
+	UserID     int      `json:"user_id"`
+	Event      []*Event `json:"event"`
+	EventID    int      `json:"event_id"`
+}
+
 type AuthResponse struct {
 	ID        int       `json:"id"`
 	Token     string    `json:"token"`
 	ExpiredAt time.Time `json:"expiredAt"`
 	User      *User     `json:"user"`
+}
+
+type CreateAttendee struct {
+	User  []*CreateUser  `json:"user"`
+	Event []*CreateEvent `json:"event"`
 }
 
 type CreateEvent struct {
@@ -94,11 +108,11 @@ type CreateUser struct {
 }
 
 type CreateVolunteer struct {
-	Role       string       `json:"role"`
-	Duration   *string      `json:"duration"`
-	IsApproved *bool        `json:"isApproved"`
-	User       *CreateUser  `json:"user"`
-	Event      *CreateEvent `json:"event"`
+	Role              string       `json:"role"`
+	Duration          *string      `json:"duration"`
+	User              *CreateUser  `json:"user"`
+	Event             *CreateEvent `json:"event"`
+	VolunteerProposal string       `json:"volunteer_proposal"`
 }
 
 type DeleteFile struct {
@@ -129,6 +143,7 @@ type Event struct {
 	Teams          []*Team      `json:"teams"`
 	VolunteerID    *int         `json:"volunteer_id"`
 	Volunteer      []*Volunteer `json:"volunteer"`
+	TotalAttendees int          `json:"totalAttendees"`
 	IsArchived     bool         `json:"isArchived"`
 	IsLocked       bool         `json:"isLocked"`
 }
@@ -222,26 +237,31 @@ type Tracks struct {
 	CreatedBy   []*Event  `json:"createdBy"`
 }
 
+type UpdateAttendee struct {
+	User []*CreateUser `json:"user"`
+}
+
 type UpdateEvent struct {
-	Name         *string            `json:"name"`
-	Type         *string            `json:"type"`
-	Summary      *string            `json:"summary"`
-	Alias        *string            `json:"alias"`
-	BucketLink   *string            `json:"bucketLink"`
-	Description  *string            `json:"description"`
-	EventType    *string            `json:"eventType"`
-	IsArchived   *bool              `json:"isArchived"`
-	IsLocked     *bool              `json:"isLocked"`
-	Email        *string            `json:"Email"`
-	Website      *string            `json:"website"`
-	TrackID      *int               `json:"track_id"`
-	UpdatedAt    *time.Time         `json:"updatedAt"`
-	Attendees    []*CreateUser      `json:"attendees"`
-	Venue        *string            `json:"venue"`
-	Date         int                `json:"Date"`
-	Team         *CreateTeam        `json:"team"`
-	VolunteerID  *int               `json:"volunteer_id"`
-	Volunteering []*CreateVolunteer `json:"volunteering"`
+	Name           *string            `json:"name"`
+	Type           *string            `json:"type"`
+	Summary        *string            `json:"summary"`
+	Alias          *string            `json:"alias"`
+	BucketLink     *string            `json:"bucketLink"`
+	Description    *string            `json:"description"`
+	EventType      *string            `json:"eventType"`
+	IsArchived     *bool              `json:"isArchived"`
+	TotalAttendees *int               `json:"totalAttendees"`
+	IsLocked       *bool              `json:"isLocked"`
+	Email          *string            `json:"Email"`
+	Website        *string            `json:"website"`
+	TrackID        *int               `json:"track_id"`
+	UpdatedAt      *time.Time         `json:"updatedAt"`
+	Attendees      []*CreateUser      `json:"attendees"`
+	Venue          *string            `json:"venue"`
+	Date           int                `json:"Date"`
+	Team           *CreateTeam        `json:"team"`
+	VolunteerID    *int               `json:"volunteer_id"`
+	Volunteering   []*CreateVolunteer `json:"volunteering"`
 }
 
 type UpdatePreference struct {
@@ -304,11 +324,12 @@ type UpdateUser struct {
 }
 
 type UpdateVolunteer struct {
-	Role       *string     `json:"role"`
-	IsApproved *int        `json:"isApproved"`
-	Duration   *string     `json:"duration"`
-	Team       *CreateTeam `json:"team"`
-	TeamID     *int        `json:"team_id"`
+	Role              *string     `json:"role"`
+	ApprovalStatus    string      `json:"approvalStatus"`
+	Duration          *string     `json:"duration"`
+	Team              *CreateTeam `json:"team"`
+	TeamID            *int        `json:"team_id"`
+	VolunteerProposal string      `json:"volunteer_proposal"`
 }
 
 type UploadFile struct {
@@ -333,14 +354,16 @@ type User struct {
 }
 
 type Volunteer struct {
-	ID         int      `json:"id"`
-	Role       string   `json:"role"`
-	Duration   string   `json:"duration"`
-	IsApproved bool     `json:"isApproved"`
-	Team       []*Team  `json:"team"`
-	TeamID     *int     `json:"team_id"`
-	Event      []*Event `json:"event"`
-	EventID    int      `json:"event_id"`
-	User       []*User  `json:"user"`
-	UserID     int      `json:"user_id"`
+	ID                int      `json:"id"`
+	Role              string   `json:"role"`
+	Duration          string   `json:"duration"`
+	ApprovalStatus    string   `json:"approvalStatus"`
+	VolunteerProposal string   `json:"volunteer_proposal"`
+	DateApplied       string   `json:"dateApplied"`
+	Team              []*Team  `json:"team"`
+	TeamID            *int     `json:"team_id"`
+	Event             []*Event `json:"event"`
+	EventID           int      `json:"event_id"`
+	User              []*User  `json:"user"`
+	UserID            int      `json:"user_id"`
 }

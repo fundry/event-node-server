@@ -109,6 +109,12 @@ models:
         resolver: true
       team:
         resolver: true
+  Attendee:
+    fields:
+      user:
+        resolver: true
+      event:
+        resolver: true
 
 
 
