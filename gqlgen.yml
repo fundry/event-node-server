@@ -65,6 +65,8 @@ models:
         resolver: true
       volunteering:
         resolver: true
+      attending:
+        resolver: true
   Preference:
     fields:
       event:
@@ -115,6 +117,15 @@ models:
         resolver: true
       event:
         resolver: true
-
+  EventFile:
+    fields:
+      event:
+        resolver: true
+      uploadedBy:
+        resolver: true
+  UserFile:
+    fields:
+      user:
+        resolver: true
 
 

@@ -7,6 +7,7 @@ type Tracks {
     isCompleted: Boolean!
     Archived: Boolean!
     createdAt: Time!
+    summary: String!
     updatedAt: Time!
     event_id: Int! #my event FK
     talks: [Talk]
@@ -17,6 +18,7 @@ input CreateTrack {
     name: String!
     trackImgUri: String
     duration: String!
+    summary: String!
     talks: String
     totalTalks: Int!
     createdBy:  String
@@ -27,6 +29,7 @@ input CreateTrack {
 input UpdateTrack {
     name: String!
     trackImgUri: String
+    summary: String
     duration: String!
     #    talks: [CreateTalk]
     totalTalks: Int!

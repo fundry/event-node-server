@@ -21,11 +21,11 @@ func (r *eventResolver) CreatedBy(ctx context.Context, obj *model.Event) ([]*mod
 	return createdBy, nil
 }
 
-func (r *eventResolver) Attendees(ctx context.Context, obj *model.Event) ([]*model.User, error) {
-	var attendees []*model.User
+func (r *eventResolver) Attendees(ctx context.Context, obj *model.Event) ([]*model.Attendee, error) {
+	var attendees []*model.Attendee
 
 	// this currently returns all users in the DB
-	if err := r.DB.Model(&attendees).Order("id").Select(); err != nil {
+	if err := r.DB.Model(&attendees).Where("event_id = ?", obj.ID).Order("id").Select(); err != nil {
 		return nil, err
 	}
 
@@ -35,10 +35,9 @@ func (r *eventResolver) Attendees(ctx context.Context, obj *model.Event) ([]*mod
 func (r *eventResolver) Tracks(ctx context.Context, obj *model.Event) ([]*model.Tracks, error) {
 	var tracks []*model.Tracks
 
-	if err := r.DB.Model(&tracks).Where("id = ?", obj.TrackID).Order("id").Select(); err != nil {
+	if err := r.DB.Model(&tracks).Where("event_id = ?", obj.ID).Order("id").Select(); err != nil {
 		return nil, err
 	}
-
 	return tracks, nil
 }
 

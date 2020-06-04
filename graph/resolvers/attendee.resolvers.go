@@ -5,18 +5,29 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/vickywane/event-server/graph/generated"
 	"github.com/vickywane/event-server/graph/model"
 )
 
 func (r *attendeeResolver) User(ctx context.Context, obj *model.Attendee) ([]*model.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	var Attendee []*model.User
+
+	if err := r.DB.Model(&Attendee).Where("id = ?", obj.UserID).Order("id").Select(); err != nil {
+		return nil, err
+	}
+
+	return Attendee, nil
 }
 
 func (r *attendeeResolver) Event(ctx context.Context, obj *model.Attendee) ([]*model.Event, error) {
-	panic(fmt.Errorf("not implemented"))
+	var Event []*model.Event
+
+	if err := r.DB.Model(&Event).Where("id = ?mu", obj.EventID).Order("id").Select(); err != nil {
+		return nil, err
+	}
+
+	return Event, nil
 }
 
 // Attendee returns generated.AttendeeResolver implementation.

@@ -1,13 +1,30 @@
-type File {
+type EventFile {
     id: ID!
     file: Upload!
+    type: String!
+    event: [Event]
+    eventId: Int
+    userId: Int!
+    uploadedBy: [User]
+    file_uri: String!
+    timestamp: Time!
+}
+
+type UserFile {
+    id: ID!
+    file: Upload!
+    type: String!
+    user: [User]
+    userId: Int!
     file_uri: String!
     timestamp: Time!
 }
 
 input UploadFile {
     file: Upload!
-    file_uri: String!
+    eventId: Int
+    type : String!
+    userId : Int
 }
 
 input DeleteFile {

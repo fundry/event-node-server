@@ -1,0 +1,35 @@
+type Category {
+    id : ID!
+    name : String!
+    event: [Event]
+    event_id: Int
+    items : [CartItem!]
+    item_id : Int!
+}
+
+type CartItem {
+    id : ID!
+    name : String!
+    description : String!
+    createdAt: String
+    category : [Category]
+    category_id : Int
+    quantity : Int!
+    price : String
+    isFree : Boolean!
+}
+
+input CreateCartItem {
+    name : String!
+    description: String!
+    category_id : Int
+    quantity : Int!
+    price : String
+    isFree : Boolean!
+}
+
+input CreateCategory {
+    name : String!
+    item_id : Int
+    event_id : Int!
+}

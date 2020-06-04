@@ -1,6 +1,7 @@
 type Query {
     event(id: Int name: String!) : Event!
     events(Limit: Int): [Event!]!
+    attendees(Limit: Int EventID: Int): [Attendee!]!
 
     user(id: Int, name: String!) : User!
     users(Limit: Int) : [User!]!
@@ -8,8 +9,11 @@ type Query {
     preference(id: Int, name: String!) : Preference!
     preferences(Limit: Int) : [Preference!]!
 
-    file(id: Int, name: String!) : File!
-    files: [File!]!
+    userFile(id: Int, name: String!) : UserFile!
+    userFiles: [UserFile!]!
+
+    eventFile(id: Int, name: String!) : EventFile!
+    eventFiles: [EventFile!]!
 
     team(id: Int , name: String!): Team!
     teams(Limit: Int): [Team!]!

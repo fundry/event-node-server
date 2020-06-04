@@ -35,8 +35,12 @@ type Mutation {
     updateTrack(id: ID! , input: UpdateTrack!) : Tracks!
     deleteTrack(id: ID!) : Boolean!
 
-    uploadSingleFile(req: UploadFile!) : File!
-    uploadMultipleFiles(req: [UploadFile!]!) : [File!]!
+    uploadSingleUserFile(req: UploadFile!, BucketName: String!) : UserFile!
+    uploadMultipleUserFiles(req: [UploadFile!]!) : [UserFile!]!
+
+    uploadSingleEventFile(req: UploadFile!, BucketName: String!) : EventFile!
+    uploadMultipleEventFiles(req: [UploadFile!]!) : [EventFile!]!
+
     deleteFile(id: ID!) : Boolean!
 
     createVolunteer(input: CreateVolunteer!, UserID: Int!, EventID: Int!) : Volunteer!

@@ -42,6 +42,17 @@ func (r *userResolver) Volunteering(ctx context.Context, obj *model.User) ([]*mo
 	return volunteer, nil
 }
 
+func (r *userResolver) Attending(ctx context.Context, obj *model.User) ([]*model.Attendee, error) {
+	var attendee []*model.Attendee
+
+	err := r.DB.Model(&attendee).Where("user_id = ?", obj.ID).Order("id").Select()
+
+	if err != nil {
+		return nil, err
+	}
+	return attendee, nil
+}
+
 // User returns generated.UserResolver implementation.
 func (r *Resolver) User() generated.UserResolver { return &userResolver{r} }
 

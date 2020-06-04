@@ -63,9 +63,13 @@ func main() {
     )
 
     // this endpoint is for beta testers. It accepts name && email address
-    r.GET("/beta/:name/:email", func(c *gin.Context)  {
+    r.GET("/beta/:name/:email", func(c *gin.Context) {
         name, email := c.Param("name"), c.Param("email")
-        c.String(http.StatusOK, "Your name is", name, email)
+        c.String(http.StatusOK, "Thank you.", name, email)
+
+        if sendEmail, _ := Resolver.SendEmail(email, name, "beta-users"); !sendEmail {
+            fmt.Errorf("error registering beta tester: %v", sendEmail)
+        }
 
         user := model.BetaTester{
             ID:          time.Now().Nanosecond(),
@@ -74,11 +78,9 @@ func main() {
             DateApplied: time.Now().Format("01-02-2006"),
         }
 
-       err := Database.Insert(&user)
-
-       if err != nil {
-           c.String(http.StatusInternalServerError, "An error occurred" )
-       }
+        if err := Database.Insert(&user); err != nil {
+            c.String(http.StatusInternalServerError, "An error occurred")
+        }
     })
 
     r.POST("/query",

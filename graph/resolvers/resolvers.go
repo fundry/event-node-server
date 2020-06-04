@@ -26,6 +26,19 @@ func (r *mutationResolver) CheckEventFieldExists(field, fieldValue string) bool 
     return false
 }
 
+func (r *mutationResolver) CheckAttendeeFieldExists(field string, fieldValue int) bool {
+    attendeeField := model.Attendee{}
+
+    err := r.DB.Model(&attendeeField).Where(fmt.Sprintf("%v = ?", field), fieldValue).First()
+
+    fmt.Println(err, "check exists")
+    if err != nil {
+        return true
+    }
+
+    return false
+}
+
 // Todo compress funcs here
 func (r *mutationResolver) GetUserField(field, value string) (*model.User, error) {
     user := model.User{}

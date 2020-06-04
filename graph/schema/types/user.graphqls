@@ -7,11 +7,12 @@ type User {
     bucketLink: String!
     talks: [Talk]
     events: [Event!]
-    volunteer_id: Int!
-    volunteering: [Volunteer!]
     event_id: Int!
     createdAt: Time!
     updatedAt: Time!
+    volunteer_id: Int!
+    volunteering: [Volunteer!]
+    attending: [Attendee]
 }
 
 input CreateUser {

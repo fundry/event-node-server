@@ -55,12 +55,6 @@ func SeedDatabase(db *pg.DB) {
 		CreatedBy: nil,
 	}
 
-	file := model.File{
-		ID:        rand.Int(),
-		FileURI:   "https://test.cloud.com",
-		Timestamp: time.Now(),
-	}
-
 	sponsor := model.Sponsor{
 		ID:             rand.Int(),
 		Name:           "John&sons.co",
@@ -114,7 +108,6 @@ func SeedDatabase(db *pg.DB) {
 	db.Insert(&event)
 	db.Insert(&preference)
 	db.Insert(&team)
-	db.Insert(&file)
 	db.Insert(&sponsor)
 	db.Insert(&task)
 	db.Insert(&talk)

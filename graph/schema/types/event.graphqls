@@ -8,14 +8,16 @@ type Event {
     confirmedEmail: Boolean!
     website: String!
     bucketLink : String!
+    bucketName: String!
     venue: String!
     eventType: String!
     Date: Int!
     createdAt: Time!
+    dateCreated: String!
     updatedAt: Time!
     author_id : Int!
     createdBy: [User]  # just for testing . This shouldnt be an array
-    attendees: [User]
+    attendees: [Attendee]
     tracks: [Tracks]
     track_id: Int
     teams: [Team!]

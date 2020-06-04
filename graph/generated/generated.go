@@ -40,6 +40,7 @@ type Config struct {
 type ResolverRoot interface {
 	Attendee() AttendeeResolver
 	Event() EventResolver
+	EventFile() EventFileResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Sponsor() SponsorResolver
@@ -48,6 +49,7 @@ type ResolverRoot interface {
 	Team() TeamResolver
 	Tracks() TracksResolver
 	User() UserResolver
+	UserFile() UserFileResolver
 	Volunteer() VolunteerResolver
 }
 
@@ -72,15 +74,38 @@ type ComplexityRoot struct {
 		User      func(childComplexity int) int
 	}
 
+	CartItem struct {
+		Category    func(childComplexity int) int
+		CategoryID  func(childComplexity int) int
+		CreatedAt   func(childComplexity int) int
+		Description func(childComplexity int) int
+		ID          func(childComplexity int) int
+		IsFree      func(childComplexity int) int
+		Name        func(childComplexity int) int
+		Price       func(childComplexity int) int
+		Quantity    func(childComplexity int) int
+	}
+
+	Category struct {
+		Event   func(childComplexity int) int
+		EventID func(childComplexity int) int
+		ID      func(childComplexity int) int
+		ItemID  func(childComplexity int) int
+		Items   func(childComplexity int) int
+		Name    func(childComplexity int) int
+	}
+
 	Event struct {
 		Alias          func(childComplexity int) int
 		Attendees      func(childComplexity int) int
 		AuthorID       func(childComplexity int) int
 		BucketLink     func(childComplexity int) int
+		BucketName     func(childComplexity int) int
 		ConfirmedEmail func(childComplexity int) int
 		CreatedAt      func(childComplexity int) int
 		CreatedBy      func(childComplexity int) int
 		Date           func(childComplexity int) int
+		DateCreated    func(childComplexity int) int
 		Description    func(childComplexity int) int
 		Email          func(childComplexity int) int
 		EventType      func(childComplexity int) int
@@ -100,47 +125,54 @@ type ComplexityRoot struct {
 		Website        func(childComplexity int) int
 	}
 
-	File struct {
-		File      func(childComplexity int) int
-		FileURI   func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Timestamp func(childComplexity int) int
+	EventFile struct {
+		Event      func(childComplexity int) int
+		EventID    func(childComplexity int) int
+		File       func(childComplexity int) int
+		FileURI    func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Timestamp  func(childComplexity int) int
+		Type       func(childComplexity int) int
+		UploadedBy func(childComplexity int) int
+		UserID     func(childComplexity int) int
 	}
 
 	Mutation struct {
-		AttendEvent         func(childComplexity int, eventID int, userID int) int
-		CreateEvent         func(childComplexity int, input model.CreateEvent, userID int) int
-		CreatePreference    func(childComplexity int, input model.CreatePreference) int
-		CreateSponsor       func(childComplexity int, input model.CreateSponsor) int
-		CreateTalk          func(childComplexity int, input model.CreateTalk, userID int) int
-		CreateTask          func(childComplexity int, input model.CreateTasks) int
-		CreateTeam          func(childComplexity int, input model.CreateTeam, eventID int) int
-		CreateTrack         func(childComplexity int, input model.CreateTrack, eventID int) int
-		CreateUser          func(childComplexity int, input model.CreateUser) int
-		CreateVolunteer     func(childComplexity int, input model.CreateVolunteer, userID int, eventID int) int
-		DeleteEvent         func(childComplexity int, id int) int
-		DeleteFile          func(childComplexity int, id int) int
-		DeletePreference    func(childComplexity int, id int) int
-		DeleteSponsor       func(childComplexity int, id int) int
-		DeleteTalk          func(childComplexity int, id int) int
-		DeleteTask          func(childComplexity int, id int) int
-		DeleteTeam          func(childComplexity int, id int) int
-		DeleteTrack         func(childComplexity int, id int) int
-		DeleteUser          func(childComplexity int, id int) int
-		DeleteVolunteer     func(childComplexity int, id int) int
-		LoginUser           func(childComplexity int, input model.LoginInput) int
-		UpdateEvent         func(childComplexity int, id *int, input model.UpdateEvent) int
-		UpdateEventAttendee func(childComplexity int, eventID int, userID int) int
-		UpdatePreference    func(childComplexity int, id *int, input model.UpdatePreference) int
-		UpdateSponsor       func(childComplexity int, id *int, input model.UpdateSponsor) int
-		UpdateTalk          func(childComplexity int, id int, input model.UpdateTalk) int
-		UpdateTask          func(childComplexity int, id int, input model.UpdateTask) int
-		UpdateTeam          func(childComplexity int, id *int, input model.UpdateTeam) int
-		UpdateTrack         func(childComplexity int, id int, input model.UpdateTrack) int
-		UpdateUser          func(childComplexity int, id *int, input model.UpdateUser) int
-		UpdateVolunteer     func(childComplexity int, id int, input model.UpdateVolunteer) int
-		UploadMultipleFiles func(childComplexity int, req []*model.UploadFile) int
-		UploadSingleFile    func(childComplexity int, req model.UploadFile) int
+		AttendEvent              func(childComplexity int, eventID int, userID int) int
+		CreateEvent              func(childComplexity int, input model.CreateEvent, userID int) int
+		CreatePreference         func(childComplexity int, input model.CreatePreference) int
+		CreateSponsor            func(childComplexity int, input model.CreateSponsor) int
+		CreateTalk               func(childComplexity int, input model.CreateTalk, userID int) int
+		CreateTask               func(childComplexity int, input model.CreateTasks) int
+		CreateTeam               func(childComplexity int, input model.CreateTeam, eventID int) int
+		CreateTrack              func(childComplexity int, input model.CreateTrack, eventID int) int
+		CreateUser               func(childComplexity int, input model.CreateUser) int
+		CreateVolunteer          func(childComplexity int, input model.CreateVolunteer, userID int, eventID int) int
+		DeleteEvent              func(childComplexity int, id int) int
+		DeleteFile               func(childComplexity int, id int) int
+		DeletePreference         func(childComplexity int, id int) int
+		DeleteSponsor            func(childComplexity int, id int) int
+		DeleteTalk               func(childComplexity int, id int) int
+		DeleteTask               func(childComplexity int, id int) int
+		DeleteTeam               func(childComplexity int, id int) int
+		DeleteTrack              func(childComplexity int, id int) int
+		DeleteUser               func(childComplexity int, id int) int
+		DeleteVolunteer          func(childComplexity int, id int) int
+		LoginUser                func(childComplexity int, input model.LoginInput) int
+		UpdateEvent              func(childComplexity int, id *int, input model.UpdateEvent) int
+		UpdateEventAttendee      func(childComplexity int, eventID int, userID int) int
+		UpdatePreference         func(childComplexity int, id *int, input model.UpdatePreference) int
+		UpdateSponsor            func(childComplexity int, id *int, input model.UpdateSponsor) int
+		UpdateTalk               func(childComplexity int, id int, input model.UpdateTalk) int
+		UpdateTask               func(childComplexity int, id int, input model.UpdateTask) int
+		UpdateTeam               func(childComplexity int, id *int, input model.UpdateTeam) int
+		UpdateTrack              func(childComplexity int, id int, input model.UpdateTrack) int
+		UpdateUser               func(childComplexity int, id *int, input model.UpdateUser) int
+		UpdateVolunteer          func(childComplexity int, id int, input model.UpdateVolunteer) int
+		UploadMultipleEventFiles func(childComplexity int, req []*model.UploadFile) int
+		UploadMultipleUserFiles  func(childComplexity int, req []*model.UploadFile) int
+		UploadSingleEventFile    func(childComplexity int, req model.UploadFile, bucketName string) int
+		UploadSingleUserFile     func(childComplexity int, req model.UploadFile, bucketName string) int
 	}
 
 	Preference struct {
@@ -153,10 +185,11 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		Attendees   func(childComplexity int, limit *int, eventID *int) int
 		Event       func(childComplexity int, id *int, name string) int
+		EventFile   func(childComplexity int, id *int, name string) int
+		EventFiles  func(childComplexity int) int
 		Events      func(childComplexity int, limit *int) int
-		File        func(childComplexity int, id *int, name string) int
-		Files       func(childComplexity int) int
 		Preference  func(childComplexity int, id *int, name string) int
 		Preferences func(childComplexity int, limit *int) int
 		Sponsor     func(childComplexity int, id *int, name *string) int
@@ -170,6 +203,8 @@ type ComplexityRoot struct {
 		Track       func(childComplexity int, id int) int
 		Tracks      func(childComplexity int, limit *int) int
 		User        func(childComplexity int, id *int, name string) int
+		UserFile    func(childComplexity int, id *int, name string) int
+		UserFiles   func(childComplexity int) int
 		Users       func(childComplexity int, limit *int) int
 		Volunteer   func(childComplexity int, id int) int
 		Volunteers  func(childComplexity int, limit *int, eventID int) int
@@ -241,6 +276,7 @@ type ComplexityRoot struct {
 		ID          func(childComplexity int) int
 		IsCompleted func(childComplexity int) int
 		Name        func(childComplexity int) int
+		Summary     func(childComplexity int) int
 		Talks       func(childComplexity int) int
 		TotalTalks  func(childComplexity int) int
 		TrackImgURI func(childComplexity int) int
@@ -248,6 +284,7 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
+		Attending    func(childComplexity int) int
 		BucketLink   func(childComplexity int) int
 		CreatedAt    func(childComplexity int) int
 		Email        func(childComplexity int) int
@@ -261,6 +298,16 @@ type ComplexityRoot struct {
 		UpdatedAt    func(childComplexity int) int
 		VolunteerID  func(childComplexity int) int
 		Volunteering func(childComplexity int) int
+	}
+
+	UserFile struct {
+		File      func(childComplexity int) int
+		FileURI   func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Timestamp func(childComplexity int) int
+		Type      func(childComplexity int) int
+		User      func(childComplexity int) int
+		UserID    func(childComplexity int) int
 	}
 
 	Volunteer struct {
@@ -286,12 +333,17 @@ type AttendeeResolver interface {
 }
 type EventResolver interface {
 	CreatedBy(ctx context.Context, obj *model.Event) ([]*model.User, error)
-	Attendees(ctx context.Context, obj *model.Event) ([]*model.User, error)
+	Attendees(ctx context.Context, obj *model.Event) ([]*model.Attendee, error)
 	Tracks(ctx context.Context, obj *model.Event) ([]*model.Tracks, error)
 
 	Teams(ctx context.Context, obj *model.Event) ([]*model.Team, error)
 
 	Volunteer(ctx context.Context, obj *model.Event) ([]*model.Volunteer, error)
+}
+type EventFileResolver interface {
+	Event(ctx context.Context, obj *model.EventFile) ([]*model.Event, error)
+
+	UploadedBy(ctx context.Context, obj *model.EventFile) ([]*model.User, error)
 }
 type MutationResolver interface {
 	LoginUser(ctx context.Context, input model.LoginInput) (*model.AuthResponse, error)
@@ -321,8 +373,10 @@ type MutationResolver interface {
 	CreateTrack(ctx context.Context, input model.CreateTrack, eventID int) (*model.Tracks, error)
 	UpdateTrack(ctx context.Context, id int, input model.UpdateTrack) (*model.Tracks, error)
 	DeleteTrack(ctx context.Context, id int) (bool, error)
-	UploadSingleFile(ctx context.Context, req model.UploadFile) (*model.File, error)
-	UploadMultipleFiles(ctx context.Context, req []*model.UploadFile) ([]*model.File, error)
+	UploadSingleUserFile(ctx context.Context, req model.UploadFile, bucketName string) (*model.UserFile, error)
+	UploadMultipleUserFiles(ctx context.Context, req []*model.UploadFile) ([]*model.UserFile, error)
+	UploadSingleEventFile(ctx context.Context, req model.UploadFile, bucketName string) (*model.EventFile, error)
+	UploadMultipleEventFiles(ctx context.Context, req []*model.UploadFile) ([]*model.EventFile, error)
 	DeleteFile(ctx context.Context, id int) (bool, error)
 	CreateVolunteer(ctx context.Context, input model.CreateVolunteer, userID int, eventID int) (*model.Volunteer, error)
 	UpdateVolunteer(ctx context.Context, id int, input model.UpdateVolunteer) (*model.Volunteer, error)
@@ -331,12 +385,15 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Event(ctx context.Context, id *int, name string) (*model.Event, error)
 	Events(ctx context.Context, limit *int) ([]*model.Event, error)
+	Attendees(ctx context.Context, limit *int, eventID *int) ([]*model.Attendee, error)
 	User(ctx context.Context, id *int, name string) (*model.User, error)
 	Users(ctx context.Context, limit *int) ([]*model.User, error)
 	Preference(ctx context.Context, id *int, name string) (*model.Preference, error)
 	Preferences(ctx context.Context, limit *int) ([]*model.Preference, error)
-	File(ctx context.Context, id *int, name string) (*model.File, error)
-	Files(ctx context.Context) ([]*model.File, error)
+	UserFile(ctx context.Context, id *int, name string) (*model.UserFile, error)
+	UserFiles(ctx context.Context) ([]*model.UserFile, error)
+	EventFile(ctx context.Context, id *int, name string) (*model.EventFile, error)
+	EventFiles(ctx context.Context) ([]*model.EventFile, error)
 	Team(ctx context.Context, id *int, name string) (*model.Team, error)
 	Teams(ctx context.Context, limit *int) ([]*model.Team, error)
 	Sponsor(ctx context.Context, id *int, name *string) (*model.Sponsor, error)
@@ -374,6 +431,10 @@ type UserResolver interface {
 	Events(ctx context.Context, obj *model.User) ([]*model.Event, error)
 
 	Volunteering(ctx context.Context, obj *model.User) ([]*model.Volunteer, error)
+	Attending(ctx context.Context, obj *model.User) ([]*model.Attendee, error)
+}
+type UserFileResolver interface {
+	User(ctx context.Context, obj *model.UserFile) ([]*model.User, error)
 }
 type VolunteerResolver interface {
 	Team(ctx context.Context, obj *model.Volunteer) ([]*model.Team, error)
@@ -468,6 +529,111 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.AuthResponse.User(childComplexity), true
 
+	case "CartItem.category":
+		if e.complexity.CartItem.Category == nil {
+			break
+		}
+
+		return e.complexity.CartItem.Category(childComplexity), true
+
+	case "CartItem.category_id":
+		if e.complexity.CartItem.CategoryID == nil {
+			break
+		}
+
+		return e.complexity.CartItem.CategoryID(childComplexity), true
+
+	case "CartItem.createdAt":
+		if e.complexity.CartItem.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.CartItem.CreatedAt(childComplexity), true
+
+	case "CartItem.description":
+		if e.complexity.CartItem.Description == nil {
+			break
+		}
+
+		return e.complexity.CartItem.Description(childComplexity), true
+
+	case "CartItem.id":
+		if e.complexity.CartItem.ID == nil {
+			break
+		}
+
+		return e.complexity.CartItem.ID(childComplexity), true
+
+	case "CartItem.isFree":
+		if e.complexity.CartItem.IsFree == nil {
+			break
+		}
+
+		return e.complexity.CartItem.IsFree(childComplexity), true
+
+	case "CartItem.name":
+		if e.complexity.CartItem.Name == nil {
+			break
+		}
+
+		return e.complexity.CartItem.Name(childComplexity), true
+
+	case "CartItem.price":
+		if e.complexity.CartItem.Price == nil {
+			break
+		}
+
+		return e.complexity.CartItem.Price(childComplexity), true
+
+	case "CartItem.quantity":
+		if e.complexity.CartItem.Quantity == nil {
+			break
+		}
+
+		return e.complexity.CartItem.Quantity(childComplexity), true
+
+	case "Category.event":
+		if e.complexity.Category.Event == nil {
+			break
+		}
+
+		return e.complexity.Category.Event(childComplexity), true
+
+	case "Category.event_id":
+		if e.complexity.Category.EventID == nil {
+			break
+		}
+
+		return e.complexity.Category.EventID(childComplexity), true
+
+	case "Category.id":
+		if e.complexity.Category.ID == nil {
+			break
+		}
+
+		return e.complexity.Category.ID(childComplexity), true
+
+	case "Category.item_id":
+		if e.complexity.Category.ItemID == nil {
+			break
+		}
+
+		return e.complexity.Category.ItemID(childComplexity), true
+
+	case "Category.items":
+		if e.complexity.Category.Items == nil {
+			break
+		}
+
+		return e.complexity.Category.Items(childComplexity), true
+
+	case "Category.name":
+		if e.complexity.Category.Name == nil {
+			break
+		}
+
+		return e.complexity.Category.Name(childComplexity), true
+
 	case "Event.alias":
 		if e.complexity.Event.Alias == nil {
 			break
@@ -496,6 +662,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Event.BucketLink(childComplexity), true
 
+	case "Event.bucketName":
+		if e.complexity.Event.BucketName == nil {
+			break
+		}
+
+		return e.complexity.Event.BucketName(childComplexity), true
+
 	case "Event.confirmedEmail":
 		if e.complexity.Event.ConfirmedEmail == nil {
 			break
@@ -523,6 +696,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Event.Date(childComplexity), true
+
+	case "Event.dateCreated":
+		if e.complexity.Event.DateCreated == nil {
+			break
+		}
+
+		return e.complexity.Event.DateCreated(childComplexity), true
 
 	case "Event.description":
 		if e.complexity.Event.Description == nil {
@@ -643,33 +823,68 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Event.Website(childComplexity), true
 
-	case "File.file":
-		if e.complexity.File.File == nil {
+	case "EventFile.event":
+		if e.complexity.EventFile.Event == nil {
 			break
 		}
 
-		return e.complexity.File.File(childComplexity), true
+		return e.complexity.EventFile.Event(childComplexity), true
 
-	case "File.file_uri":
-		if e.complexity.File.FileURI == nil {
+	case "EventFile.eventId":
+		if e.complexity.EventFile.EventID == nil {
 			break
 		}
 
-		return e.complexity.File.FileURI(childComplexity), true
+		return e.complexity.EventFile.EventID(childComplexity), true
 
-	case "File.id":
-		if e.complexity.File.ID == nil {
+	case "EventFile.file":
+		if e.complexity.EventFile.File == nil {
 			break
 		}
 
-		return e.complexity.File.ID(childComplexity), true
+		return e.complexity.EventFile.File(childComplexity), true
 
-	case "File.timestamp":
-		if e.complexity.File.Timestamp == nil {
+	case "EventFile.file_uri":
+		if e.complexity.EventFile.FileURI == nil {
 			break
 		}
 
-		return e.complexity.File.Timestamp(childComplexity), true
+		return e.complexity.EventFile.FileURI(childComplexity), true
+
+	case "EventFile.id":
+		if e.complexity.EventFile.ID == nil {
+			break
+		}
+
+		return e.complexity.EventFile.ID(childComplexity), true
+
+	case "EventFile.timestamp":
+		if e.complexity.EventFile.Timestamp == nil {
+			break
+		}
+
+		return e.complexity.EventFile.Timestamp(childComplexity), true
+
+	case "EventFile.type":
+		if e.complexity.EventFile.Type == nil {
+			break
+		}
+
+		return e.complexity.EventFile.Type(childComplexity), true
+
+	case "EventFile.uploadedBy":
+		if e.complexity.EventFile.UploadedBy == nil {
+			break
+		}
+
+		return e.complexity.EventFile.UploadedBy(childComplexity), true
+
+	case "EventFile.userId":
+		if e.complexity.EventFile.UserID == nil {
+			break
+		}
+
+		return e.complexity.EventFile.UserID(childComplexity), true
 
 	case "Mutation.attendEvent":
 		if e.complexity.Mutation.AttendEvent == nil {
@@ -1043,29 +1258,53 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateVolunteer(childComplexity, args["id"].(int), args["input"].(model.UpdateVolunteer)), true
 
-	case "Mutation.uploadMultipleFiles":
-		if e.complexity.Mutation.UploadMultipleFiles == nil {
+	case "Mutation.uploadMultipleEventFiles":
+		if e.complexity.Mutation.UploadMultipleEventFiles == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_uploadMultipleFiles_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_uploadMultipleEventFiles_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UploadMultipleFiles(childComplexity, args["req"].([]*model.UploadFile)), true
+		return e.complexity.Mutation.UploadMultipleEventFiles(childComplexity, args["req"].([]*model.UploadFile)), true
 
-	case "Mutation.uploadSingleFile":
-		if e.complexity.Mutation.UploadSingleFile == nil {
+	case "Mutation.uploadMultipleUserFiles":
+		if e.complexity.Mutation.UploadMultipleUserFiles == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_uploadSingleFile_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_uploadMultipleUserFiles_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UploadSingleFile(childComplexity, args["req"].(model.UploadFile)), true
+		return e.complexity.Mutation.UploadMultipleUserFiles(childComplexity, args["req"].([]*model.UploadFile)), true
+
+	case "Mutation.uploadSingleEventFile":
+		if e.complexity.Mutation.UploadSingleEventFile == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_uploadSingleEventFile_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UploadSingleEventFile(childComplexity, args["req"].(model.UploadFile), args["BucketName"].(string)), true
+
+	case "Mutation.uploadSingleUserFile":
+		if e.complexity.Mutation.UploadSingleUserFile == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_uploadSingleUserFile_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UploadSingleUserFile(childComplexity, args["req"].(model.UploadFile), args["BucketName"].(string)), true
 
 	case "Preference.color":
 		if e.complexity.Preference.Color == nil {
@@ -1109,6 +1348,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Preference.UpdatedAt(childComplexity), true
 
+	case "Query.attendees":
+		if e.complexity.Query.Attendees == nil {
+			break
+		}
+
+		args, err := ec.field_Query_attendees_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Attendees(childComplexity, args["Limit"].(*int), args["EventID"].(*int)), true
+
 	case "Query.event":
 		if e.complexity.Query.Event == nil {
 			break
@@ -1121,6 +1372,25 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Event(childComplexity, args["id"].(*int), args["name"].(string)), true
 
+	case "Query.eventFile":
+		if e.complexity.Query.EventFile == nil {
+			break
+		}
+
+		args, err := ec.field_Query_eventFile_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.EventFile(childComplexity, args["id"].(*int), args["name"].(string)), true
+
+	case "Query.eventFiles":
+		if e.complexity.Query.EventFiles == nil {
+			break
+		}
+
+		return e.complexity.Query.EventFiles(childComplexity), true
+
 	case "Query.events":
 		if e.complexity.Query.Events == nil {
 			break
@@ -1132,25 +1402,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Events(childComplexity, args["Limit"].(*int)), true
-
-	case "Query.file":
-		if e.complexity.Query.File == nil {
-			break
-		}
-
-		args, err := ec.field_Query_file_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.File(childComplexity, args["id"].(*int), args["name"].(string)), true
-
-	case "Query.files":
-		if e.complexity.Query.Files == nil {
-			break
-		}
-
-		return e.complexity.Query.Files(childComplexity), true
 
 	case "Query.preference":
 		if e.complexity.Query.Preference == nil {
@@ -1307,6 +1558,25 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.User(childComplexity, args["id"].(*int), args["name"].(string)), true
+
+	case "Query.userFile":
+		if e.complexity.Query.UserFile == nil {
+			break
+		}
+
+		args, err := ec.field_Query_userFile_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.UserFile(childComplexity, args["id"].(*int), args["name"].(string)), true
+
+	case "Query.userFiles":
+		if e.complexity.Query.UserFiles == nil {
+			break
+		}
+
+		return e.complexity.Query.UserFiles(childComplexity), true
 
 	case "Query.users":
 		if e.complexity.Query.Users == nil {
@@ -1699,6 +1969,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tracks.Name(childComplexity), true
 
+	case "Tracks.summary":
+		if e.complexity.Tracks.Summary == nil {
+			break
+		}
+
+		return e.complexity.Tracks.Summary(childComplexity), true
+
 	case "Tracks.talks":
 		if e.complexity.Tracks.Talks == nil {
 			break
@@ -1726,6 +2003,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Tracks.UpdatedAt(childComplexity), true
+
+	case "User.attending":
+		if e.complexity.User.Attending == nil {
+			break
+		}
+
+		return e.complexity.User.Attending(childComplexity), true
 
 	case "User.bucketLink":
 		if e.complexity.User.BucketLink == nil {
@@ -1817,6 +2101,55 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Volunteering(childComplexity), true
+
+	case "UserFile.file":
+		if e.complexity.UserFile.File == nil {
+			break
+		}
+
+		return e.complexity.UserFile.File(childComplexity), true
+
+	case "UserFile.file_uri":
+		if e.complexity.UserFile.FileURI == nil {
+			break
+		}
+
+		return e.complexity.UserFile.FileURI(childComplexity), true
+
+	case "UserFile.id":
+		if e.complexity.UserFile.ID == nil {
+			break
+		}
+
+		return e.complexity.UserFile.ID(childComplexity), true
+
+	case "UserFile.timestamp":
+		if e.complexity.UserFile.Timestamp == nil {
+			break
+		}
+
+		return e.complexity.UserFile.Timestamp(childComplexity), true
+
+	case "UserFile.type":
+		if e.complexity.UserFile.Type == nil {
+			break
+		}
+
+		return e.complexity.UserFile.Type(childComplexity), true
+
+	case "UserFile.user":
+		if e.complexity.UserFile.User == nil {
+			break
+		}
+
+		return e.complexity.UserFile.User(childComplexity), true
+
+	case "UserFile.userId":
+		if e.complexity.UserFile.UserID == nil {
+			break
+		}
+
+		return e.complexity.UserFile.UserID(childComplexity), true
 
 	case "Volunteer.approvalStatus":
 		if e.complexity.Volunteer.ApprovalStatus == nil {
@@ -2044,8 +2377,12 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
     updateTrack(id: ID! , input: UpdateTrack!) : Tracks!
     deleteTrack(id: ID!) : Boolean!
 
-    uploadSingleFile(req: UploadFile!) : File!
-    uploadMultipleFiles(req: [UploadFile!]!) : [File!]!
+    uploadSingleUserFile(req: UploadFile!, BucketName: String!) : UserFile!
+    uploadMultipleUserFiles(req: [UploadFile!]!) : [UserFile!]!
+
+    uploadSingleEventFile(req: UploadFile!, BucketName: String!) : EventFile!
+    uploadMultipleEventFiles(req: [UploadFile!]!) : [EventFile!]!
+
     deleteFile(id: ID!) : Boolean!
 
     createVolunteer(input: CreateVolunteer!, UserID: Int!, EventID: Int!) : Volunteer!
@@ -2055,6 +2392,7 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
 	&ast.Source{Name: "graph/schema/query.graphqls", Input: `type Query {
     event(id: Int name: String!) : Event!
     events(Limit: Int): [Event!]!
+    attendees(Limit: Int EventID: Int): [Attendee!]!
 
     user(id: Int, name: String!) : User!
     users(Limit: Int) : [User!]!
@@ -2062,8 +2400,11 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
     preference(id: Int, name: String!) : Preference!
     preferences(Limit: Int) : [Preference!]!
 
-    file(id: Int, name: String!) : File!
-    files: [File!]!
+    userFile(id: Int, name: String!) : UserFile!
+    userFiles: [UserFile!]!
+
+    eventFile(id: Int, name: String!) : EventFile!
+    eventFiles: [EventFile!]!
 
     team(id: Int , name: String!): Team!
     teams(Limit: Int): [Team!]!
@@ -2142,14 +2483,16 @@ input LoginInput {
     confirmedEmail: Boolean!
     website: String!
     bucketLink : String!
+    bucketName: String!
     venue: String!
     eventType: String!
     Date: Int!
     createdAt: Time!
+    dateCreated: String!
     updatedAt: Time!
     author_id : Int!
     createdBy: [User]  # just for testing . This shouldnt be an array
-    attendees: [User]
+    attendees: [Attendee]
     tracks: [Tracks]
     track_id: Int
     teams: [Team!]
@@ -2200,16 +2543,33 @@ input UpdateEvent {
     volunteer_id: Int
     volunteering: [CreateVolunteer!]
 }`, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/file.graphqls", Input: `type File {
+	&ast.Source{Name: "graph/schema/types/file.graphqls", Input: `type EventFile {
     id: ID!
     file: Upload!
+    type: String!
+    event: [Event]
+    eventId: Int
+    userId: Int!
+    uploadedBy: [User]
+    file_uri: String!
+    timestamp: Time!
+}
+
+type UserFile {
+    id: ID!
+    file: Upload!
+    type: String!
+    user: [User]
+    userId: Int!
     file_uri: String!
     timestamp: Time!
 }
 
 input UploadFile {
     file: Upload!
-    file_uri: String!
+    eventId: Int
+    type : String!
+    userId : Int
 }
 
 input DeleteFile {
@@ -2237,6 +2597,41 @@ input UpdatePreference {
     color: String!
     Event: CreateEvent!
     updatedAt: Time!
+}`, BuiltIn: false},
+	&ast.Source{Name: "graph/schema/types/shop.graphqls", Input: `type Category {
+    id : ID!
+    name : String!
+    event: [Event]
+    event_id: Int
+    items : [CartItem!]
+    item_id : Int!
+}
+
+type CartItem {
+    id : ID!
+    name : String!
+    description : String!
+    createdAt: String
+    category : [Category]
+    category_id : Int
+    quantity : Int!
+    price : String
+    isFree : Boolean!
+}
+
+input CreateCartItem {
+    name : String!
+    description: String!
+    category_id : Int
+    quantity : Int!
+    price : String
+    isFree : Boolean!
+}
+
+input CreateCategory {
+    name : String!
+    item_id : Int
+    event_id : Int!
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/types/sponsor.graphqls", Input: `type Sponsor {
     id : Int!
@@ -2363,6 +2758,7 @@ input UpdateTeam {
     isCompleted: Boolean!
     Archived: Boolean!
     createdAt: Time!
+    summary: String!
     updatedAt: Time!
     event_id: Int! #my event FK
     talks: [Talk]
@@ -2373,6 +2769,7 @@ input CreateTrack {
     name: String!
     trackImgUri: String
     duration: String!
+    summary: String!
     talks: String
     totalTalks: Int!
     createdBy:  String
@@ -2383,6 +2780,7 @@ input CreateTrack {
 input UpdateTrack {
     name: String!
     trackImgUri: String
+    summary: String
     duration: String!
     #    talks: [CreateTalk]
     totalTalks: Int!
@@ -2403,11 +2801,12 @@ input UpdateTrack {
     bucketLink: String!
     talks: [Talk]
     events: [Event!]
-    volunteer_id: Int!
-    volunteering: [Volunteer!]
     event_id: Int!
     createdAt: Time!
     updatedAt: Time!
+    volunteer_id: Int!
+    volunteering: [Volunteer!]
+    attending: [Attendee]
 }
 
 input CreateUser {
@@ -3052,7 +3451,7 @@ func (ec *executionContext) field_Mutation_updateVolunteer_args(ctx context.Cont
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_uploadMultipleFiles_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_uploadMultipleEventFiles_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 []*model.UploadFile
@@ -3066,7 +3465,21 @@ func (ec *executionContext) field_Mutation_uploadMultipleFiles_args(ctx context.
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_uploadSingleFile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_uploadMultipleUserFiles_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []*model.UploadFile
+	if tmp, ok := rawArgs["req"]; ok {
+		arg0, err = ec.unmarshalNUploadFile2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUploadFileᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["req"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_uploadSingleEventFile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 model.UploadFile
@@ -3077,6 +3490,36 @@ func (ec *executionContext) field_Mutation_uploadSingleFile_args(ctx context.Con
 		}
 	}
 	args["req"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["BucketName"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["BucketName"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_uploadSingleUserFile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.UploadFile
+	if tmp, ok := rawArgs["req"]; ok {
+		arg0, err = ec.unmarshalNUploadFile2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUploadFile(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["req"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["BucketName"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["BucketName"] = arg1
 	return args, nil
 }
 
@@ -3091,6 +3534,50 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_attendees_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["Limit"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["Limit"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["EventID"]; ok {
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["EventID"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_eventFile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["name"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg1
 	return args, nil
 }
 
@@ -3127,28 +3614,6 @@ func (ec *executionContext) field_Query_events_args(ctx context.Context, rawArgs
 		}
 	}
 	args["Limit"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_file_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 *int
-	if tmp, ok := rawArgs["id"]; ok {
-		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["name"]; ok {
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["name"] = arg1
 	return args, nil
 }
 
@@ -3341,6 +3806,28 @@ func (ec *executionContext) field_Query_tracks_args(ctx context.Context, rawArgs
 		}
 	}
 	args["Limit"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_userFile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["name"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg1
 	return args, nil
 }
 
@@ -3800,6 +4287,495 @@ func (ec *executionContext) _AuthResponse_user(ctx context.Context, field graphq
 	return ec.marshalNUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _CartItem_id(ctx context.Context, field graphql.CollectedField, obj *model.CartItem) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "CartItem",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNID2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CartItem_name(ctx context.Context, field graphql.CollectedField, obj *model.CartItem) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "CartItem",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CartItem_description(ctx context.Context, field graphql.CollectedField, obj *model.CartItem) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "CartItem",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CartItem_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.CartItem) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "CartItem",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CartItem_category(ctx context.Context, field graphql.CollectedField, obj *model.CartItem) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "CartItem",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Category, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Category)
+	fc.Result = res
+	return ec.marshalOCategory2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCategory(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CartItem_category_id(ctx context.Context, field graphql.CollectedField, obj *model.CartItem) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "CartItem",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CategoryID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CartItem_quantity(ctx context.Context, field graphql.CollectedField, obj *model.CartItem) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "CartItem",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Quantity, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CartItem_price(ctx context.Context, field graphql.CollectedField, obj *model.CartItem) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "CartItem",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Price, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _CartItem_isFree(ctx context.Context, field graphql.CollectedField, obj *model.CartItem) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "CartItem",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsFree, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Category_id(ctx context.Context, field graphql.CollectedField, obj *model.Category) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Category",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNID2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Category_name(ctx context.Context, field graphql.CollectedField, obj *model.Category) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Category",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Category_event(ctx context.Context, field graphql.CollectedField, obj *model.Category) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Category",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Event, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Event)
+	fc.Result = res
+	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Category_event_id(ctx context.Context, field graphql.CollectedField, obj *model.Category) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Category",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EventID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Category_items(ctx context.Context, field graphql.CollectedField, obj *model.Category) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Category",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Items, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.CartItem)
+	fc.Result = res
+	return ec.marshalOCartItem2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCartItemᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Category_item_id(ctx context.Context, field graphql.CollectedField, obj *model.Category) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Category",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ItemID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Event_id(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -4106,6 +5082,40 @@ func (ec *executionContext) _Event_bucketLink(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Event_bucketName(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BucketName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Event_venue(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -4242,6 +5252,40 @@ func (ec *executionContext) _Event_createdAt(ctx context.Context, field graphql.
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Event_dateCreated(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DateCreated, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Event_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -4367,9 +5411,9 @@ func (ec *executionContext) _Event_attendees(ctx context.Context, field graphql.
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*model.User)
+	res := resTmp.([]*model.Attendee)
 	fc.Result = res
-	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOAttendee2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAttendee(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Event_tracks(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
@@ -4677,7 +5721,7 @@ func (ec *executionContext) _Event_isLocked(ctx context.Context, field graphql.C
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _File_id(ctx context.Context, field graphql.CollectedField, obj *model.File) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventFile_id(ctx context.Context, field graphql.CollectedField, obj *model.EventFile) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4685,7 +5729,7 @@ func (ec *executionContext) _File_id(ctx context.Context, field graphql.Collecte
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "File",
+		Object:   "EventFile",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -4711,7 +5755,7 @@ func (ec *executionContext) _File_id(ctx context.Context, field graphql.Collecte
 	return ec.marshalNID2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _File_file(ctx context.Context, field graphql.CollectedField, obj *model.File) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventFile_file(ctx context.Context, field graphql.CollectedField, obj *model.EventFile) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4719,7 +5763,7 @@ func (ec *executionContext) _File_file(ctx context.Context, field graphql.Collec
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "File",
+		Object:   "EventFile",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -4745,7 +5789,7 @@ func (ec *executionContext) _File_file(ctx context.Context, field graphql.Collec
 	return ec.marshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _File_file_uri(ctx context.Context, field graphql.CollectedField, obj *model.File) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventFile_type(ctx context.Context, field graphql.CollectedField, obj *model.EventFile) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4753,7 +5797,168 @@ func (ec *executionContext) _File_file_uri(ctx context.Context, field graphql.Co
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "File",
+		Object:   "EventFile",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventFile_event(ctx context.Context, field graphql.CollectedField, obj *model.EventFile) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "EventFile",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.EventFile().Event(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Event)
+	fc.Result = res
+	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventFile_eventId(ctx context.Context, field graphql.CollectedField, obj *model.EventFile) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "EventFile",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EventID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventFile_userId(ctx context.Context, field graphql.CollectedField, obj *model.EventFile) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "EventFile",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventFile_uploadedBy(ctx context.Context, field graphql.CollectedField, obj *model.EventFile) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "EventFile",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.EventFile().UploadedBy(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _EventFile_file_uri(ctx context.Context, field graphql.CollectedField, obj *model.EventFile) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "EventFile",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -4779,7 +5984,7 @@ func (ec *executionContext) _File_file_uri(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _File_timestamp(ctx context.Context, field graphql.CollectedField, obj *model.File) (ret graphql.Marshaler) {
+func (ec *executionContext) _EventFile_timestamp(ctx context.Context, field graphql.CollectedField, obj *model.EventFile) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -4787,7 +5992,7 @@ func (ec *executionContext) _File_timestamp(ctx context.Context, field graphql.C
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "File",
+		Object:   "EventFile",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -5917,7 +7122,7 @@ func (ec *executionContext) _Mutation_deleteTrack(ctx context.Context, field gra
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Mutation_uploadSingleFile(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_uploadSingleUserFile(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -5933,7 +7138,7 @@ func (ec *executionContext) _Mutation_uploadSingleFile(ctx context.Context, fiel
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_uploadSingleFile_args(ctx, rawArgs)
+	args, err := ec.field_Mutation_uploadSingleUserFile_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -5941,7 +7146,7 @@ func (ec *executionContext) _Mutation_uploadSingleFile(ctx context.Context, fiel
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UploadSingleFile(rctx, args["req"].(model.UploadFile))
+		return ec.resolvers.Mutation().UploadSingleUserFile(rctx, args["req"].(model.UploadFile), args["BucketName"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5953,12 +7158,12 @@ func (ec *executionContext) _Mutation_uploadSingleFile(ctx context.Context, fiel
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.File)
+	res := resTmp.(*model.UserFile)
 	fc.Result = res
-	return ec.marshalNFile2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐFile(ctx, field.Selections, res)
+	return ec.marshalNUserFile2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUserFile(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Mutation_uploadMultipleFiles(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_uploadMultipleUserFiles(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -5974,7 +7179,7 @@ func (ec *executionContext) _Mutation_uploadMultipleFiles(ctx context.Context, f
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_uploadMultipleFiles_args(ctx, rawArgs)
+	args, err := ec.field_Mutation_uploadMultipleUserFiles_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -5982,7 +7187,7 @@ func (ec *executionContext) _Mutation_uploadMultipleFiles(ctx context.Context, f
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UploadMultipleFiles(rctx, args["req"].([]*model.UploadFile))
+		return ec.resolvers.Mutation().UploadMultipleUserFiles(rctx, args["req"].([]*model.UploadFile))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5994,9 +7199,91 @@ func (ec *executionContext) _Mutation_uploadMultipleFiles(ctx context.Context, f
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.File)
+	res := resTmp.([]*model.UserFile)
 	fc.Result = res
-	return ec.marshalNFile2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐFileᚄ(ctx, field.Selections, res)
+	return ec.marshalNUserFile2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUserFileᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_uploadSingleEventFile(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_uploadSingleEventFile_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UploadSingleEventFile(rctx, args["req"].(model.UploadFile), args["BucketName"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.EventFile)
+	fc.Result = res
+	return ec.marshalNEventFile2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventFile(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_uploadMultipleEventFiles(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_uploadMultipleEventFiles_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UploadMultipleEventFiles(rctx, args["req"].([]*model.UploadFile))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.EventFile)
+	fc.Result = res
+	return ec.marshalNEventFile2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventFileᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_deleteFile(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -6449,6 +7736,47 @@ func (ec *executionContext) _Query_events(ctx context.Context, field graphql.Col
 	return ec.marshalNEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_attendees(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_attendees_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Attendees(rctx, args["Limit"].(*int), args["EventID"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Attendee)
+	fc.Result = res
+	return ec.marshalNAttendee2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAttendeeᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_user(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -6613,7 +7941,7 @@ func (ec *executionContext) _Query_preferences(ctx context.Context, field graphq
 	return ec.marshalNPreference2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐPreferenceᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_file(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_userFile(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6629,7 +7957,7 @@ func (ec *executionContext) _Query_file(ctx context.Context, field graphql.Colle
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_file_args(ctx, rawArgs)
+	args, err := ec.field_Query_userFile_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -6637,7 +7965,7 @@ func (ec *executionContext) _Query_file(ctx context.Context, field graphql.Colle
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().File(rctx, args["id"].(*int), args["name"].(string))
+		return ec.resolvers.Query().UserFile(rctx, args["id"].(*int), args["name"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6649,12 +7977,12 @@ func (ec *executionContext) _Query_file(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.File)
+	res := resTmp.(*model.UserFile)
 	fc.Result = res
-	return ec.marshalNFile2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐFile(ctx, field.Selections, res)
+	return ec.marshalNUserFile2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUserFile(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_files(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_userFiles(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -6671,7 +7999,7 @@ func (ec *executionContext) _Query_files(ctx context.Context, field graphql.Coll
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Files(rctx)
+		return ec.resolvers.Query().UserFiles(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6683,9 +8011,84 @@ func (ec *executionContext) _Query_files(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.File)
+	res := resTmp.([]*model.UserFile)
 	fc.Result = res
-	return ec.marshalNFile2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐFileᚄ(ctx, field.Selections, res)
+	return ec.marshalNUserFile2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUserFileᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_eventFile(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_eventFile_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().EventFile(rctx, args["id"].(*int), args["name"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.EventFile)
+	fc.Result = res
+	return ec.marshalNEventFile2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventFile(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_eventFiles(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().EventFiles(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.EventFile)
+	fc.Result = res
+	return ec.marshalNEventFile2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventFileᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_team(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -8942,6 +10345,40 @@ func (ec *executionContext) _Tracks_createdAt(ctx context.Context, field graphql
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Tracks_summary(ctx context.Context, field graphql.CollectedField, obj *model.Tracks) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Tracks",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Summary, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Tracks_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Tracks) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -9335,71 +10772,6 @@ func (ec *executionContext) _User_events(ctx context.Context, field graphql.Coll
 	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _User_volunteer_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "User",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.VolunteerID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _User_volunteering(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "User",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.User().Volunteering(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Volunteer)
-	fc.Result = res
-	return ec.marshalOVolunteer2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteerᚄ(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _User_event_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -9486,6 +10858,337 @@ func (ec *executionContext) _User_updatedAt(ctx context.Context, field graphql.C
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_volunteer_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.VolunteerID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_volunteering(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.User().Volunteering(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Volunteer)
+	fc.Result = res
+	return ec.marshalOVolunteer2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteerᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_attending(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.User().Attending(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Attendee)
+	fc.Result = res
+	return ec.marshalOAttendee2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAttendee(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserFile_id(ctx context.Context, field graphql.CollectedField, obj *model.UserFile) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "UserFile",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNID2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserFile_file(ctx context.Context, field graphql.CollectedField, obj *model.UserFile) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "UserFile",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.File, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(graphql.Upload)
+	fc.Result = res
+	return ec.marshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserFile_type(ctx context.Context, field graphql.CollectedField, obj *model.UserFile) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "UserFile",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserFile_user(ctx context.Context, field graphql.CollectedField, obj *model.UserFile) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "UserFile",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.UserFile().User(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserFile_userId(ctx context.Context, field graphql.CollectedField, obj *model.UserFile) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "UserFile",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserFile_file_uri(ctx context.Context, field graphql.CollectedField, obj *model.UserFile) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "UserFile",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FileURI, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _UserFile_timestamp(ctx context.Context, field graphql.CollectedField, obj *model.UserFile) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "UserFile",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Timestamp, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10983,6 +12686,84 @@ func (ec *executionContext) unmarshalInputCreateAttendee(ctx context.Context, ob
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreateCartItem(ctx context.Context, obj interface{}) (model.CreateCartItem, error) {
+	var it model.CreateCartItem
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+			it.Description, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "category_id":
+			var err error
+			it.CategoryID, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "quantity":
+			var err error
+			it.Quantity, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "price":
+			var err error
+			it.Price, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "isFree":
+			var err error
+			it.IsFree, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateCategory(ctx context.Context, obj interface{}) (model.CreateCategory, error) {
+	var it model.CreateCategory
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "item_id":
+			var err error
+			it.ItemID, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "event_id":
+			var err error
+			it.EventID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateEvent(ctx context.Context, obj interface{}) (model.CreateEvent, error) {
 	var it model.CreateEvent
 	var asMap = obj.(map[string]interface{})
@@ -11316,6 +13097,12 @@ func (ec *executionContext) unmarshalInputCreateTrack(ctx context.Context, obj i
 		case "duration":
 			var err error
 			it.Duration, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "summary":
+			var err error
+			it.Summary, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11865,6 +13652,12 @@ func (ec *executionContext) unmarshalInputUpdateTrack(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
+		case "summary":
+			var err error
+			it.Summary, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "duration":
 			var err error
 			it.Duration, err = ec.unmarshalNString2string(ctx, v)
@@ -12015,9 +13808,21 @@ func (ec *executionContext) unmarshalInputUploadFile(ctx context.Context, obj in
 			if err != nil {
 				return it, err
 			}
-		case "file_uri":
+		case "eventId":
 			var err error
-			it.FileURI, err = ec.unmarshalNString2string(ctx, v)
+			it.EventID, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "type":
+			var err error
+			it.Type, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "userId":
+			var err error
+			it.UserID, err = ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12141,6 +13946,104 @@ func (ec *executionContext) _AuthResponse(ctx context.Context, sel ast.Selection
 	return out
 }
 
+var cartItemImplementors = []string{"CartItem"}
+
+func (ec *executionContext) _CartItem(ctx context.Context, sel ast.SelectionSet, obj *model.CartItem) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, cartItemImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CartItem")
+		case "id":
+			out.Values[i] = ec._CartItem_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+			out.Values[i] = ec._CartItem_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "description":
+			out.Values[i] = ec._CartItem_description(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._CartItem_createdAt(ctx, field, obj)
+		case "category":
+			out.Values[i] = ec._CartItem_category(ctx, field, obj)
+		case "category_id":
+			out.Values[i] = ec._CartItem_category_id(ctx, field, obj)
+		case "quantity":
+			out.Values[i] = ec._CartItem_quantity(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "price":
+			out.Values[i] = ec._CartItem_price(ctx, field, obj)
+		case "isFree":
+			out.Values[i] = ec._CartItem_isFree(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var categoryImplementors = []string{"Category"}
+
+func (ec *executionContext) _Category(ctx context.Context, sel ast.SelectionSet, obj *model.Category) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, categoryImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Category")
+		case "id":
+			out.Values[i] = ec._Category_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Category_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "event":
+			out.Values[i] = ec._Category_event(ctx, field, obj)
+		case "event_id":
+			out.Values[i] = ec._Category_event_id(ctx, field, obj)
+		case "items":
+			out.Values[i] = ec._Category_items(ctx, field, obj)
+		case "item_id":
+			out.Values[i] = ec._Category_item_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var eventImplementors = []string{"Event"}
 
 func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, obj *model.Event) graphql.Marshaler {
@@ -12197,6 +14100,11 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "bucketName":
+			out.Values[i] = ec._Event_bucketName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "venue":
 			out.Values[i] = ec._Event_venue(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -12214,6 +14122,11 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 			}
 		case "createdAt":
 			out.Values[i] = ec._Event_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "dateCreated":
+			out.Values[i] = ec._Event_dateCreated(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
@@ -12312,36 +14225,70 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 	return out
 }
 
-var fileImplementors = []string{"File"}
+var eventFileImplementors = []string{"EventFile"}
 
-func (ec *executionContext) _File(ctx context.Context, sel ast.SelectionSet, obj *model.File) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, fileImplementors)
+func (ec *executionContext) _EventFile(ctx context.Context, sel ast.SelectionSet, obj *model.EventFile) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, eventFileImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("File")
+			out.Values[i] = graphql.MarshalString("EventFile")
 		case "id":
-			out.Values[i] = ec._File_id(ctx, field, obj)
+			out.Values[i] = ec._EventFile_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "file":
-			out.Values[i] = ec._File_file(ctx, field, obj)
+			out.Values[i] = ec._EventFile_file(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
-		case "file_uri":
-			out.Values[i] = ec._File_file_uri(ctx, field, obj)
+		case "type":
+			out.Values[i] = ec._EventFile_type(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "event":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._EventFile_event(ctx, field, obj)
+				return res
+			})
+		case "eventId":
+			out.Values[i] = ec._EventFile_eventId(ctx, field, obj)
+		case "userId":
+			out.Values[i] = ec._EventFile_userId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "uploadedBy":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._EventFile_uploadedBy(ctx, field, obj)
+				return res
+			})
+		case "file_uri":
+			out.Values[i] = ec._EventFile_file_uri(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "timestamp":
-			out.Values[i] = ec._File_timestamp(ctx, field, obj)
+			out.Values[i] = ec._EventFile_timestamp(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -12501,13 +14448,23 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "uploadSingleFile":
-			out.Values[i] = ec._Mutation_uploadSingleFile(ctx, field)
+		case "uploadSingleUserFile":
+			out.Values[i] = ec._Mutation_uploadSingleUserFile(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "uploadMultipleFiles":
-			out.Values[i] = ec._Mutation_uploadMultipleFiles(ctx, field)
+		case "uploadMultipleUserFiles":
+			out.Values[i] = ec._Mutation_uploadMultipleUserFiles(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "uploadSingleEventFile":
+			out.Values[i] = ec._Mutation_uploadSingleEventFile(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "uploadMultipleEventFiles":
+			out.Values[i] = ec._Mutation_uploadMultipleEventFiles(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -12637,6 +14594,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "attendees":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_attendees(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "user":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -12693,7 +14664,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
-		case "file":
+		case "userFile":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -12701,13 +14672,13 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_file(ctx, field)
+				res = ec._Query_userFile(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
-		case "files":
+		case "userFiles":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -12715,7 +14686,35 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_files(ctx, field)
+				res = ec._Query_userFiles(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "eventFile":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_eventFile(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "eventFiles":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_eventFiles(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -13268,6 +15267,11 @@ func (ec *executionContext) _Tracks(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "summary":
+			out.Values[i] = ec._Tracks_summary(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "updatedAt":
 			out.Values[i] = ec._Tracks_updatedAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -13371,6 +15375,21 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 				res = ec._User_events(ctx, field, obj)
 				return res
 			})
+		case "event_id":
+			out.Values[i] = ec._User_event_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "createdAt":
+			out.Values[i] = ec._User_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "updatedAt":
+			out.Values[i] = ec._User_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "volunteer_id":
 			out.Values[i] = ec._User_volunteer_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -13387,18 +15406,77 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 				res = ec._User_volunteering(ctx, field, obj)
 				return res
 			})
-		case "event_id":
-			out.Values[i] = ec._User_event_id(ctx, field, obj)
+		case "attending":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_attending(ctx, field, obj)
+				return res
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var userFileImplementors = []string{"UserFile"}
+
+func (ec *executionContext) _UserFile(ctx context.Context, sel ast.SelectionSet, obj *model.UserFile) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, userFileImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UserFile")
+		case "id":
+			out.Values[i] = ec._UserFile_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "createdAt":
-			out.Values[i] = ec._User_createdAt(ctx, field, obj)
+		case "file":
+			out.Values[i] = ec._UserFile_file(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "updatedAt":
-			out.Values[i] = ec._User_updatedAt(ctx, field, obj)
+		case "type":
+			out.Values[i] = ec._UserFile_type(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "user":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._UserFile_user(ctx, field, obj)
+				return res
+			})
+		case "userId":
+			out.Values[i] = ec._UserFile_userId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "file_uri":
+			out.Values[i] = ec._UserFile_file_uri(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "timestamp":
+			out.Values[i] = ec._UserFile_timestamp(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
@@ -13765,6 +15843,43 @@ func (ec *executionContext) marshalNAttendee2githubᚗcomᚋvickywaneᚋeventᚑ
 	return ec._Attendee(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalNAttendee2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAttendeeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Attendee) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNAttendee2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAttendee(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
 func (ec *executionContext) marshalNAttendee2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAttendee(ctx context.Context, sel ast.SelectionSet, v *model.Attendee) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -13801,6 +15916,20 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNCartItem2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCartItem(ctx context.Context, sel ast.SelectionSet, v model.CartItem) graphql.Marshaler {
+	return ec._CartItem(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNCartItem2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCartItem(ctx context.Context, sel ast.SelectionSet, v *model.CartItem) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._CartItem(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNCreateEvent2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx context.Context, v interface{}) (model.CreateEvent, error) {
@@ -13971,11 +16100,11 @@ func (ec *executionContext) marshalNEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑ
 	return ec._Event(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNFile2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐFile(ctx context.Context, sel ast.SelectionSet, v model.File) graphql.Marshaler {
-	return ec._File(ctx, sel, &v)
+func (ec *executionContext) marshalNEventFile2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventFile(ctx context.Context, sel ast.SelectionSet, v model.EventFile) graphql.Marshaler {
+	return ec._EventFile(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNFile2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐFileᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.File) graphql.Marshaler {
+func (ec *executionContext) marshalNEventFile2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventFileᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.EventFile) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -13999,7 +16128,7 @@ func (ec *executionContext) marshalNFile2ᚕᚖgithubᚗcomᚋvickywaneᚋevent�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNFile2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐFile(ctx, sel, v[i])
+			ret[i] = ec.marshalNEventFile2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventFile(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -14012,14 +16141,14 @@ func (ec *executionContext) marshalNFile2ᚕᚖgithubᚗcomᚋvickywaneᚋevent�
 	return ret
 }
 
-func (ec *executionContext) marshalNFile2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐFile(ctx context.Context, sel ast.SelectionSet, v *model.File) graphql.Marshaler {
+func (ec *executionContext) marshalNEventFile2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventFile(ctx context.Context, sel ast.SelectionSet, v *model.EventFile) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
 		}
 		return graphql.Null
 	}
-	return ec._File(ctx, sel, v)
+	return ec._EventFile(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNID2int(ctx context.Context, v interface{}) (int, error) {
@@ -14484,6 +16613,57 @@ func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑs
 	return ec._User(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNUserFile2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUserFile(ctx context.Context, sel ast.SelectionSet, v model.UserFile) graphql.Marshaler {
+	return ec._UserFile(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUserFile2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUserFileᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.UserFile) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNUserFile2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUserFile(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNUserFile2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUserFile(ctx context.Context, sel ast.SelectionSet, v *model.UserFile) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._UserFile(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNVolunteer2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteer(ctx context.Context, sel ast.SelectionSet, v model.Volunteer) graphql.Marshaler {
 	return ec._Volunteer(ctx, sel, &v)
 }
@@ -14761,6 +16941,57 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) marshalOAttendee2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAttendee(ctx context.Context, sel ast.SelectionSet, v model.Attendee) graphql.Marshaler {
+	return ec._Attendee(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOAttendee2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAttendee(ctx context.Context, sel ast.SelectionSet, v []*model.Attendee) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOAttendee2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAttendee(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOAttendee2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAttendee(ctx context.Context, sel ast.SelectionSet, v *model.Attendee) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Attendee(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOAuthResponse2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐAuthResponse(ctx context.Context, sel ast.SelectionSet, v model.AuthResponse) graphql.Marshaler {
 	return ec._AuthResponse(ctx, sel, &v)
 }
@@ -14793,6 +17024,97 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	return ec.marshalOBoolean2bool(ctx, sel, *v)
+}
+
+func (ec *executionContext) marshalOCartItem2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCartItemᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.CartItem) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNCartItem2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCartItem(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOCategory2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCategory(ctx context.Context, sel ast.SelectionSet, v model.Category) graphql.Marshaler {
+	return ec._Category(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOCategory2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCategory(ctx context.Context, sel ast.SelectionSet, v []*model.Category) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOCategory2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCategory(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOCategory2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCategory(ctx context.Context, sel ast.SelectionSet, v *model.Category) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Category(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOCreateEvent2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx context.Context, v interface{}) (model.CreateEvent, error) {

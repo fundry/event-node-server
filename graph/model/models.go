@@ -24,9 +24,45 @@ type AuthResponse struct {
 	User      *User     `json:"user"`
 }
 
+type CartItem struct {
+	ID          int         `json:"id"`
+	Name        string      `json:"name"`
+	Description string      `json:"description"`
+	CreatedAt   *string     `json:"createdAt"`
+	Category    []*Category `json:"category"`
+	CategoryID  *int        `json:"category_id"`
+	Quantity    int         `json:"quantity"`
+	Price       *string     `json:"price"`
+	IsFree      bool        `json:"isFree"`
+}
+
+type Category struct {
+	ID      int         `json:"id"`
+	Name    string      `json:"name"`
+	Event   []*Event    `json:"event"`
+	EventID *int        `json:"event_id"`
+	Items   []*CartItem `json:"items"`
+	ItemID  int         `json:"item_id"`
+}
+
 type CreateAttendee struct {
 	User  []*CreateUser  `json:"user"`
 	Event []*CreateEvent `json:"event"`
+}
+
+type CreateCartItem struct {
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	CategoryID  *int    `json:"category_id"`
+	Quantity    int     `json:"quantity"`
+	Price       *string `json:"price"`
+	IsFree      bool    `json:"isFree"`
+}
+
+type CreateCategory struct {
+	Name    string `json:"name"`
+	ItemID  *int   `json:"item_id"`
+	EventID int    `json:"event_id"`
 }
 
 type CreateEvent struct {
@@ -91,6 +127,7 @@ type CreateTrack struct {
 	Name        string  `json:"name"`
 	TrackImgURI *string `json:"trackImgUri"`
 	Duration    string  `json:"duration"`
+	Summary     string  `json:"summary"`
 	Talks       *string `json:"talks"`
 	TotalTalks  int     `json:"totalTalks"`
 	CreatedBy   *string `json:"createdBy"`
@@ -130,14 +167,16 @@ type Event struct {
 	ConfirmedEmail bool         `json:"confirmedEmail"`
 	Website        string       `json:"website"`
 	BucketLink     string       `json:"bucketLink"`
+	BucketName     string       `json:"bucketName"`
 	Venue          string       `json:"venue"`
 	EventType      string       `json:"eventType"`
 	Date           int          `json:"Date"`
 	CreatedAt      time.Time    `json:"createdAt"`
+	DateCreated    string       `json:"dateCreated"`
 	UpdatedAt      time.Time    `json:"updatedAt"`
 	AuthorID       int          `json:"author_id"`
 	CreatedBy      []*User      `json:"createdBy"`
-	Attendees      []*User      `json:"attendees"`
+	Attendees      []*Attendee  `json:"attendees"`
 	Tracks         []*Tracks    `json:"tracks"`
 	TrackID        *int         `json:"track_id"`
 	Teams          []*Team      `json:"teams"`
@@ -148,11 +187,16 @@ type Event struct {
 	IsLocked       bool         `json:"isLocked"`
 }
 
-type File struct {
-	ID        int            `json:"id"`
-	File      graphql.Upload `json:"file"`
-	FileURI   string         `json:"file_uri"`
-	Timestamp time.Time      `json:"timestamp"`
+type EventFile struct {
+	ID         int            `json:"id"`
+	File       graphql.Upload `json:"file"`
+	Type       string         `json:"type"`
+	Event      []*Event       `json:"event"`
+	EventID    *int           `json:"eventId"`
+	UserID     int            `json:"userId"`
+	UploadedBy []*User        `json:"uploadedBy"`
+	FileURI    string         `json:"file_uri"`
+	Timestamp  time.Time      `json:"timestamp"`
 }
 
 type LoginInput struct {
@@ -231,6 +275,7 @@ type Tracks struct {
 	IsCompleted bool      `json:"isCompleted"`
 	Archived    bool      `json:"Archived"`
 	CreatedAt   time.Time `json:"createdAt"`
+	Summary     string    `json:"summary"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 	EventID     int       `json:"event_id"`
 	Talks       []*Talk   `json:"talks"`
@@ -306,6 +351,7 @@ type UpdateTeam struct {
 type UpdateTrack struct {
 	Name        string    `json:"name"`
 	TrackImgURI *string   `json:"trackImgUri"`
+	Summary     *string   `json:"summary"`
 	Duration    string    `json:"duration"`
 	TotalTalks  int       `json:"totalTalks"`
 	IsCompleted bool      `json:"isCompleted"`
@@ -334,7 +380,9 @@ type UpdateVolunteer struct {
 
 type UploadFile struct {
 	File    graphql.Upload `json:"file"`
-	FileURI string         `json:"file_uri"`
+	EventID *int           `json:"eventId"`
+	Type    string         `json:"type"`
+	UserID  *int           `json:"userId"`
 }
 
 type User struct {
@@ -346,11 +394,22 @@ type User struct {
 	BucketLink   string       `json:"bucketLink"`
 	Talks        []*Talk      `json:"talks"`
 	Events       []*Event     `json:"events"`
-	VolunteerID  int          `json:"volunteer_id"`
-	Volunteering []*Volunteer `json:"volunteering"`
 	EventID      int          `json:"event_id"`
 	CreatedAt    time.Time    `json:"createdAt"`
 	UpdatedAt    time.Time    `json:"updatedAt"`
+	VolunteerID  int          `json:"volunteer_id"`
+	Volunteering []*Volunteer `json:"volunteering"`
+	Attending    []*Attendee  `json:"attending"`
+}
+
+type UserFile struct {
+	ID        int            `json:"id"`
+	File      graphql.Upload `json:"file"`
+	Type      string         `json:"type"`
+	User      []*User        `json:"user"`
+	UserID    int            `json:"userId"`
+	FileURI   string         `json:"file_uri"`
+	Timestamp time.Time      `json:"timestamp"`
 }
 
 type Volunteer struct {

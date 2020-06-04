@@ -43,6 +43,15 @@ func (r *queryResolver) Events(ctx context.Context, limit *int) ([]*model.Event,
 	return events, nil
 }
 
+func (r *queryResolver) Attendees(ctx context.Context, limit *int, eventID *int) ([]*model.Attendee, error) {
+	var attendee []*model.Attendee
+	if err := r.DB.Select(attendee); err != nil {
+		return nil, err
+	}
+
+	return attendee, nil
+}
+
 func (r *queryResolver) User(ctx context.Context, id *int, name string) (*model.User, error) {
 	User := model.User{ID: *id, Name: name}
 
@@ -107,8 +116,8 @@ func (r *queryResolver) Preferences(ctx context.Context, limit *int) ([]*model.P
 	return Preferences, nil
 }
 
-func (r *queryResolver) File(ctx context.Context, id *int, name string) (*model.File, error) {
-	File := model.File{ID: *id, FileURI: name}
+func (r *queryResolver) UserFile(ctx context.Context, id *int, name string) (*model.UserFile, error) {
+	File := model.UserFile{ID: *id, FileURI: name}
 
 	if err := r.DB.Select(&File); err != nil {
 		return nil, err
@@ -117,8 +126,30 @@ func (r *queryResolver) File(ctx context.Context, id *int, name string) (*model.
 	return &File, nil
 }
 
-func (r *queryResolver) Files(ctx context.Context) ([]*model.File, error) {
-	var Files []*model.File
+func (r *queryResolver) UserFiles(ctx context.Context) ([]*model.UserFile, error) {
+	var Files []*model.UserFile
+
+	err := r.DB.Model(&Files).Select()
+
+	if err != nil {
+		fmt.Println("some err here")
+	}
+
+	return Files, nil
+}
+
+func (r *queryResolver) EventFile(ctx context.Context, id *int, name string) (*model.EventFile, error) {
+	File := model.EventFile{ID: *id, FileURI: name}
+
+	if err := r.DB.Select(&File); err != nil {
+		return nil, err
+	}
+
+	return &File, nil
+}
+
+func (r *queryResolver) EventFiles(ctx context.Context) ([]*model.EventFile, error) {
+	var Files []*model.EventFile
 
 	err := r.DB.Model(&Files).Select()
 
