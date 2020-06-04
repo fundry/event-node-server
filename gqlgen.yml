@@ -127,5 +127,24 @@ models:
     fields:
       user:
         resolver: true
+  Category:
+    fields:
+      event:
+        resolver: true
+      items:
+        resolver: true
+  CartItems:
+    fields:
+      category:
+        resolver: true
+  Purchases :
+    fields:
+      item:
+        resolver: true
+      user:
+        resolver: true
+      event:
+        resolver: true
+
 
 

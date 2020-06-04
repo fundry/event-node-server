@@ -19,6 +19,19 @@ type CartItem {
     isFree : Boolean!
 }
 
+type Purchases {
+    id : ID!
+    item: [CartItem!]
+    item_id : Int!
+    user : [User]
+    user_id: Int!
+    event : [Event]
+    event_id: Int!
+    datePurchased: String!
+    quantity: Int!
+    price: String
+}
+
 input CreateCartItem {
     name : String!
     description: String!
