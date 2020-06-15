@@ -20,6 +20,17 @@ func (r *talkResolver) Speaker(ctx context.Context, obj *model.Talk) ([]*model.U
 	return Speaker, nil
 }
 
+// Talk returns generated.TalkResolver implementation.
+func (r *Resolver) Talk() generated.TalkResolver { return &talkResolver{r} }
+
+type talkResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
 func (r *talkResolver) Reviewers(ctx context.Context, obj *model.Talk) ([]*model.User, error) {
 	var User []*model.User
 
@@ -30,8 +41,3 @@ func (r *talkResolver) Reviewers(ctx context.Context, obj *model.Talk) ([]*model
 	}
 	return User, nil
 }
-
-// Talk returns generated.TalkResolver implementation.
-func (r *Resolver) Talk() generated.TalkResolver { return &talkResolver{r} }
-
-type talkResolver struct{ *Resolver }

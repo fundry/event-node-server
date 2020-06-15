@@ -57,6 +57,22 @@ models:
         resolver: true
       volunteer:
         resolver: true
+      cart_items_category:
+        resolver: true
+      talk:
+        resolver: true
+      meetupGroups:
+        resolver:  true
+
+  MeetupGroups :
+    fields :
+      event:
+        resolver: true
+      lead:
+        resolver: true
+      members :
+        resolver: true
+
   User:
     fields:
       events:
@@ -67,26 +83,35 @@ models:
         resolver: true
       attending:
         resolver: true
+      files:
+        resolver: true
+
   Preference:
     fields:
       event:
         resolver: true
+
   Sponsor:
     fields:
       event:
         resolver: true
+
   Talk:
     fields:
       speaker:
         resolver: true
       reviewers:
         resolver: true
+
   Team:
     fields:
       members:
         resolver: true
       createdBy:
         resolver: true
+      tasks:
+        resolver: true
+
   Tracks:
     fields:
       talks:
@@ -95,6 +120,7 @@ models:
         resolver: true
       event:
         resolver: true
+
   Task:
     fields:
       assignees:
@@ -103,6 +129,7 @@ models:
         resolver: true
       event:
         resolver: true
+
   Volunteer:
     fields:
       user:
@@ -111,33 +138,48 @@ models:
         resolver: true
       team:
         resolver: true
+
   Attendee:
     fields:
       user:
         resolver: true
       event:
         resolver: true
+
   EventFile:
     fields:
       event:
         resolver: true
       uploadedBy:
         resolver: true
+
+  EventTalk:
+    fields:
+      draft:
+        resolver: true
+      author:
+        resolver: true
+      event:
+        resolver: true
+
   UserFile:
     fields:
       user:
         resolver: true
+
   Category:
     fields:
       event:
         resolver: true
       items:
         resolver: true
+
   CartItems:
     fields:
       category:
         resolver: true
-  Purchases :
+
+  Purchases:
     fields:
       item:
         resolver: true
@@ -145,6 +187,26 @@ models:
         resolver: true
       event:
         resolver: true
+
+  Tasks:
+    fields:
+      event:
+        resolver: true
+      assignees:
+        resolver: true
+      createdBy:
+        resolver: true
+      comments:
+        resolver: true
+
+  TaskComments:
+    fields:
+      writtenBy:
+        resolver: true
+      task:
+        resolver: true
+
+
 
 
 

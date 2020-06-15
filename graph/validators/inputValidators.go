@@ -29,6 +29,10 @@ func ValueNotFound(field string) error {
 	return errors.Errorf("%v field value not found" , field )
 }
 
+func ValueExceeded(no int) error {
+	return errors.Errorf("field value exceeded %v" , no )
+}
+
 /*
 Todo: This currently doesnt work.
  I want it to break the execution of the function invoking it, so i can clean up the mutations and reuse this block

@@ -31,6 +31,17 @@ func (r *userResolver) Events(ctx context.Context, obj *model.User) ([]*model.Ev
 	return events, nil
 }
 
+func (r *userResolver) Files(ctx context.Context, obj *model.User) ([]*model.UserFile, error) {
+	var file []*model.UserFile
+
+	err := r.DB.Model(&file).Where("user_id = ?", obj.ID).Order("id").Select()
+
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
+}
+
 func (r *userResolver) Volunteering(ctx context.Context, obj *model.User) ([]*model.Volunteer, error) {
 	var volunteer []*model.Volunteer
 

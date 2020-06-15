@@ -13,13 +13,9 @@ import (
 // Todo: Use a proper SQL file to seed.
 
 func SeedDatabase(db *pg.DB) {
-
 	fmt.Println("Seeding Database ....")
 	user := model.User{
 		ID:         rand.Int(),
-		Name:       "John Doe",
-		Email:      "Johndoe@gmail.com",
-		BucketLink: "https://google.cloud.com/storage",
 	}
 
 	event := model.Event{
@@ -67,7 +63,7 @@ func SeedDatabase(db *pg.DB) {
 	task := model.Tasks{
 		ID:          rand.Int(),
 		Name:        "Sketch and Create Event Media Assets",
-		Type:        "Design",
+		Category:        "Design",
 		IsCompleted: false,
 		Assignees:   nil,
 	}
@@ -78,7 +74,6 @@ func SeedDatabase(db *pg.DB) {
 		TalkCoverURI: nil,
 		Summary:      "Learn about Distributed systems and how they're built ",
 		Description:  "Come learn how building modern distributed systems can affect performance of a Software",
-		Reviewers:    nil,
 		Archived:     false,
 		Duration:     20,
 		Tags:         nil,

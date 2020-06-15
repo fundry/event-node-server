@@ -10,11 +10,13 @@ import (
     "github.com/dgrijalva/jwt-go"
     "github.com/joho/godotenv"
     "github.com/pkg/errors"
+    uuid "github.com/satori/go.uuid"
     "golang.org/x/crypto/bcrypt"
+    "google.golang.org/api/googleapi"
     "google.golang.org/api/option"
     "io"
     "net/http"
-    "os"
+    "strings"
     "time"
 )
 
@@ -26,7 +28,7 @@ var (
 
     PROJECT_ID        = Envs["GCP_ID"]
     SERVICE_KEY_PATH  = Envs["SERVICE_KEY_PATH"]
-    FUNCTION_ENDPOINT = Envs["EMAIL_FUNCTION_ENDPOINT"]
+    FUNCTION_ENDPOINT = Envs["LOCAL_EMAIL_FUNCTION_ENDPOINT"]
 )
 
 func HashPassword(password string) string {
@@ -36,9 +38,7 @@ func HashPassword(password string) string {
         fmt.Println("Error from hashPassword func")
     }
 
-    convertedToString := string(passwordHash)
-    return convertedToString
-
+    return string(passwordHash)
 }
 
 func GenToken(id string) (string, error) {
@@ -72,17 +72,19 @@ func ComparePassword(userPassword string, password string) interface{} {
     return bcrypt.CompareHashAndPassword(byteUserPassword, hashedPassword) // returns nil as success
 }
 
-func CreateBucket(name string, alias string) (string, error) {
+func CreateBucket(id int) (string, error) {
     appContext := context.Background()
-    bucketName := name + alias // find a better way to generate names
+    // newName  := strings.SplitAfter(name, " ")[0] // removes whitespace && picks name b4 whitespace
+    UUID := uuid.NewV4()
 
+    bucketName := fmt.Sprintf("%v-%v", UUID, id)
     client, err := storage.NewClient(appContext, option.WithCredentialsFile(SERVICE_KEY_PATH))
     if err != nil {
         return "", errors.Errorf("some err %v", err)
     }
-
+    fmt.Println(strings.TrimSpace(bucketName))
     // Creates a Bucket instance.
-    bucket := client.Bucket(bucketName)
+    bucket := client.Bucket(strings.TrimSpace(bucketName))
 
     // Creates the new bucket.
     ctx, cancel := context.WithTimeout(appContext, time.Second*10)
@@ -98,40 +100,53 @@ func CreateBucket(name string, alias string) (string, error) {
 
 // Accepts {file props} && return uri of uploaded file
 func UploadFileToBucket(bucketName string, file graphql.Upload, fileName string) (interface{}, error) {
-    f, fileErr := os.Open("go.mod") // to be replaced by passed in file
+    // f, fileErr := os.Open("go.mod") // to be replaced by passed in file
+    //
+    // if fileErr != nil {
+    //     fmt.Errorf("file not found %v", fileErr)
+    // }
+
     appContext := context.Background()
-
-    if fileErr != nil {
-        fmt.Errorf("file not found %v", fileErr)
-    }
-
     client, err := storage.NewClient(appContext, option.WithCredentialsFile(SERVICE_KEY_PATH))
 
     if err != nil {
-
+       // gCloud uses comma ok idiom not err - nil
     }
 
     ctx, cancel := context.WithTimeout(appContext, time.Second*50)
     defer cancel()
 
     wc := client.Bucket(bucketName).Object(fileName).NewWriter(ctx)
-    if _, err = io.Copy(wc, f); err != nil {
+    if _, err = io.Copy(wc, file.File); err != nil {
         return errors.Errorf("Error %v", err), nil
     }
-    fmt.Println("hello")
-    fmt.Println(wc)
 
-    if err := wc.Close(); err != nil {
-        return errors.Errorf("Error %v", err), nil
+    err = wc.Close()
+
+    // i need to sleep the ACL action so the object gets uploaded first
+    time.Sleep(1 * time.Second)
+    // make file public
+    acl := client.Bucket(bucketName).Object(fileName).ACL()
+    if err = acl.Set(ctx, storage.AllUsers, storage.RoleReader); err != nil {
+        return errors.Errorf("Error while setting access %v", err), nil
+    }
+
+    if e, ok := err.(*googleapi.Error); ok {
+        fmt.Println(e, "comma ok")
+
+        if e.Code == e.Code {
+            fmt.Println(e, "trying comma ok")
+        }
     }
 
     return client, nil
 }
 
-func SendEmail(email string, eventName string, eventType string) (bool, error) {
-    sendDetail := fmt.Sprintf("%v?email=%v&type=%v&name=%v", FUNCTION_ENDPOINT, email, eventType, eventName)
-    fmt.Println(sendDetail)
+type details struct {
+    email, eventName , eventType string
+}
 
+func SendEmail(email string, eventName string, eventType string) (bool, error) {
     reqBody, reqErr := json.Marshal(map[string]string{
         "email": email,
         "type":  eventType,
@@ -139,16 +154,16 @@ func SendEmail(email string, eventName string, eventType string) (bool, error) {
     })
 
     if reqErr != nil {
-        return false, errors.Errorf("Error %v", reqErr)
+        return false, errors.Errorf("Error in Marshalling req details %v", reqErr)
     }
 
-    resp, err := http.Post(sendDetail, "text/html", bytes.NewBuffer(reqBody))
+    resp, err := http.Post(FUNCTION_ENDPOINT, "application/json", bytes.NewBuffer(reqBody))
     if err != nil {
-        return false, errors.New("couldn't send email")
-    };
-    // fmt.Println(resp, "res")
+        return false, errors.Errorf("couldn't send email. Error %v" , err)
+    }
+
     fmt.Println(resp)
-    //resp.Body.Close()
+    defer resp.Body.Close()
 
     return true, err
 }

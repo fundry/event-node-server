@@ -6,6 +6,9 @@ type Mutation {
     attendEvent(EventID: ID!, UserID : ID!): Attendee!
     updateEventAttendee(EventID: ID!, UserID : ID!): Attendee!
     deleteEvent(id: ID!) : Boolean!
+    submitEventTalk( talkId: Int! eventId: Int!, input: SubmitEventTalk ) : EventTalk
+    updateSubmittedTalk( talkId: Int!, reviewerId: Int ,input: UpdateSubmittedTalk! ) : EventTalk
+    createMeetupGroup(eventId : Int!, leadId: Int! ,input: CreateMeetupGroup): MeetupGroups
 
     createUser(input: CreateUser!): AuthResponse
     updateUser(id: ID, input: UpdateUser! ): User!
@@ -23,7 +26,7 @@ type Mutation {
     updateSponsor(id: ID, input: UpdateSponsor!):Sponsor!
     deleteSponsor(id: ID!) : Boolean!
 
-    createTask(input: CreateTasks!) : Tasks!
+    createTask(input: CreateTasks! , teamId:  Int! , userId :Int!) : Tasks!
     updateTask(id: ID! , input: UpdateTask!) : Tasks!
     deleteTask(id: ID!) : Boolean!
 
@@ -46,4 +49,16 @@ type Mutation {
     createVolunteer(input: CreateVolunteer!, UserID: Int!, EventID: Int!) : Volunteer!
     updateVolunteer(id: ID! , input: UpdateVolunteer!) : Volunteer!
     deleteVolunteer(id: ID!) : Boolean!
+
+    purchaseItem(input: MakePurchases!, ItemID: Int!, UserID: Int!, EventID: Int! ) : Purchases!
+    deletePurchase(id: Int!): Boolean!
+
+    createCategory(input: CreateCategory!, EventID: Int!) : Category!
+    deleteCategory(id: Int!): Boolean!
+
+    createCartItem(input: CreateCartItem! CategoryId : Int! ) : CartItem!
+    updateCartItem(input: UpdateCartItem!) : CartItem!
+    deleteCartItem(id: Int!): Boolean!
+
+    createComment(input : CreateTaskComment!, userId: Int!, taskId: Int!  ): TaskComments
 }

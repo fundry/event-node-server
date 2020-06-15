@@ -1,3 +1,5 @@
+#Todo : Implement default directives for BOOLEAN fields
+
 type Event {
     id : Int!
     name: String!
@@ -5,13 +7,15 @@ type Event {
     summary: String!
     alias: String!
     Email: String!
-    confirmedEmail: Boolean!
     website: String!
+    talk:[EventTalk!]
     bucketLink : String!
     bucketName: String!
     venue: String!
     eventType: String!
-    Date: Int!
+    meetupGroups : [MeetupGroups]
+    meetupGroup_id : Int
+    EventDate: [String]!
     createdAt: Time!
     dateCreated: String!
     updatedAt: Time!
@@ -20,30 +24,36 @@ type Event {
     attendees: [Attendee]
     tracks: [Tracks]
     track_id: Int
+    actions: [String!]
+    cart_items_category : [Category]
     teams: [Team!]
     volunteer_id: Int
     volunteer: [Volunteer!]
     totalAttendees: Int!
-    isArchived: Boolean! @default(value: false)
-    isLocked: Boolean!  @default(value: false)
+    confirmedEmail: Boolean!
+    isAcceptingVolunteers: Boolean!
+    isAcceptingTalks : Boolean!
+    isArchived: Boolean!
+    isLocked: Boolean!
 }
 
 input CreateEvent {
     name: String!
     summary: String!
     alias: String!
-    Date: Int!
+    EventDate: [String]!
     description: String!
     website: String!
     Email: String!
     eventType: String!
-    isArchived: Boolean
-    isLocked: Boolean
-    CreatedBy: CreateUser
-    attendees: [CreateUser]
     venue: String!
     volunteer_id: Int
-    volunteering: [CreateVolunteer!]
+    actions: [String!]
+    CreatedBy: CreateUser
+    isArchived: Boolean!
+    isLocked: Boolean!
+    isAcceptingVolunteers: Boolean!
+    isAcceptingTalks : Boolean!
 }
 
 input UpdateEvent {
@@ -54,17 +64,63 @@ input UpdateEvent {
     bucketLink : String
     description: String
     eventType: String
-    isArchived: Boolean
     totalAttendees: Int
-    isLocked: Boolean
     Email: String
     website: String
     track_id: Int
     updatedAt: Time
-    attendees: [CreateUser]
     venue: String
-    Date: Int!
-    team: CreateTeam
+    EventDate: [String]!
     volunteer_id: Int
+    actions: [String!]
     volunteering: [CreateVolunteer!]
+    attendees: [CreateUser]
+    ConfirmedEmail : Boolean,
+    isArchived: Boolean
+    isLocked: Boolean
+    isAcceptingVolunteers: Boolean
+    isAcceptingTalks : Boolean
+}
+
+type EventTalk {
+    id : ID!
+    isAccepted : Boolean!
+    dateSubmitted: String!
+    dateAccepted: String!
+    reviewer_id : Int
+    event : [Event!]
+    event_id : Int!
+    comment : String
+    reviewer: [User!]
+    draftId : Int!
+    draft : [Talk!]
+}
+
+type MeetupGroups {
+    id : ID!
+    name : String!
+    event: [Event]
+    event_id  : Int!
+    lead : [User]
+    members : [User]
+    members_id:  Int
+    lead_id: Int!
+    location : String!
+    alias: String!
+    createdAt : String!
+}
+
+input CreateMeetupGroup {
+    name : String!
+    location : String!
+    alias: String!
+}
+
+input SubmitEventTalk {
+    isAccepted : Boolean!
+}
+
+input UpdateSubmittedTalk {
+    isAccepted : Boolean!
+    comment : String
 }

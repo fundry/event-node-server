@@ -5,6 +5,7 @@ package resolvers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/vickywane/event-server/graph/generated"
@@ -52,8 +53,35 @@ func (r *queryResolver) Attendees(ctx context.Context, limit *int, eventID *int)
 	return attendee, nil
 }
 
+func (r *queryResolver) EventTalk(ctx context.Context, limit *int, talkID int) ([]*model.Talk, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) MeetupGroups(ctx context.Context, limit *int) ([]*model.MeetupGroups, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) GetEventTalks(ctx context.Context, areApproved bool, limit *int, eventID *int) ([]*model.EventTalk, error) {
+	var talks []*model.EventTalk
+
+	if err := r.DB.Model(&model.Event{}).Where("id = ?", eventID).First(); err != nil {
+		return nil, errors.New("event doesnt exist or not found ")
+	}
+
+	// err := r.DB.Model(talks).Where("is_accepted = ?", areApproved).Limit(*limit).Select(&talks)
+	if err := r.DB.Model(&talks).Where("is_accepted = ?", areApproved).Limit(*limit).Select(); err != nil {
+		return nil, err
+	}
+	// if err != nil {
+	//     fmt.Println(err)
+	//     return nil, err
+	// }
+
+	return talks, nil
+}
+
 func (r *queryResolver) User(ctx context.Context, id *int, name string) (*model.User, error) {
-	User := model.User{ID: *id, Name: name}
+	User := model.User{ID: *id}
 
 	if err := r.DB.Select(&User); err != nil {
 		return nil, err
@@ -290,6 +318,76 @@ func (r *queryResolver) Volunteers(ctx context.Context, limit *int, eventID int)
 		return nil, CustomResponse.QueryError
 	}
 	return Volunteer, nil
+}
+
+func (r *queryResolver) CartItems(ctx context.Context, categoryID int, limit *int) ([]*model.CartItem, error) {
+	// var CartItem []*model.CartItem{ID: categoryID}
+	var CartItem []*model.CartItem
+
+	if limit != nil {
+		QueryErr = r.DB.Model(&CartItem).Limit(*limit).Select()
+	} else {
+		QueryErr = r.DB.Model(&CartItem).Select()
+	}
+
+	if QueryErr != nil {
+		return nil, CustomResponse.QueryError
+	}
+	return CartItem, nil
+}
+
+func (r *queryResolver) AllCartItems(ctx context.Context, limit *int) ([]*model.CartItem, error) {
+	var CartItem []*model.CartItem
+
+	if limit != nil {
+		QueryErr = r.DB.Model(&CartItem).Limit(*limit).Select()
+	} else {
+		QueryErr = r.DB.Model(&CartItem).Select()
+	}
+
+	if QueryErr != nil {
+		return nil, CustomResponse.QueryError
+	}
+	return CartItem, nil
+}
+
+func (r *queryResolver) Purchases(ctx context.Context, eventID int, limit *int) ([]*model.Purchases, error) {
+	// var purchases []*model.Purchases
+	//
+	// if limit != nil {
+	// 	QueryErr = r.DB.Model(&purchases).Limit(*limit).Select()
+	// } else {
+	// 	QueryErr = r.DB.Model(&purchases).Select()
+	// }
+	//
+	// if QueryErr != nil {
+	// 	return nil, CustomResponse.QueryError
+	// }
+	// return purchases, nil
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) AllPurchases(ctx context.Context, limit *int) ([]*model.Purchases, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Category(ctx context.Context, id int, limit *int) ([]*model.Category, error) {
+	var Category []*model.Category
+
+	if limit != nil {
+		QueryErr = r.DB.Model(&Category).Limit(*limit).Where("v = ?", id).Select()
+	} else {
+		QueryErr = r.DB.Model(&Category).Where("id = ?", id).Select()
+	}
+
+	if QueryErr != nil {
+		return nil, CustomResponse.QueryError
+	}
+	return Category, nil
+}
+
+func (r *queryResolver) TaskComment(ctx context.Context, taskID int) ([]*model.TaskComments, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 // Query returns generated.QueryResolver implementation.

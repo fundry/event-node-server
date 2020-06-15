@@ -8,6 +8,8 @@ type Team {
     updatedAt: Time!
     event_id : Int! #event FK
     event: [Event]
+    tasks: [Tasks!]
+    task_id: Int
 }
 
 input CreateTeam {
@@ -20,4 +22,5 @@ input UpdateTeam {
     name : String!
     members: [CreateUser]
     goal: String!
+    task_id: Int
 }

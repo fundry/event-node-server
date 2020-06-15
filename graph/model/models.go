@@ -28,9 +28,9 @@ type CartItem struct {
 	ID          int         `json:"id"`
 	Name        string      `json:"name"`
 	Description string      `json:"description"`
-	CreatedAt   *string     `json:"createdAt"`
+	CreatedAt   string      `json:"createdAt"`
 	Category    []*Category `json:"category"`
-	CategoryID  *int        `json:"category_id"`
+	CategoryID  int         `json:"category_id"`
 	Quantity    int         `json:"quantity"`
 	Price       *string     `json:"price"`
 	IsFree      bool        `json:"isFree"`
@@ -40,9 +40,9 @@ type Category struct {
 	ID      int         `json:"id"`
 	Name    string      `json:"name"`
 	Event   []*Event    `json:"event"`
-	EventID *int        `json:"event_id"`
+	EventID int         `json:"event_id"`
 	Items   []*CartItem `json:"items"`
-	ItemID  int         `json:"item_id"`
+	ItemID  *int        `json:"item_id"`
 }
 
 type CreateAttendee struct {
@@ -53,34 +53,39 @@ type CreateAttendee struct {
 type CreateCartItem struct {
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
-	CategoryID  *int    `json:"category_id"`
 	Quantity    int     `json:"quantity"`
 	Price       *string `json:"price"`
 	IsFree      bool    `json:"isFree"`
 }
 
 type CreateCategory struct {
-	Name    string `json:"name"`
-	ItemID  *int   `json:"item_id"`
-	EventID int    `json:"event_id"`
+	Name   string `json:"name"`
+	ItemID *int   `json:"item_id"`
 }
 
 type CreateEvent struct {
-	Name         string             `json:"name"`
-	Summary      string             `json:"summary"`
-	Alias        string             `json:"alias"`
-	Date         int                `json:"Date"`
-	Description  string             `json:"description"`
-	Website      string             `json:"website"`
-	Email        string             `json:"Email"`
-	EventType    string             `json:"eventType"`
-	IsArchived   *bool              `json:"isArchived"`
-	IsLocked     *bool              `json:"isLocked"`
-	CreatedBy    *CreateUser        `json:"CreatedBy"`
-	Attendees    []*CreateUser      `json:"attendees"`
-	Venue        string             `json:"venue"`
-	VolunteerID  *int               `json:"volunteer_id"`
-	Volunteering []*CreateVolunteer `json:"volunteering"`
+	Name                  string      `json:"name"`
+	Summary               string      `json:"summary"`
+	Alias                 string      `json:"alias"`
+	EventDate             []*string   `json:"EventDate"`
+	Description           string      `json:"description"`
+	Website               string      `json:"website"`
+	Email                 string      `json:"Email"`
+	EventType             string      `json:"eventType"`
+	Venue                 string      `json:"venue"`
+	VolunteerID           *int        `json:"volunteer_id"`
+	Actions               []string    `json:"actions"`
+	CreatedBy             *CreateUser `json:"CreatedBy"`
+	IsArchived            bool        `json:"isArchived"`
+	IsLocked              bool        `json:"isLocked"`
+	IsAcceptingVolunteers bool        `json:"isAcceptingVolunteers"`
+	IsAcceptingTalks      bool        `json:"isAcceptingTalks"`
+}
+
+type CreateMeetupGroup struct {
+	Name     string `json:"name"`
+	Location string `json:"location"`
+	Alias    string `json:"alias"`
 }
 
 type CreatePreference struct {
@@ -107,9 +112,14 @@ type CreateTalk struct {
 	Tags         []*string `json:"tags"`
 }
 
+type CreateTaskComment struct {
+	Content   string `json:"content"`
+	WrittenAt string `json:"writtenAt"`
+}
+
 type CreateTasks struct {
 	Name        string        `json:"name"`
-	Type        string        `json:"type"`
+	Category    string        `json:"category"`
 	IsCompleted bool          `json:"isCompleted"`
 	Event       *CreateEvent  `json:"event"`
 	Assignees   []*CreateUser `json:"assignees"`
@@ -137,7 +147,6 @@ type CreateTrack struct {
 
 type CreateUser struct {
 	Name         string             `json:"name"`
-	Role         *string            `json:"role"`
 	Email        string             `json:"email"`
 	Password     string             `json:"password"`
 	Volunteering []*CreateVolunteer `json:"volunteering"`
@@ -158,33 +167,40 @@ type DeleteFile struct {
 }
 
 type Event struct {
-	ID             int          `json:"id"`
-	Name           string       `json:"name"`
-	Description    string       `json:"description"`
-	Summary        string       `json:"summary"`
-	Alias          string       `json:"alias"`
-	Email          string       `json:"Email"`
-	ConfirmedEmail bool         `json:"confirmedEmail"`
-	Website        string       `json:"website"`
-	BucketLink     string       `json:"bucketLink"`
-	BucketName     string       `json:"bucketName"`
-	Venue          string       `json:"venue"`
-	EventType      string       `json:"eventType"`
-	Date           int          `json:"Date"`
-	CreatedAt      time.Time    `json:"createdAt"`
-	DateCreated    string       `json:"dateCreated"`
-	UpdatedAt      time.Time    `json:"updatedAt"`
-	AuthorID       int          `json:"author_id"`
-	CreatedBy      []*User      `json:"createdBy"`
-	Attendees      []*Attendee  `json:"attendees"`
-	Tracks         []*Tracks    `json:"tracks"`
-	TrackID        *int         `json:"track_id"`
-	Teams          []*Team      `json:"teams"`
-	VolunteerID    *int         `json:"volunteer_id"`
-	Volunteer      []*Volunteer `json:"volunteer"`
-	TotalAttendees int          `json:"totalAttendees"`
-	IsArchived     bool         `json:"isArchived"`
-	IsLocked       bool         `json:"isLocked"`
+	ID                    int             `json:"id"`
+	Name                  string          `json:"name"`
+	Description           string          `json:"description"`
+	Summary               string          `json:"summary"`
+	Alias                 string          `json:"alias"`
+	Email                 string          `json:"Email"`
+	Website               string          `json:"website"`
+	Talk                  []*EventTalk    `json:"talk"`
+	BucketLink            string          `json:"bucketLink"`
+	BucketName            string          `json:"bucketName"`
+	Venue                 string          `json:"venue"`
+	EventType             string          `json:"eventType"`
+	MeetupGroups          []*MeetupGroups `json:"meetupGroups"`
+	MeetupGroupID         *int            `json:"meetupGroup_id"`
+	EventDate             []*string       `json:"EventDate"`
+	CreatedAt             time.Time       `json:"createdAt"`
+	DateCreated           string          `json:"dateCreated"`
+	UpdatedAt             time.Time       `json:"updatedAt"`
+	AuthorID              int             `json:"author_id"`
+	CreatedBy             []*User         `json:"createdBy"`
+	Attendees             []*Attendee     `json:"attendees"`
+	Tracks                []*Tracks       `json:"tracks"`
+	TrackID               *int            `json:"track_id"`
+	Actions               []string        `json:"actions"`
+	CartItemsCategory     []*Category     `json:"cart_items_category"`
+	Teams                 []*Team         `json:"teams"`
+	VolunteerID           *int            `json:"volunteer_id"`
+	Volunteer             []*Volunteer    `json:"volunteer"`
+	TotalAttendees        int             `json:"totalAttendees"`
+	ConfirmedEmail        bool            `json:"confirmedEmail"`
+	IsAcceptingVolunteers bool            `json:"isAcceptingVolunteers"`
+	IsAcceptingTalks      bool            `json:"isAcceptingTalks"`
+	IsArchived            bool            `json:"isArchived"`
+	IsLocked              bool            `json:"isLocked"`
 }
 
 type EventFile struct {
@@ -199,9 +215,46 @@ type EventFile struct {
 	Timestamp  time.Time      `json:"timestamp"`
 }
 
+type EventTalk struct {
+	ID            int      `json:"id"`
+	IsAccepted    bool     `json:"isAccepted"`
+	DateSubmitted string   `json:"dateSubmitted"`
+	DateAccepted  string   `json:"dateAccepted"`
+	ReviewerID    *int     `json:"reviewer_id"`
+	Event         []*Event `json:"event"`
+	EventID       int      `json:"event_id"`
+	Comment       *string  `json:"comment"`
+	Reviewer      []*User  `json:"reviewer"`
+	DraftID       int      `json:"draftId"`
+	Draft         []*Talk  `json:"draft"`
+}
+
 type LoginInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type MakePurchases struct {
+	ItemID        int     `json:"item_id"`
+	UserID        int     `json:"user_id"`
+	EventID       int     `json:"event_id"`
+	DatePurchased string  `json:"datePurchased"`
+	Quantity      int     `json:"quantity"`
+	Price         *string `json:"price"`
+}
+
+type MeetupGroups struct {
+	ID        int      `json:"id"`
+	Name      string   `json:"name"`
+	Event     []*Event `json:"event"`
+	EventID   int      `json:"event_id"`
+	Lead      []*User  `json:"lead"`
+	Members   []*User  `json:"members"`
+	MembersID *int     `json:"members_id"`
+	LeadID    int      `json:"lead_id"`
+	Location  string   `json:"location"`
+	Alias     string   `json:"alias"`
+	CreatedAt string   `json:"createdAt"`
 }
 
 type Preference struct {
@@ -213,6 +266,19 @@ type Preference struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
+type Purchases struct {
+	ID            int         `json:"id"`
+	Item          []*CartItem `json:"item"`
+	ItemID        int         `json:"item_id"`
+	User          []*User     `json:"user"`
+	UserID        int         `json:"user_id"`
+	Event         []*Event    `json:"event"`
+	EventID       int         `json:"event_id"`
+	DatePurchased string      `json:"datePurchased"`
+	Quantity      int         `json:"quantity"`
+	Price         *string     `json:"price"`
+}
+
 type Sponsor struct {
 	ID             int    `json:"id"`
 	Name           string `json:"name"`
@@ -220,6 +286,10 @@ type Sponsor struct {
 	Amount         int    `json:"amount"`
 	Event          *Event `json:"event"`
 	IsOrganization bool   `json:"isOrganization"`
+}
+
+type SubmitEventTalk struct {
+	IsAccepted bool `json:"isAccepted"`
 }
 
 type Talk struct {
@@ -234,24 +304,35 @@ type Talk struct {
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
 	EventID      *int      `json:"event_id"`
-	ReviewersID  int       `json:"reviewers_id"`
 	SpeakerID    int       `json:"speaker_id"`
 	Event        []*Event  `json:"event"`
 	Speaker      []*User   `json:"speaker"`
-	Reviewers    []*User   `json:"reviewers"`
+}
+
+type TaskComments struct {
+	ID        int      `json:"id"`
+	Content   string   `json:"content"`
+	WrittenBy []*User  `json:"writtenBy"`
+	Task      []*Tasks `json:"task"`
+	UserID    int      `json:"user_id"`
+	TaskID    int      `json:"task_id"`
+	WrittenAt string   `json:"writtenAt"`
 }
 
 type Tasks struct {
-	ID          int       `json:"id"`
-	Name        string    `json:"name"`
-	Type        string    `json:"type"`
-	IsCompleted bool      `json:"isCompleted"`
-	Assignees   []*User   `json:"assignees"`
-	CreatedBy   *User     `json:"createdBy"`
-	Event       *Event    `json:"event"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
-	TeamID      int       `json:"team_id"`
+	ID          int             `json:"id"`
+	Name        string          `json:"name"`
+	Category    string          `json:"category"`
+	IsCompleted bool            `json:"isCompleted"`
+	Assignees   []*User         `json:"assignees"`
+	CreatedBy   []*User         `json:"createdBy"`
+	Event       []*Event        `json:"event"`
+	CreatedAt   string          `json:"createdAt"`
+	Comments    []*TaskComments `json:"comments"`
+	CommentID   *int            `json:"comment_id"`
+	UpdatedAt   time.Time       `json:"updatedAt"`
+	AuthorID    int             `json:"author_id"`
+	TeamID      int             `json:"team_id"`
 }
 
 type Team struct {
@@ -264,6 +345,8 @@ type Team struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 	EventID   int       `json:"event_id"`
 	Event     []*Event  `json:"event"`
+	Tasks     []*Tasks  `json:"tasks"`
+	TaskID    *int      `json:"task_id"`
 }
 
 type Tracks struct {
@@ -286,27 +369,38 @@ type UpdateAttendee struct {
 	User []*CreateUser `json:"user"`
 }
 
+type UpdateCartItem struct {
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Quantity    int     `json:"quantity"`
+	Price       *string `json:"price"`
+	IsFree      bool    `json:"isFree"`
+}
+
 type UpdateEvent struct {
-	Name           *string            `json:"name"`
-	Type           *string            `json:"type"`
-	Summary        *string            `json:"summary"`
-	Alias          *string            `json:"alias"`
-	BucketLink     *string            `json:"bucketLink"`
-	Description    *string            `json:"description"`
-	EventType      *string            `json:"eventType"`
-	IsArchived     *bool              `json:"isArchived"`
-	TotalAttendees *int               `json:"totalAttendees"`
-	IsLocked       *bool              `json:"isLocked"`
-	Email          *string            `json:"Email"`
-	Website        *string            `json:"website"`
-	TrackID        *int               `json:"track_id"`
-	UpdatedAt      *time.Time         `json:"updatedAt"`
-	Attendees      []*CreateUser      `json:"attendees"`
-	Venue          *string            `json:"venue"`
-	Date           int                `json:"Date"`
-	Team           *CreateTeam        `json:"team"`
-	VolunteerID    *int               `json:"volunteer_id"`
-	Volunteering   []*CreateVolunteer `json:"volunteering"`
+	Name                  *string            `json:"name"`
+	Type                  *string            `json:"type"`
+	Summary               *string            `json:"summary"`
+	Alias                 *string            `json:"alias"`
+	BucketLink            *string            `json:"bucketLink"`
+	Description           *string            `json:"description"`
+	EventType             *string            `json:"eventType"`
+	TotalAttendees        *int               `json:"totalAttendees"`
+	Email                 *string            `json:"Email"`
+	Website               *string            `json:"website"`
+	TrackID               *int               `json:"track_id"`
+	UpdatedAt             *time.Time         `json:"updatedAt"`
+	Venue                 *string            `json:"venue"`
+	EventDate             []*string          `json:"EventDate"`
+	VolunteerID           *int               `json:"volunteer_id"`
+	Actions               []string           `json:"actions"`
+	Volunteering          []*CreateVolunteer `json:"volunteering"`
+	Attendees             []*CreateUser      `json:"attendees"`
+	ConfirmedEmail        *bool              `json:"ConfirmedEmail"`
+	IsArchived            *bool              `json:"isArchived"`
+	IsLocked              *bool              `json:"isLocked"`
+	IsAcceptingVolunteers *bool              `json:"isAcceptingVolunteers"`
+	IsAcceptingTalks      *bool              `json:"isAcceptingTalks"`
 }
 
 type UpdatePreference struct {
@@ -324,20 +418,24 @@ type UpdateSponsor struct {
 	IsOrganization *bool        `json:"isOrganization"`
 }
 
+type UpdateSubmittedTalk struct {
+	IsAccepted bool    `json:"isAccepted"`
+	Comment    *string `json:"comment"`
+}
+
 type UpdateTalk struct {
-	Title        string        `json:"title"`
-	TalkCoverURI *string       `json:"talkCoverUri"`
-	Summary      string        `json:"summary"`
-	Description  string        `json:"description"`
-	Reviewers    []*CreateUser `json:"reviewers"`
-	Archived     bool          `json:"Archived"`
-	Duration     int           `json:"duration"`
-	Tags         []*string     `json:"tags"`
+	Title        string    `json:"title"`
+	TalkCoverURI *string   `json:"talkCoverUri"`
+	Summary      string    `json:"summary"`
+	Description  string    `json:"description"`
+	Archived     bool      `json:"Archived"`
+	Duration     int       `json:"duration"`
+	Tags         []*string `json:"tags"`
 }
 
 type UpdateTask struct {
 	Name        string        `json:"name"`
-	Type        string        `json:"type"`
+	Category    string        `json:"category"`
 	IsCompleted bool          `json:"isCompleted"`
 	Assignees   []*CreateUser `json:"assignees"`
 }
@@ -346,6 +444,7 @@ type UpdateTeam struct {
 	Name    string        `json:"name"`
 	Members []*CreateUser `json:"members"`
 	Goal    string        `json:"goal"`
+	TaskID  *int          `json:"task_id"`
 }
 
 type UpdateTrack struct {
@@ -361,9 +460,10 @@ type UpdateTrack struct {
 
 type UpdateUser struct {
 	Name         *string            `json:"name"`
-	Role         *string            `json:"role"`
 	Email        *string            `json:"email"`
 	Password     *string            `json:"password"`
+	ImgURI       *string            `json:"img_uri"`
+	FileURI      *string            `json:"file_uri"`
 	Volunteering []*CreateVolunteer `json:"volunteering"`
 	Events       []*CreateEvent     `json:"events"`
 	UpdatedAt    *time.Time         `json:"updatedAt"`
@@ -388,14 +488,16 @@ type UploadFile struct {
 type User struct {
 	ID           int          `json:"id"`
 	Name         string       `json:"name"`
-	Role         *string      `json:"role"`
 	Email        string       `json:"email"`
 	Password     string       `json:"password"`
-	BucketLink   string       `json:"bucketLink"`
+	BucketName   string       `json:"bucketName"`
 	Talks        []*Talk      `json:"talks"`
 	Events       []*Event     `json:"events"`
 	EventID      int          `json:"event_id"`
+	FileID       *int         `json:"file_id"`
+	ImgURI       *string      `json:"img_uri"`
 	CreatedAt    time.Time    `json:"createdAt"`
+	Files        []*UserFile  `json:"files"`
 	UpdatedAt    time.Time    `json:"updatedAt"`
 	VolunteerID  int          `json:"volunteer_id"`
 	Volunteering []*Volunteer `json:"volunteering"`

@@ -2,6 +2,9 @@ type Query {
     event(id: Int name: String!) : Event!
     events(Limit: Int): [Event!]!
     attendees(Limit: Int EventID: Int): [Attendee!]!
+    eventTalk(Limit: Int TalkId: Int!): [Talk]
+    MeetupGroups(Limit: Int) : [MeetupGroups]
+    getEventTalks(areApproved: Boolean! Limit : Int eventId: Int): [EventTalk!]!  # Todo Try return EVENTTALK here instead
 
     user(id: Int, name: String!) : User!
     users(Limit: Int) : [User!]!
@@ -32,4 +35,15 @@ type Query {
 
     volunteer(id: Int!): Volunteer!
     volunteers(Limit: Int , EventID : Int!): [Volunteer!]!
+
+    cartItems(categoryId: Int! ,Limit: Int): [CartItem]
+    allCartItems(Limit: Int): [CartItem]
+
+    purchases(event_id: Int!, Limit: Int): [Purchases]
+    allPurchases(Limit: Int): [Purchases]
+
+    category(id: Int!, Limit: Int): [Category]
+
+    taskComment(taskId: Int!) : [TaskComments]
+
 }

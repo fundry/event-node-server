@@ -1,14 +1,16 @@
 type User {
     id : Int!
     name: String!
-    role: String
     email: String!
     password: String!
-    bucketLink: String!
+    bucketName: String!
     talks: [Talk]
     events: [Event!]
     event_id: Int!
+    file_id: Int
+    img_uri : String
     createdAt: Time!
+    files: [UserFile!]
     updatedAt: Time!
     volunteer_id: Int!
     volunteering: [Volunteer!]
@@ -17,7 +19,6 @@ type User {
 
 input CreateUser {
     name: String!
-    role: String
     email: String!
     password: String!
     volunteering: [CreateVolunteer!]
@@ -26,9 +27,10 @@ input CreateUser {
 
 input UpdateUser {
     name: String
-    role: String
     email: String
     password: String
+    img_uri : String
+    file_uri : String
     volunteering: [CreateVolunteer!]
     events: [CreateEvent]
     updatedAt: Time

@@ -1,19 +1,37 @@
 type Tasks {
     id : Int!
     name : String!
-    type: String!
+    category: String!
     isCompleted: Boolean!
     assignees: [User!]
-    createdBy: User
-    event: Event
-    createdAt: Time!
+    createdBy: [User]
+    event: [Event]
+    createdAt: String!
+    comments : [TaskComments!]
+    comment_id: Int
     updatedAt: Time!
+    author_id: Int!
     team_id : Int! #team FK
+}
+
+type TaskComments {
+    id : Int!
+    content : String!
+    writtenBy : [User!]
+    task : [Tasks!]
+    user_id : Int!
+    task_id: Int!
+    writtenAt : String!
+}
+
+input CreateTaskComment {
+    content : String!
+    writtenAt : String!
 }
 
 input CreateTasks {
     name : String!
-    type: String!
+    category: String!
     isCompleted: Boolean!
     event: CreateEvent
     assignees: [CreateUser!]
@@ -23,7 +41,7 @@ input CreateTasks {
 
 input UpdateTask {
     name : String!
-    type: String!
+    category: String!
     isCompleted: Boolean!
     assignees: [CreateUser!]
 }

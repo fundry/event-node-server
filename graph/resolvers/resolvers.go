@@ -15,16 +15,27 @@ type Resolver struct {
 
 func (r *mutationResolver) CheckEventFieldExists(field, fieldValue string) bool {
     eventField := model.Event{}
-
-    err := r.DB.Model(&eventField).Where(fmt.Sprintf("%v = ?", field), fieldValue).First()
-
-     fmt.Println(err, "check exists")
-    if err != nil {
+    if err := r.DB.Model(&eventField).Where(fmt.Sprintf("%v = ?", field), fieldValue).First(); err != nil {
         return true
     }
-
     return false
 }
+
+func (r *mutationResolver) CheckMeetupFieldExists(field, fieldValue string) bool {
+    meetupField := model.MeetupGroups{}
+    if err := r.DB.Model(&meetupField).Where(fmt.Sprintf("%v = ?", field), fieldValue).First(); err != nil {
+        return true
+    }
+    return false
+}
+
+
+func (r *mutationResolver) GetSubmittedTalkById(id int) (*model.EventTalk, error) {
+    event := model.EventTalk{}
+    err := r.DB.Model(&event).Where("id = ?", id).First()
+    return &event, err
+}
+
 
 func (r *mutationResolver) CheckAttendeeFieldExists(field string, fieldValue int) bool {
     attendeeField := model.Attendee{}
@@ -172,4 +183,18 @@ func (r *mutationResolver) DeleteCurrentVolunteer(Volunteer *model.Volunteer) er
         return nil
     }
     return nil
+}
+
+// Checks if file exists
+func (r *mutationResolver) CheckEventFile(field, fieldValue string) bool {
+    err := r.DB.Model(&model.EventFile{}).Where(fmt.Sprintf("%v = ?", field), fieldValue).First()
+
+    if err != nil {
+        fmt.Printf("Error %v", err)
+        return true
+    }
+
+    println(",skgfsfbkefblu")
+
+    return false
 }

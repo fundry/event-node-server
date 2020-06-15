@@ -6,6 +6,7 @@ import (
     "github.com/99designs/gqlgen/graphql/playground"
     "github.com/gin-contrib/cors"
     "github.com/gin-gonic/gin"
+    uuid "github.com/satori/go.uuid"
     "net/http"
     "time"
 
@@ -87,7 +88,7 @@ func main() {
         InternalMiddleware.JWT(InternalMiddleware.User{Database}),
         graphqlHandler(),
     )
-
+    fmt.Printf("uuid %v" , uuid.NewV4())
     r.GET("/", playgroundHandler())
     r.Run(":4040")
     fmt.Println("Playground running at http://localhost:4040")

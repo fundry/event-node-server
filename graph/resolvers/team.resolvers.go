@@ -31,6 +31,15 @@ func (r *teamResolver) CreatedBy(ctx context.Context, obj *model.Team) ([]*model
 	return createdBy, nil
 }
 
+func (r *teamResolver) Tasks(ctx context.Context, obj *model.Team) ([]*model.Tasks, error) {
+	var tasks []*model.Tasks
+	err := r.DB.Model(&tasks).Where("team_id = ?", obj.ID).Order("id").Select()
+	if err != nil {
+		return nil, err
+	}
+	return tasks, nil
+}
+
 // Team returns generated.TeamResolver implementation.
 func (r *Resolver) Team() generated.TeamResolver { return &teamResolver{r} }
 
