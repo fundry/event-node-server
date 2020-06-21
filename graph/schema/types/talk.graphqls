@@ -2,7 +2,7 @@ type Talk {
     id : Int!
     title: String!
     talkCoverUri: String
-    duration : Int!
+    duration : String!
     summary: String!
     description: String!
     Archived: Boolean!
@@ -21,16 +21,16 @@ input CreateTalk {
     summary: String!
     description: String!
     Archived: Boolean!
-    duration : Int!
+    duration : String!
     tags: [String]
 }
 
 input UpdateTalk {
     title: String!
     talkCoverUri: String
-    summary: String!
-    description: String!
-    Archived: Boolean!
-    duration : Int!
+    summary: String
+    description: String
+    Archived: Boolean
+    duration : String
     tags: [String]
 }

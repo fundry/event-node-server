@@ -61,6 +61,19 @@ func (r *queryResolver) MeetupGroups(ctx context.Context, limit *int) ([]*model.
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *queryResolver) GetMeetupGroup(ctx context.Context, id int) (*model.MeetupGroups, error) {
+	Meetup := model.MeetupGroups{ID: id}
+	// if err := r.DB.Model(&event).Column("user").Relation("CreatedBy").Select(); err != nil {
+	// 	return  nil, err
+	// }
+
+	if err := r.DB.Select(&Meetup); err != nil {
+		return nil, err
+	}
+
+	return &Meetup, nil
+}
+
 func (r *queryResolver) GetEventTalks(ctx context.Context, areApproved bool, limit *int, eventID *int) ([]*model.EventTalk, error) {
 	var talks []*model.EventTalk
 
@@ -72,10 +85,6 @@ func (r *queryResolver) GetEventTalks(ctx context.Context, areApproved bool, lim
 	if err := r.DB.Model(&talks).Where("is_accepted = ?", areApproved).Limit(*limit).Select(); err != nil {
 		return nil, err
 	}
-	// if err != nil {
-	//     fmt.Println(err)
-	//     return nil, err
-	// }
 
 	return talks, nil
 }

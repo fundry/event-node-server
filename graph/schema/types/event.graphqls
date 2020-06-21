@@ -15,20 +15,22 @@ type Event {
     eventType: String!
     meetupGroups : [MeetupGroups]
     meetupGroup_id : Int
-    EventDate: [String]!
+    EventDate: [String]
     createdAt: Time!
     dateCreated: String!
     updatedAt: Time!
     author_id : Int!
-    createdBy: [User]  # just for testing . This shouldnt be an array
+    createdBy: [User]  # just for testing . This shouldnt be  a slice
     attendees: [Attendee]
     tracks: [Tracks]
     track_id: Int
+    speakerConduct: String
     actions: [String!]
     cart_items_category : [Category]
     teams: [Team!]
     volunteer_id: Int
     volunteer: [Volunteer!]
+    isVirtual : Boolean!
     totalAttendees: Int!
     confirmedEmail: Boolean!
     isAcceptingVolunteers: Boolean!
@@ -47,9 +49,11 @@ input CreateEvent {
     Email: String!
     eventType: String!
     venue: String!
+    speakerConduct: String
     volunteer_id: Int
     actions: [String!]
     CreatedBy: CreateUser
+    isVirtual : Boolean!
     isArchived: Boolean!
     isLocked: Boolean!
     isAcceptingVolunteers: Boolean!
@@ -66,15 +70,14 @@ input UpdateEvent {
     eventType: String
     totalAttendees: Int
     Email: String
+    speakerConduct: String
     website: String
     track_id: Int
-    updatedAt: Time
     venue: String
-    EventDate: [String]!
+    EventDate: [String]
     volunteer_id: Int
     actions: [String!]
-    volunteering: [CreateVolunteer!]
-    attendees: [CreateUser]
+    isVirtual : Boolean
     ConfirmedEmail : Boolean,
     isArchived: Boolean
     isLocked: Boolean
@@ -98,7 +101,9 @@ type EventTalk {
 
 type MeetupGroups {
     id : ID!
+    img_uri : String
     name : String!
+    summary : String!
     event: [Event]
     event_id  : Int!
     lead : [User]

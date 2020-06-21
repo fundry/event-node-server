@@ -109,7 +109,14 @@ func (r *eventTalkResolver) Draft(ctx context.Context, obj *model.EventTalk) ([]
 }
 
 func (r *meetupGroupsResolver) Event(ctx context.Context, obj *model.MeetupGroups) ([]*model.Event, error) {
-	panic(fmt.Errorf("not implemented"))
+	var Event []*model.Event
+	err := r.DB.Model(&Event).Where("id = ?", obj.EventID).Order("id").Select()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return Event, nil
 }
 
 func (r *meetupGroupsResolver) Lead(ctx context.Context, obj *model.MeetupGroups) ([]*model.User, error) {

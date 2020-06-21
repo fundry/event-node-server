@@ -2,7 +2,7 @@ type Mutation {
     loginUser(input: LoginInput!): AuthResponse!
 
     createEvent(input: CreateEvent!, UserID: Int!): Event!
-    updateEvent(id: ID, input: UpdateEvent!): Event!
+    updateEvent(id: ID!, input: UpdateEvent!): Event!
     attendEvent(EventID: ID!, UserID : ID!): Attendee!
     updateEventAttendee(EventID: ID!, UserID : ID!): Attendee!
     deleteEvent(id: ID!) : Boolean!

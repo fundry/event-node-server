@@ -122,9 +122,11 @@ type ComplexityRoot struct {
 		IsAcceptingVolunteers func(childComplexity int) int
 		IsArchived            func(childComplexity int) int
 		IsLocked              func(childComplexity int) int
+		IsVirtual             func(childComplexity int) int
 		MeetupGroupID         func(childComplexity int) int
 		MeetupGroups          func(childComplexity int) int
 		Name                  func(childComplexity int) int
+		SpeakerConduct        func(childComplexity int) int
 		Summary               func(childComplexity int) int
 		Talk                  func(childComplexity int) int
 		Teams                 func(childComplexity int) int
@@ -170,12 +172,14 @@ type ComplexityRoot struct {
 		Event     func(childComplexity int) int
 		EventID   func(childComplexity int) int
 		ID        func(childComplexity int) int
+		ImgURI    func(childComplexity int) int
 		Lead      func(childComplexity int) int
 		LeadID    func(childComplexity int) int
 		Location  func(childComplexity int) int
 		Members   func(childComplexity int) int
 		MembersID func(childComplexity int) int
 		Name      func(childComplexity int) int
+		Summary   func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -210,7 +214,7 @@ type ComplexityRoot struct {
 		PurchaseItem             func(childComplexity int, input model.MakePurchases, itemID int, userID int, eventID int) int
 		SubmitEventTalk          func(childComplexity int, talkID int, eventID int, input *model.SubmitEventTalk) int
 		UpdateCartItem           func(childComplexity int, input model.UpdateCartItem) int
-		UpdateEvent              func(childComplexity int, id *int, input model.UpdateEvent) int
+		UpdateEvent              func(childComplexity int, id int, input model.UpdateEvent) int
 		UpdateEventAttendee      func(childComplexity int, eventID int, userID int) int
 		UpdatePreference         func(childComplexity int, id *int, input model.UpdatePreference) int
 		UpdateSponsor            func(childComplexity int, id *int, input model.UpdateSponsor) int
@@ -250,38 +254,39 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		AllCartItems  func(childComplexity int, limit *int) int
-		AllPurchases  func(childComplexity int, limit *int) int
-		Attendees     func(childComplexity int, limit *int, eventID *int) int
-		CartItems     func(childComplexity int, categoryID int, limit *int) int
-		Category      func(childComplexity int, id int, limit *int) int
-		Event         func(childComplexity int, id *int, name string) int
-		EventFile     func(childComplexity int, id *int, name string) int
-		EventFiles    func(childComplexity int) int
-		EventTalk     func(childComplexity int, limit *int, talkID int) int
-		Events        func(childComplexity int, limit *int) int
-		GetEventTalks func(childComplexity int, areApproved bool, limit *int, eventID *int) int
-		MeetupGroups  func(childComplexity int, limit *int) int
-		Preference    func(childComplexity int, id *int, name string) int
-		Preferences   func(childComplexity int, limit *int) int
-		Purchases     func(childComplexity int, eventID int, limit *int) int
-		Sponsor       func(childComplexity int, id *int, name *string) int
-		Sponsors      func(childComplexity int, limit *int) int
-		Talk          func(childComplexity int, id int) int
-		Talks         func(childComplexity int, limit *int) int
-		Task          func(childComplexity int, id *int) int
-		TaskComment   func(childComplexity int, taskID int) int
-		Tasks         func(childComplexity int, limit *int) int
-		Team          func(childComplexity int, id *int, name string) int
-		Teams         func(childComplexity int, limit *int) int
-		Track         func(childComplexity int, id int) int
-		Tracks        func(childComplexity int, limit *int) int
-		User          func(childComplexity int, id *int, name string) int
-		UserFile      func(childComplexity int, id *int, name string) int
-		UserFiles     func(childComplexity int) int
-		Users         func(childComplexity int, limit *int) int
-		Volunteer     func(childComplexity int, id int) int
-		Volunteers    func(childComplexity int, limit *int, eventID int) int
+		AllCartItems   func(childComplexity int, limit *int) int
+		AllPurchases   func(childComplexity int, limit *int) int
+		Attendees      func(childComplexity int, limit *int, eventID *int) int
+		CartItems      func(childComplexity int, categoryID int, limit *int) int
+		Category       func(childComplexity int, id int, limit *int) int
+		Event          func(childComplexity int, id *int, name string) int
+		EventFile      func(childComplexity int, id *int, name string) int
+		EventFiles     func(childComplexity int) int
+		EventTalk      func(childComplexity int, limit *int, talkID int) int
+		Events         func(childComplexity int, limit *int) int
+		GetEventTalks  func(childComplexity int, areApproved bool, limit *int, eventID *int) int
+		GetMeetupGroup func(childComplexity int, id int) int
+		MeetupGroups   func(childComplexity int, limit *int) int
+		Preference     func(childComplexity int, id *int, name string) int
+		Preferences    func(childComplexity int, limit *int) int
+		Purchases      func(childComplexity int, eventID int, limit *int) int
+		Sponsor        func(childComplexity int, id *int, name *string) int
+		Sponsors       func(childComplexity int, limit *int) int
+		Talk           func(childComplexity int, id int) int
+		Talks          func(childComplexity int, limit *int) int
+		Task           func(childComplexity int, id *int) int
+		TaskComment    func(childComplexity int, taskID int) int
+		Tasks          func(childComplexity int, limit *int) int
+		Team           func(childComplexity int, id *int, name string) int
+		Teams          func(childComplexity int, limit *int) int
+		Track          func(childComplexity int, id int) int
+		Tracks         func(childComplexity int, limit *int) int
+		User           func(childComplexity int, id *int, name string) int
+		UserFile       func(childComplexity int, id *int, name string) int
+		UserFiles      func(childComplexity int) int
+		Users          func(childComplexity int, limit *int) int
+		Volunteer      func(childComplexity int, id int) int
+		Volunteers     func(childComplexity int, limit *int, eventID int) int
 	}
 
 	Sponsor struct {
@@ -458,7 +463,7 @@ type MeetupGroupsResolver interface {
 type MutationResolver interface {
 	LoginUser(ctx context.Context, input model.LoginInput) (*model.AuthResponse, error)
 	CreateEvent(ctx context.Context, input model.CreateEvent, userID int) (*model.Event, error)
-	UpdateEvent(ctx context.Context, id *int, input model.UpdateEvent) (*model.Event, error)
+	UpdateEvent(ctx context.Context, id int, input model.UpdateEvent) (*model.Event, error)
 	AttendEvent(ctx context.Context, eventID int, userID int) (*model.Attendee, error)
 	UpdateEventAttendee(ctx context.Context, eventID int, userID int) (*model.Attendee, error)
 	DeleteEvent(ctx context.Context, id int) (bool, error)
@@ -516,6 +521,7 @@ type QueryResolver interface {
 	Attendees(ctx context.Context, limit *int, eventID *int) ([]*model.Attendee, error)
 	EventTalk(ctx context.Context, limit *int, talkID int) ([]*model.Talk, error)
 	MeetupGroups(ctx context.Context, limit *int) ([]*model.MeetupGroups, error)
+	GetMeetupGroup(ctx context.Context, id int) (*model.MeetupGroups, error)
 	GetEventTalks(ctx context.Context, areApproved bool, limit *int, eventID *int) ([]*model.EventTalk, error)
 	User(ctx context.Context, id *int, name string) (*model.User, error)
 	Users(ctx context.Context, limit *int) ([]*model.User, error)
@@ -925,6 +931,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Event.IsLocked(childComplexity), true
 
+	case "Event.isVirtual":
+		if e.complexity.Event.IsVirtual == nil {
+			break
+		}
+
+		return e.complexity.Event.IsVirtual(childComplexity), true
+
 	case "Event.meetupGroup_id":
 		if e.complexity.Event.MeetupGroupID == nil {
 			break
@@ -945,6 +958,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Event.Name(childComplexity), true
+
+	case "Event.speakerConduct":
+		if e.complexity.Event.SpeakerConduct == nil {
+			break
+		}
+
+		return e.complexity.Event.SpeakerConduct(childComplexity), true
 
 	case "Event.summary":
 		if e.complexity.Event.Summary == nil {
@@ -1198,6 +1218,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MeetupGroups.ID(childComplexity), true
 
+	case "MeetupGroups.img_uri":
+		if e.complexity.MeetupGroups.ImgURI == nil {
+			break
+		}
+
+		return e.complexity.MeetupGroups.ImgURI(childComplexity), true
+
 	case "MeetupGroups.lead":
 		if e.complexity.MeetupGroups.Lead == nil {
 			break
@@ -1239,6 +1266,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MeetupGroups.Name(childComplexity), true
+
+	case "MeetupGroups.summary":
+		if e.complexity.MeetupGroups.Summary == nil {
+			break
+		}
+
+		return e.complexity.MeetupGroups.Summary(childComplexity), true
 
 	case "Mutation.attendEvent":
 		if e.complexity.Mutation.AttendEvent == nil {
@@ -1622,7 +1656,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateEvent(childComplexity, args["id"].(*int), args["input"].(model.UpdateEvent)), true
+		return e.complexity.Mutation.UpdateEvent(childComplexity, args["id"].(int), args["input"].(model.UpdateEvent)), true
 
 	case "Mutation.updateEventAttendee":
 		if e.complexity.Mutation.UpdateEventAttendee == nil {
@@ -2030,6 +2064,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetEventTalks(childComplexity, args["areApproved"].(bool), args["Limit"].(*int), args["eventId"].(*int)), true
+
+	case "Query.getMeetupGroup":
+		if e.complexity.Query.GetMeetupGroup == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getMeetupGroup_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetMeetupGroup(childComplexity, args["id"].(int)), true
 
 	case "Query.MeetupGroups":
 		if e.complexity.Query.MeetupGroups == nil {
@@ -3092,7 +3138,7 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
     loginUser(input: LoginInput!): AuthResponse!
 
     createEvent(input: CreateEvent!, UserID: Int!): Event!
-    updateEvent(id: ID, input: UpdateEvent!): Event!
+    updateEvent(id: ID!, input: UpdateEvent!): Event!
     attendEvent(EventID: ID!, UserID : ID!): Attendee!
     updateEventAttendee(EventID: ID!, UserID : ID!): Attendee!
     deleteEvent(id: ID!) : Boolean!
@@ -3158,6 +3204,7 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
     attendees(Limit: Int EventID: Int): [Attendee!]!
     eventTalk(Limit: Int TalkId: Int!): [Talk]
     MeetupGroups(Limit: Int) : [MeetupGroups]
+    getMeetupGroup(id: Int!) : MeetupGroups!
     getEventTalks(areApproved: Boolean! Limit : Int eventId: Int): [EventTalk!]!  # Todo Try return EVENTTALK here instead
 
     user(id: Int, name: String!) : User!
@@ -3267,20 +3314,22 @@ type Event {
     eventType: String!
     meetupGroups : [MeetupGroups]
     meetupGroup_id : Int
-    EventDate: [String]!
+    EventDate: [String]
     createdAt: Time!
     dateCreated: String!
     updatedAt: Time!
     author_id : Int!
-    createdBy: [User]  # just for testing . This shouldnt be an array
+    createdBy: [User]  # just for testing . This shouldnt be  a slice
     attendees: [Attendee]
     tracks: [Tracks]
     track_id: Int
+    speakerConduct: String
     actions: [String!]
     cart_items_category : [Category]
     teams: [Team!]
     volunteer_id: Int
     volunteer: [Volunteer!]
+    isVirtual : Boolean!
     totalAttendees: Int!
     confirmedEmail: Boolean!
     isAcceptingVolunteers: Boolean!
@@ -3299,9 +3348,11 @@ input CreateEvent {
     Email: String!
     eventType: String!
     venue: String!
+    speakerConduct: String
     volunteer_id: Int
     actions: [String!]
     CreatedBy: CreateUser
+    isVirtual : Boolean!
     isArchived: Boolean!
     isLocked: Boolean!
     isAcceptingVolunteers: Boolean!
@@ -3318,15 +3369,14 @@ input UpdateEvent {
     eventType: String
     totalAttendees: Int
     Email: String
+    speakerConduct: String
     website: String
     track_id: Int
-    updatedAt: Time
     venue: String
-    EventDate: [String]!
+    EventDate: [String]
     volunteer_id: Int
     actions: [String!]
-    volunteering: [CreateVolunteer!]
-    attendees: [CreateUser]
+    isVirtual : Boolean
     ConfirmedEmail : Boolean,
     isArchived: Boolean
     isLocked: Boolean
@@ -3350,7 +3400,9 @@ type EventTalk {
 
 type MeetupGroups {
     id : ID!
+    img_uri : String
     name : String!
+    summary : String!
     event: [Event]
     event_id  : Int!
     lead : [User]
@@ -3525,7 +3577,7 @@ input UpdateSponsor {
     id : Int!
     title: String!
     talkCoverUri: String
-    duration : Int!
+    duration : String!
     summary: String!
     description: String!
     Archived: Boolean!
@@ -3544,17 +3596,17 @@ input CreateTalk {
     summary: String!
     description: String!
     Archived: Boolean!
-    duration : Int!
+    duration : String!
     tags: [String]
 }
 
 input UpdateTalk {
     title: String!
     talkCoverUri: String
-    summary: String!
-    description: String!
-    Archived: Boolean!
-    duration : Int!
+    summary: String
+    description: String
+    Archived: Boolean
+    duration : String
     tags: [String]
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/types/tasks.graphqls", Input: `type Tasks {
@@ -4383,9 +4435,9 @@ func (ec *executionContext) field_Mutation_updateEventAttendee_args(ctx context.
 func (ec *executionContext) field_Mutation_updateEvent_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *int
+	var arg0 int
 	if tmp, ok := rawArgs["id"]; ok {
-		arg0, err = ec.unmarshalOID2ᚖint(ctx, tmp)
+		arg0, err = ec.unmarshalNID2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4909,6 +4961,20 @@ func (ec *executionContext) field_Query_getEventTalks_args(ctx context.Context, 
 		}
 	}
 	args["eventId"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getMeetupGroup_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -6604,14 +6670,11 @@ func (ec *executionContext) _Event_EventDate(ctx context.Context, field graphql.
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.([]*string)
 	fc.Result = res
-	return ec.marshalNString2ᚕᚖstring(ctx, field.Selections, res)
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Event_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
@@ -6874,6 +6937,37 @@ func (ec *executionContext) _Event_track_id(ctx context.Context, field graphql.C
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Event_speakerConduct(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SpeakerConduct, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Event_actions(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -7027,6 +7121,40 @@ func (ec *executionContext) _Event_volunteer(ctx context.Context, field graphql.
 	res := resTmp.([]*model.Volunteer)
 	fc.Result = res
 	return ec.marshalOVolunteer2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐVolunteerᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Event_isVirtual(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsVirtual, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Event_totalAttendees(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
@@ -7923,6 +8051,37 @@ func (ec *executionContext) _MeetupGroups_id(ctx context.Context, field graphql.
 	return ec.marshalNID2int(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _MeetupGroups_img_uri(ctx context.Context, field graphql.CollectedField, obj *model.MeetupGroups) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "MeetupGroups",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ImgURI, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _MeetupGroups_name(ctx context.Context, field graphql.CollectedField, obj *model.MeetupGroups) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -7941,6 +8100,40 @@ func (ec *executionContext) _MeetupGroups_name(ctx context.Context, field graphq
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _MeetupGroups_summary(ctx context.Context, field graphql.CollectedField, obj *model.MeetupGroups) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "MeetupGroups",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Summary, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -8357,7 +8550,7 @@ func (ec *executionContext) _Mutation_updateEvent(ctx context.Context, field gra
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateEvent(rctx, args["id"].(*int), args["input"].(model.UpdateEvent))
+		return ec.resolvers.Mutation().UpdateEvent(rctx, args["id"].(int), args["input"].(model.UpdateEvent))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -10853,6 +11046,47 @@ func (ec *executionContext) _Query_MeetupGroups(ctx context.Context, field graph
 	return ec.marshalOMeetupGroups2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐMeetupGroups(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_getMeetupGroup(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getMeetupGroup_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetMeetupGroup(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.MeetupGroups)
+	fc.Result = res
+	return ec.marshalNMeetupGroups2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐMeetupGroups(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_getEventTalks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -12392,9 +12626,9 @@ func (ec *executionContext) _Talk_duration(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Talk_summary(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
@@ -16544,6 +16778,12 @@ func (ec *executionContext) unmarshalInputCreateEvent(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
+		case "speakerConduct":
+			var err error
+			it.SpeakerConduct, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "volunteer_id":
 			var err error
 			it.VolunteerID, err = ec.unmarshalOInt2ᚖint(ctx, v)
@@ -16559,6 +16799,12 @@ func (ec *executionContext) unmarshalInputCreateEvent(ctx context.Context, obj i
 		case "CreatedBy":
 			var err error
 			it.CreatedBy, err = ec.unmarshalOCreateUser2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "isVirtual":
+			var err error
+			it.IsVirtual, err = ec.unmarshalNBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16732,7 +16978,7 @@ func (ec *executionContext) unmarshalInputCreateTalk(ctx context.Context, obj in
 			}
 		case "duration":
 			var err error
-			it.Duration, err = ec.unmarshalNInt2int(ctx, v)
+			it.Duration, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -17240,6 +17486,12 @@ func (ec *executionContext) unmarshalInputUpdateEvent(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
+		case "speakerConduct":
+			var err error
+			it.SpeakerConduct, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "website":
 			var err error
 			it.Website, err = ec.unmarshalOString2ᚖstring(ctx, v)
@@ -17252,12 +17504,6 @@ func (ec *executionContext) unmarshalInputUpdateEvent(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
-		case "updatedAt":
-			var err error
-			it.UpdatedAt, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "venue":
 			var err error
 			it.Venue, err = ec.unmarshalOString2ᚖstring(ctx, v)
@@ -17266,7 +17512,7 @@ func (ec *executionContext) unmarshalInputUpdateEvent(ctx context.Context, obj i
 			}
 		case "EventDate":
 			var err error
-			it.EventDate, err = ec.unmarshalNString2ᚕᚖstring(ctx, v)
+			it.EventDate, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -17282,15 +17528,9 @@ func (ec *executionContext) unmarshalInputUpdateEvent(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
-		case "volunteering":
+		case "isVirtual":
 			var err error
-			it.Volunteering, err = ec.unmarshalOCreateVolunteer2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateVolunteerᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "attendees":
-			var err error
-			it.Attendees, err = ec.unmarshalOCreateUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateUser(ctx, v)
+			it.IsVirtual, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -17452,25 +17692,25 @@ func (ec *executionContext) unmarshalInputUpdateTalk(ctx context.Context, obj in
 			}
 		case "summary":
 			var err error
-			it.Summary, err = ec.unmarshalNString2string(ctx, v)
+			it.Summary, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "description":
 			var err error
-			it.Description, err = ec.unmarshalNString2string(ctx, v)
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "Archived":
 			var err error
-			it.Archived, err = ec.unmarshalNBoolean2bool(ctx, v)
+			it.Archived, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "duration":
 			var err error
-			it.Duration, err = ec.unmarshalNInt2int(ctx, v)
+			it.Duration, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -18090,9 +18330,6 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 			out.Values[i] = ec._Event_meetupGroup_id(ctx, field, obj)
 		case "EventDate":
 			out.Values[i] = ec._Event_EventDate(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "createdAt":
 			out.Values[i] = ec._Event_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -18148,6 +18385,8 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 			})
 		case "track_id":
 			out.Values[i] = ec._Event_track_id(ctx, field, obj)
+		case "speakerConduct":
+			out.Values[i] = ec._Event_speakerConduct(ctx, field, obj)
 		case "actions":
 			out.Values[i] = ec._Event_actions(ctx, field, obj)
 		case "cart_items_category":
@@ -18185,6 +18424,11 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 				res = ec._Event_volunteer(ctx, field, obj)
 				return res
 			})
+		case "isVirtual":
+			out.Values[i] = ec._Event_isVirtual(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "totalAttendees":
 			out.Values[i] = ec._Event_totalAttendees(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -18398,8 +18642,15 @@ func (ec *executionContext) _MeetupGroups(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "img_uri":
+			out.Values[i] = ec._MeetupGroups_img_uri(ctx, field, obj)
 		case "name":
 			out.Values[i] = ec._MeetupGroups_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "summary":
+			out.Values[i] = ec._MeetupGroups_summary(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
@@ -18931,6 +19182,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_MeetupGroups(ctx, field)
+				return res
+			})
+		case "getMeetupGroup":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getMeetupGroup(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "getEventTalks":
@@ -20791,6 +21056,20 @@ func (ec *executionContext) unmarshalNLoginInput2githubᚗcomᚋvickywaneᚋeven
 
 func (ec *executionContext) unmarshalNMakePurchases2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐMakePurchases(ctx context.Context, v interface{}) (model.MakePurchases, error) {
 	return ec.unmarshalInputMakePurchases(ctx, v)
+}
+
+func (ec *executionContext) marshalNMeetupGroups2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐMeetupGroups(ctx context.Context, sel ast.SelectionSet, v model.MeetupGroups) graphql.Marshaler {
+	return ec._MeetupGroups(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMeetupGroups2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐMeetupGroups(ctx context.Context, sel ast.SelectionSet, v *model.MeetupGroups) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._MeetupGroups(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNPreference2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐPreference(ctx context.Context, sel ast.SelectionSet, v model.Preference) graphql.Marshaler {

@@ -13,6 +13,14 @@ type Resolver struct {
 
 // my custom func
 
+func (r *mutationResolver) CheckEventTalkFieldExists(field string , fieldValue int) bool {
+    talkField := model.EventTalk{}
+    if err := r.DB.Model(&talkField).Where(fmt.Sprintf("%v = ?", field), fieldValue).First(); err != nil {
+        return true
+    }
+    return false
+}
+
 func (r *mutationResolver) CheckEventFieldExists(field, fieldValue string) bool {
     eventField := model.Event{}
     if err := r.DB.Model(&eventField).Where(fmt.Sprintf("%v = ?", field), fieldValue).First(); err != nil {
