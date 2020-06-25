@@ -21,6 +21,10 @@ var (
 	ParseToken           = errors.New("Error occurred while parsing token")
 )
 
+func InsertError(error error) error  {
+	return errors.Errorf("Error inserting data : %v " , error )
+}
+
 func FieldTaken(field string) error {
 	 return errors.Errorf("%v field value already stored" , field )
 }

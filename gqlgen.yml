@@ -63,6 +63,8 @@ models:
         resolver: true
       meetupGroups:
         resolver:  true
+      sponsors:
+        resolver: true
 
   MeetupGroups :
     fields :

@@ -94,6 +94,16 @@ func (r *eventResolver) Volunteer(ctx context.Context, obj *model.Event) ([]*mod
 	return volunteer, nil
 }
 
+func (r *eventResolver) Sponsors(ctx context.Context, obj *model.Event) ([]*model.Sponsor, error) {
+	var sponsors []*model.Sponsor
+
+	if err := r.DB.Model(&sponsors).Where("event_id = ?", obj.ID).Order("id").Select(); err != nil {
+		return nil, err
+	}
+
+	return sponsors, nil
+}
+
 func (r *eventTalkResolver) Event(ctx context.Context, obj *model.EventTalk) ([]*model.Event, error) {
 	panic(fmt.Errorf("not implemented"))
 }

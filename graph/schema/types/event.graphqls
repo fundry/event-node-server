@@ -30,10 +30,13 @@ type Event {
     teams: [Team!]
     volunteer_id: Int
     volunteer: [Volunteer!]
+    sponsors : [Sponsor!]
+    sponsor_id : Int
     isVirtual : Boolean!
     totalAttendees: Int!
     confirmedEmail: Boolean!
     isAcceptingVolunteers: Boolean!
+    isAcceptingAttendees: Boolean!
     isAcceptingTalks : Boolean!
     isArchived: Boolean!
     isLocked: Boolean!
@@ -51,6 +54,7 @@ input CreateEvent {
     venue: String!
     speakerConduct: String
     volunteer_id: Int
+    sponsor_id : Int
     actions: [String!]
     CreatedBy: CreateUser
     isVirtual : Boolean!
@@ -76,7 +80,9 @@ input UpdateEvent {
     venue: String
     EventDate: [String]
     volunteer_id: Int
+    sponsor_id : Int
     actions: [String!]
+    isAcceptingAttendees: Boolean
     isVirtual : Boolean
     ConfirmedEmail : Boolean,
     isArchived: Boolean

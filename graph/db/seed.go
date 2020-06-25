@@ -55,7 +55,6 @@ func SeedDatabase(db *pg.DB) {
 		ID:             rand.Int(),
 		Name:           "John&sons.co",
 		Type:           "Platinum",
-		Amount:         1000,
 		Event:          nil,
 		IsOrganization: false,
 	}

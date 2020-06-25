@@ -75,6 +75,7 @@ type CreateEvent struct {
 	Venue                 string      `json:"venue"`
 	SpeakerConduct        *string     `json:"speakerConduct"`
 	VolunteerID           *int        `json:"volunteer_id"`
+	SponsorID             *int        `json:"sponsor_id"`
 	Actions               []string    `json:"actions"`
 	CreatedBy             *CreateUser `json:"CreatedBy"`
 	IsVirtual             bool        `json:"isVirtual"`
@@ -97,11 +98,10 @@ type CreatePreference struct {
 }
 
 type CreateSponsor struct {
-	Name           string       `json:"name"`
-	Type           *string      `json:"type"`
-	Amount         *int         `json:"amount"`
-	Event          *CreateEvent `json:"event"`
-	IsOrganization *bool        `json:"isOrganization"`
+	Name           string  `json:"name"`
+	Type           string  `json:"type"`
+	ImageURL       *string `json:"image_url"`
+	IsOrganization bool    `json:"isOrganization"`
 }
 
 type CreateTalk struct {
@@ -198,10 +198,13 @@ type Event struct {
 	Teams                 []*Team         `json:"teams"`
 	VolunteerID           *int            `json:"volunteer_id"`
 	Volunteer             []*Volunteer    `json:"volunteer"`
+	Sponsors              []*Sponsor      `json:"sponsors"`
+	SponsorID             *int            `json:"sponsor_id"`
 	IsVirtual             bool            `json:"isVirtual"`
 	TotalAttendees        int             `json:"totalAttendees"`
 	ConfirmedEmail        bool            `json:"confirmedEmail"`
 	IsAcceptingVolunteers bool            `json:"isAcceptingVolunteers"`
+	IsAcceptingAttendees  bool            `json:"isAcceptingAttendees"`
 	IsAcceptingTalks      bool            `json:"isAcceptingTalks"`
 	IsArchived            bool            `json:"isArchived"`
 	IsLocked              bool            `json:"isLocked"`
@@ -286,12 +289,13 @@ type Purchases struct {
 }
 
 type Sponsor struct {
-	ID             int    `json:"id"`
-	Name           string `json:"name"`
-	Type           string `json:"type"`
-	Amount         int    `json:"amount"`
-	Event          *Event `json:"event"`
-	IsOrganization bool   `json:"isOrganization"`
+	ID             int     `json:"id"`
+	Name           string  `json:"name"`
+	ImageURL       *string `json:"image_url"`
+	Type           string  `json:"type"`
+	Event          *Event  `json:"event"`
+	EventID        int     `json:"event_id"`
+	IsOrganization bool    `json:"isOrganization"`
 }
 
 type SubmitEventTalk struct {
@@ -399,7 +403,9 @@ type UpdateEvent struct {
 	Venue                 *string   `json:"venue"`
 	EventDate             []*string `json:"EventDate"`
 	VolunteerID           *int      `json:"volunteer_id"`
+	SponsorID             *int      `json:"sponsor_id"`
 	Actions               []string  `json:"actions"`
+	IsAcceptingAttendees  *bool     `json:"isAcceptingAttendees"`
 	IsVirtual             *bool     `json:"isVirtual"`
 	ConfirmedEmail        *bool     `json:"ConfirmedEmail"`
 	IsArchived            *bool     `json:"isArchived"`
@@ -416,11 +422,10 @@ type UpdatePreference struct {
 }
 
 type UpdateSponsor struct {
-	Name           string       `json:"name"`
-	Type           *string      `json:"type"`
-	Amount         *string      `json:"amount"`
-	Event          *CreateEvent `json:"event"`
-	IsOrganization *bool        `json:"isOrganization"`
+	Name           string  `json:"name"`
+	ImageURL       *string `json:"image_url"`
+	Type           string  `json:"type"`
+	IsOrganization bool    `json:"isOrganization"`
 }
 
 type UpdateSubmittedTalk struct {

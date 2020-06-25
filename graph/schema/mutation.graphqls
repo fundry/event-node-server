@@ -10,6 +10,10 @@ type Mutation {
     updateSubmittedTalk( talkId: Int!, reviewerId: Int ,input: UpdateSubmittedTalk! ) : EventTalk
     createMeetupGroup(eventId : Int!, leadId: Int! ,input: CreateMeetupGroup): MeetupGroups
 
+    createSponsor(input: CreateSponsor! eventID : Int! ): Sponsor!
+    updateSponsor(id: ID, input: UpdateSponsor!):Sponsor!
+    deleteSponsor(id: ID!) : Boolean!
+
     createUser(input: CreateUser!): AuthResponse
     updateUser(id: ID, input: UpdateUser! ): User!
     deleteUser(id: ID!) : Boolean!
@@ -22,9 +26,7 @@ type Mutation {
     updateTeam(id: ID, input: UpdateTeam!): Team!
     deleteTeam(id: ID!) : Boolean!
 
-    createSponsor(input: CreateSponsor!): Sponsor!
-    updateSponsor(id: ID, input: UpdateSponsor!):Sponsor!
-    deleteSponsor(id: ID!) : Boolean!
+
 
     createTask(input: CreateTasks! , teamId:  Int! , userId :Int!) : Tasks!
     updateTask(id: ID! , input: UpdateTask!) : Tasks!
