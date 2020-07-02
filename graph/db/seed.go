@@ -63,7 +63,7 @@ func SeedDatabase(db *pg.DB) {
 		ID:          rand.Int(),
 		Name:        "Sketch and Create Event Media Assets",
 		Category:        "Design",
-		IsCompleted: false,
+		Status: "COMPLETEDt",
 		Assignees:   nil,
 	}
 

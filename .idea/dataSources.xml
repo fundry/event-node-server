@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="Postgres-databases" uuid="b9448c10-9f56-4a05-b8ad-0ec5f4a1526a">
+    <data-source source="LOCAL" name="local-oasis-database" uuid="b9448c10-9f56-4a05-b8ad-0ec5f4a1526a">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://localhost:5432/oasis-database</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="oasis" uuid="7aa6bdb6-2bc3-4a99-9b1f-6cf0afa69ec5">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://ec2-35-172-73-125.compute-1.amazonaws.com:5432/d92nrrs8iih2fh</jdbc-url>
     </data-source>
   </component>
 </project>

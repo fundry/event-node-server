@@ -5,6 +5,7 @@ type Sponsor {
     type: String!
     event: Event
     event_id: Int!
+    sponsorshipStatus : String!
     isOrganization : Boolean!
 }
 
@@ -19,5 +20,6 @@ input UpdateSponsor {
     name : String!
     image_url : String
     type: String!
+    sponsorhipStatus : String!
     isOrganization : Boolean!
 }

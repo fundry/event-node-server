@@ -11,6 +11,15 @@ import (
 	"github.com/vickywane/event-server/graph/model"
 )
 
+func (r *eventResolver) Tracks(ctx context.Context, obj *model.Event) ([]*model.Tracks, error) {
+	var tracks []*model.Tracks
+
+	if err := r.DB.Model(&tracks).Where("event_id = ?", obj.ID).Order("id").Select(); err != nil {
+		return nil, err
+	}
+	return tracks, nil
+}
+
 func (r *eventResolver) Talk(ctx context.Context, obj *model.Event) ([]*model.EventTalk, error) {
 	var eventTalk []*model.EventTalk
 	err := r.DB.Model(&eventTalk).Where("event_id = ?", obj.ID).Order("id").Select()
@@ -55,13 +64,14 @@ func (r *eventResolver) Attendees(ctx context.Context, obj *model.Event) ([]*mod
 	return attendees, nil
 }
 
-func (r *eventResolver) Tracks(ctx context.Context, obj *model.Event) ([]*model.Tracks, error) {
-	var tracks []*model.Tracks
+func (r *eventResolver) Teams(ctx context.Context, obj *model.Event) ([]*model.Team, error) {
+	var teams []*model.Team
 
-	if err := r.DB.Model(&tracks).Where("event_id = ?", obj.ID).Order("id").Select(); err != nil {
+	if err := r.DB.Model(&teams).Where("event_id = ?", obj.ID).Order("id").Select(); err != nil {
 		return nil, err
 	}
-	return tracks, nil
+
+	return teams, nil
 }
 
 func (r *eventResolver) CartItemsCategory(ctx context.Context, obj *model.Event) ([]*model.Category, error) {
@@ -72,16 +82,6 @@ func (r *eventResolver) CartItemsCategory(ctx context.Context, obj *model.Event)
 	}
 
 	return categories, nil
-}
-
-func (r *eventResolver) Teams(ctx context.Context, obj *model.Event) ([]*model.Team, error) {
-	var teams []*model.Team
-
-	if err := r.DB.Model(&teams).Where("event_id = ?", obj.ID).Order("id").Select(); err != nil {
-		return nil, err
-	}
-
-	return teams, nil
 }
 
 func (r *eventResolver) Volunteer(ctx context.Context, obj *model.Event) ([]*model.Volunteer, error) {

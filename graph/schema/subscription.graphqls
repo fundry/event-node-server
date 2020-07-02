@@ -1,3 +1,5 @@
 type Subscription {
     volunteerCreated(role : String): Volunteer
+    newTeam : Team
 }
+

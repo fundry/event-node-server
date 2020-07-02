@@ -1,0 +1,133 @@
+// package main
+//
+// import (
+//     "errors"
+//     "fmt"
+//     "github.com/99designs/gqlgen/graphql/handler"
+//     "github.com/99designs/gqlgen/graphql/handler/extension"
+//     "github.com/99designs/gqlgen/graphql/handler/transport"
+//     "github.com/99designs/gqlgen/graphql/playground"
+//     "github.com/gin-contrib/cors"
+//     "github.com/gin-gonic/gin"
+//     "net/http"
+//     "time"
+//
+//     socket "github.com/gorilla/websocket"
+//
+//     "github.com/vickywane/event-server/graph/db"
+//     "github.com/vickywane/event-server/graph/generated"
+//     InternalMiddleware "github.com/vickywane/event-server/graph/middlewares"
+//     "github.com/vickywane/event-server/graph/model"
+//     Resolver "github.com/vickywane/event-server/graph/resolvers"
+// )
+//
+// var Database = db.Connect()
+//
+// func graphqlHandler() gin.HandlerFunc {
+//     // Todo: Push logs into a log file
+//     Database.AddQueryHook(db.Logs{})
+//
+//     schema := generated.NewExecutableSchema(generated.Config{
+//         Resolvers: &Resolver.Resolver{
+//             DB: Database,
+//         } ,
+//         Directives: generated.DirectiveRoot{},
+//         Complexity: generated.ComplexityRoot{},
+//     })
+//
+//     var server = handler.NewDefaultServer(schema)
+//
+//     server.AddTransport(&transport.POST{})
+//     server.AddTransport(&transport.Websocket{
+//         KeepAlivePingInterval: 20 * time.Second,
+//
+//         Upgrader: socket.Upgrader{
+//             CheckOrigin: func(r *http.Request) bool {
+//                 return true
+//             },
+//             HandshakeTimeout: 20 * time.Second,
+//             EnableCompression: true,
+//             ReadBufferSize: 1024 ,
+//             WriteBufferSize: 1024 ,
+//             Error: func(w http.ResponseWriter, r *http.Request, status int, reason error) {
+//                 fmt.Println("an error here")
+//             },
+//         },
+//     })
+//
+//     server.Use(extension.Introspection{})
+//     socket.ErrBadHandshake = errors.New("bad handshake")
+//
+//     InternalMiddleware.DataLoaderMiddleware(Database, server)
+//
+//     return func(c *gin.Context) {
+//         if up := socket.IsWebSocketUpgrade(c.Request); up {
+//             fmt.Println("A WS connection has been established!")
+//         }
+//         server.ServeHTTP(c.Writer, c.Request)
+//     }
+// }
+//
+// // Playground handler
+// func playgroundHandler() gin.HandlerFunc {
+//     h := playground.Handler("GraphQL", "/query")
+//
+//     return func(c *gin.Context) {
+//         h.ServeHTTP(c.Writer, c.Request)
+//     }
+// }
+//
+// func main() {
+//     r := gin.Default()
+//
+//     r.Use(
+//         cors.New(cors.Config{ // Todo : cors err
+//             // AllowOrigins: []string{"http://localhost:3000/", "http://localhost:4040",
+//             //     "http://localhost:8080"},
+//             AllowMethods:    []string{"GET", "PUT", "POST", "DELETE"},
+//             AllowHeaders:    []string{"content-type"},
+//             AllowAllOrigins: true,
+//         }),
+//         gin.Recovery(),
+//         InternalMiddleware.GinContextToContextMiddleware(),
+//
+//         // this is restricting other services from accessing my endpoint
+//         //  InternalMiddleware.PlaygroundAuth(),
+//     )
+//
+//     // this endpoint is for beta testers. It accepts name && email address
+//     r.GET("/beta/:name/:email", func(c *gin.Context) {
+//         name, email := c.Param("name"), c.Param("email")
+//         c.String(http.StatusOK, "Thank you.", name, email)
+//
+//         if sendEmail, _ := Resolver.SendEmail(email, name, "beta-users"); !sendEmail {
+//             fmt.Errorf("error registering beta tester: %v", sendEmail)
+//         }
+//
+//         user := model.BetaTester{
+//             ID:          time.Now().Nanosecond(),
+//             Name:        name,
+//             Email:       email,
+//             DateApplied: time.Now().Format("01-02-2006"),
+//         }
+//
+//         if err := Database.Insert(&user); err != nil {
+//             c.String(http.StatusInternalServerError, "An error occurred")
+//         }
+//     })
+//
+//     // WEBSOCKET WORKS WITH GET VERB && !POST
+//     r.POST("/query",
+//         InternalMiddleware.JWT(InternalMiddleware.User{DB: Database}),
+//         graphqlHandler(),
+//     )
+//
+//     r.GET("/ws",
+//         InternalMiddleware.JWT(InternalMiddleware.User{DB: Database}),
+//         graphqlHandler(),
+//     )
+//
+//     r.Handle( "GET" , "/", playgroundHandler())
+//     r.Run(":4040")
+//     fmt.Println("Playground running at http://localhost:4040")
+// }

@@ -64,25 +64,25 @@ type CreateCategory struct {
 }
 
 type CreateEvent struct {
-	Name                  string      `json:"name"`
-	Summary               string      `json:"summary"`
-	Alias                 string      `json:"alias"`
-	EventDate             []*string   `json:"EventDate"`
-	Description           string      `json:"description"`
-	Website               string      `json:"website"`
-	Email                 string      `json:"Email"`
-	EventType             string      `json:"eventType"`
-	Venue                 string      `json:"venue"`
-	SpeakerConduct        *string     `json:"speakerConduct"`
-	VolunteerID           *int        `json:"volunteer_id"`
-	SponsorID             *int        `json:"sponsor_id"`
-	Actions               []string    `json:"actions"`
-	CreatedBy             *CreateUser `json:"CreatedBy"`
-	IsVirtual             bool        `json:"isVirtual"`
-	IsArchived            bool        `json:"isArchived"`
-	IsLocked              bool        `json:"isLocked"`
-	IsAcceptingVolunteers bool        `json:"isAcceptingVolunteers"`
-	IsAcceptingTalks      bool        `json:"isAcceptingTalks"`
+	Name                  string    `json:"name"`
+	Summary               string    `json:"summary"`
+	Alias                 string    `json:"alias"`
+	Description           string    `json:"description"`
+	Website               string    `json:"website"`
+	Email                 string    `json:"Email"`
+	EventType             string    `json:"eventType"`
+	Venue                 string    `json:"venue"`
+	SpeakerConduct        *string   `json:"speakerConduct"`
+	VolunteerID           *int      `json:"volunteer_id"`
+	SponsorID             *int      `json:"sponsor_id"`
+	EventDate             []*string `json:"EventDate"`
+	Actions               []string  `json:"actions"`
+	MediaLinks            []string  `json:"mediaLinks"`
+	IsVirtual             bool      `json:"isVirtual"`
+	IsArchived            bool      `json:"isArchived"`
+	IsLocked              bool      `json:"isLocked"`
+	IsAcceptingVolunteers bool      `json:"isAcceptingVolunteers"`
+	IsAcceptingTalks      bool      `json:"isAcceptingTalks"`
 }
 
 type CreateMeetupGroup struct {
@@ -117,16 +117,16 @@ type CreateTalk struct {
 type CreateTaskComment struct {
 	Content   string `json:"content"`
 	WrittenAt string `json:"writtenAt"`
+	UserID    int    `json:"user_id"`
 }
 
 type CreateTasks struct {
-	Name        string        `json:"name"`
-	Category    string        `json:"category"`
-	IsCompleted bool          `json:"isCompleted"`
-	Event       *CreateEvent  `json:"event"`
-	Assignees   []*CreateUser `json:"assignees"`
-	CreatedBy   *CreateUser   `json:"createdBy"`
-	TeamID      int           `json:"team_id"`
+	Name      string        `json:"name"`
+	Category  string        `json:"category"`
+	Status    string        `json:"status"`
+	Priority  string        `json:"priority"`
+	Assignees []*CreateUser `json:"assignees"`
+	TeamID    int           `json:"team_id"`
 }
 
 type CreateTeam struct {
@@ -176,32 +176,33 @@ type Event struct {
 	Alias                 string          `json:"alias"`
 	Email                 string          `json:"Email"`
 	Website               string          `json:"website"`
-	Talk                  []*EventTalk    `json:"talk"`
 	BucketLink            string          `json:"bucketLink"`
 	BucketName            string          `json:"bucketName"`
 	Venue                 string          `json:"venue"`
 	EventType             string          `json:"eventType"`
-	MeetupGroups          []*MeetupGroups `json:"meetupGroups"`
 	MeetupGroupID         *int            `json:"meetupGroup_id"`
-	EventDate             []*string       `json:"EventDate"`
 	CreatedAt             time.Time       `json:"createdAt"`
 	DateCreated           string          `json:"dateCreated"`
 	UpdatedAt             time.Time       `json:"updatedAt"`
 	AuthorID              int             `json:"author_id"`
+	TrackID               *int            `json:"track_id"`
+	VolunteerID           *int            `json:"volunteer_id"`
+	SponsorID             *int            `json:"sponsor_id"`
+	TotalAttendees        int             `json:"totalAttendees"`
+	MediaLinks            []string        `json:"mediaLinks"`
+	Tracks                []*Tracks       `json:"tracks"`
+	Talk                  []*EventTalk    `json:"talk"`
+	MeetupGroups          []*MeetupGroups `json:"meetupGroups"`
+	EventDate             []*string       `json:"EventDate"`
 	CreatedBy             []*User         `json:"createdBy"`
 	Attendees             []*Attendee     `json:"attendees"`
-	Tracks                []*Tracks       `json:"tracks"`
-	TrackID               *int            `json:"track_id"`
 	SpeakerConduct        *string         `json:"speakerConduct"`
 	Actions               []string        `json:"actions"`
-	CartItemsCategory     []*Category     `json:"cart_items_category"`
 	Teams                 []*Team         `json:"teams"`
-	VolunteerID           *int            `json:"volunteer_id"`
+	CartItemsCategory     []*Category     `json:"cart_items_category"`
 	Volunteer             []*Volunteer    `json:"volunteer"`
 	Sponsors              []*Sponsor      `json:"sponsors"`
-	SponsorID             *int            `json:"sponsor_id"`
 	IsVirtual             bool            `json:"isVirtual"`
-	TotalAttendees        int             `json:"totalAttendees"`
 	ConfirmedEmail        bool            `json:"confirmedEmail"`
 	IsAcceptingVolunteers bool            `json:"isAcceptingVolunteers"`
 	IsAcceptingAttendees  bool            `json:"isAcceptingAttendees"`
@@ -232,6 +233,7 @@ type EventTalk struct {
 	EventID       int      `json:"event_id"`
 	Comment       *string  `json:"comment"`
 	Reviewer      []*User  `json:"reviewer"`
+	Track         *string  `json:"track"`
 	DraftID       int      `json:"draftId"`
 	Draft         []*Talk  `json:"draft"`
 }
@@ -289,13 +291,14 @@ type Purchases struct {
 }
 
 type Sponsor struct {
-	ID             int     `json:"id"`
-	Name           string  `json:"name"`
-	ImageURL       *string `json:"image_url"`
-	Type           string  `json:"type"`
-	Event          *Event  `json:"event"`
-	EventID        int     `json:"event_id"`
-	IsOrganization bool    `json:"isOrganization"`
+	ID                int     `json:"id"`
+	Name              string  `json:"name"`
+	ImageURL          *string `json:"image_url"`
+	Type              string  `json:"type"`
+	Event             *Event  `json:"event"`
+	EventID           int     `json:"event_id"`
+	SponsorshipStatus string  `json:"sponsorshipStatus"`
+	IsOrganization    bool    `json:"isOrganization"`
 }
 
 type SubmitEventTalk struct {
@@ -330,19 +333,20 @@ type TaskComments struct {
 }
 
 type Tasks struct {
-	ID          int             `json:"id"`
-	Name        string          `json:"name"`
-	Category    string          `json:"category"`
-	IsCompleted bool            `json:"isCompleted"`
-	Assignees   []*User         `json:"assignees"`
-	CreatedBy   []*User         `json:"createdBy"`
-	Event       []*Event        `json:"event"`
-	CreatedAt   string          `json:"createdAt"`
-	Comments    []*TaskComments `json:"comments"`
-	CommentID   *int            `json:"comment_id"`
-	UpdatedAt   time.Time       `json:"updatedAt"`
-	AuthorID    int             `json:"author_id"`
-	TeamID      int             `json:"team_id"`
+	ID        int             `json:"id"`
+	Name      string          `json:"name"`
+	Category  string          `json:"category"`
+	Status    string          `json:"status"`
+	Priority  string          `json:"priority"`
+	Assignees []*User         `json:"assignees"`
+	CreatedBy []*User         `json:"createdBy"`
+	Event     []*Event        `json:"event"`
+	CreatedAt string          `json:"createdAt"`
+	Comments  []*TaskComments `json:"comments"`
+	CommentID *int            `json:"comment_id"`
+	UpdatedAt time.Time       `json:"updatedAt"`
+	AuthorID  int             `json:"author_id"`
+	TeamID    int             `json:"team_id"`
 }
 
 type Team struct {
@@ -389,10 +393,8 @@ type UpdateCartItem struct {
 
 type UpdateEvent struct {
 	Name                  *string   `json:"name"`
-	Type                  *string   `json:"type"`
 	Summary               *string   `json:"summary"`
 	Alias                 *string   `json:"alias"`
-	BucketLink            *string   `json:"bucketLink"`
 	Description           *string   `json:"description"`
 	EventType             *string   `json:"eventType"`
 	TotalAttendees        *int      `json:"totalAttendees"`
@@ -404,6 +406,7 @@ type UpdateEvent struct {
 	EventDate             []*string `json:"EventDate"`
 	VolunteerID           *int      `json:"volunteer_id"`
 	SponsorID             *int      `json:"sponsor_id"`
+	MediaLinks            []string  `json:"mediaLinks"`
 	Actions               []string  `json:"actions"`
 	IsAcceptingAttendees  *bool     `json:"isAcceptingAttendees"`
 	IsVirtual             *bool     `json:"isVirtual"`
@@ -422,14 +425,16 @@ type UpdatePreference struct {
 }
 
 type UpdateSponsor struct {
-	Name           string  `json:"name"`
-	ImageURL       *string `json:"image_url"`
-	Type           string  `json:"type"`
-	IsOrganization bool    `json:"isOrganization"`
+	Name             string  `json:"name"`
+	ImageURL         *string `json:"image_url"`
+	Type             string  `json:"type"`
+	SponsorhipStatus string  `json:"sponsorhipStatus"`
+	IsOrganization   bool    `json:"isOrganization"`
 }
 
 type UpdateSubmittedTalk struct {
 	IsAccepted bool    `json:"isAccepted"`
+	Track      *string `json:"track"`
 	Comment    *string `json:"comment"`
 }
 
@@ -444,10 +449,10 @@ type UpdateTalk struct {
 }
 
 type UpdateTask struct {
-	Name        string        `json:"name"`
-	Category    string        `json:"category"`
-	IsCompleted bool          `json:"isCompleted"`
-	Assignees   []*CreateUser `json:"assignees"`
+	Name     string `json:"name"`
+	Category string `json:"category"`
+	Status   string `json:"status"`
+	Priority string `json:"priority"`
 }
 
 type UpdateTeam struct {

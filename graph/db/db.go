@@ -39,12 +39,23 @@ func Connect() *pg.DB {
     Envs, err := godotenv.Read(".env")
 
     db := pg.Connect(&pg.Options{
-        User:            Envs["POSTGRES_USER"],
         Password:        Envs["POSTGRES_DB_PASSWORD"],
+        User:            Envs["POSTGRES_USER"],
         Addr:            Envs["POSTGRES_DB_ADDRESS"],
         Database:        Envs["POSTGRES_DB"],
         ApplicationName: Envs["APPLICATION_NAME"],
+        MaxRetries: 10,
+        TLSConfig: nil,
     })
+
+    // ========> USING CONN STR
+    // opt, err := pg.ParseURL("postgres://user:pass@localhost:5432/db_name")
+    // if err != nil {
+    //     panic(err)
+    // }
+    //
+    // db := pg.Connect(opt)
+
 
     if db != nil {
         fmt.Println(db)

@@ -1,95 +1,83 @@
 package main
 
 import (
-    "fmt"
     "github.com/99designs/gqlgen/graphql/handler"
+    "github.com/99designs/gqlgen/graphql/handler/extension"
+    "github.com/99designs/gqlgen/graphql/handler/transport"
     "github.com/99designs/gqlgen/graphql/playground"
-    "github.com/gin-contrib/cors"
-    "github.com/gin-gonic/gin"
-    uuid "github.com/satori/go.uuid"
+    "github.com/go-chi/chi"
+    "github.com/go-chi/chi/middleware"
+    "github.com/rs/cors"
+    "log"
     "net/http"
+    "os"
     "time"
 
+    socket "github.com/gorilla/websocket"
+
+    // "github.com/vickywane/event-server/graph/dataloaders"
     "github.com/vickywane/event-server/graph/db"
     "github.com/vickywane/event-server/graph/generated"
-    InternalMiddleware "github.com/vickywane/event-server/graph/middlewares"
-    "github.com/vickywane/event-server/graph/model"
-    Resolver "github.com/vickywane/event-server/graph/resolvers"
+    // InternalMiddleWare "github.com/vickywane/event-server/graph/middlewares"
+    "github.com/vickywane/event-server/graph/resolvers"
 )
 
-var Key = "id"
-var Database = db.Connect()
-
-// Todo Decompress this file later!
-func graphqlHandler() gin.HandlerFunc {
-    // Todo: Push logs into a log file
-    Database.AddQueryHook(db.Logs{})
-
-    graphqlHandler := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{
-        Resolvers: &Resolver.Resolver{
-            DB: Database,
-        }}))
-
-    InternalMiddleware.DataLoaderMiddleware(Database, graphqlHandler)
-
-    return func(c *gin.Context) {
-        graphqlHandler.ServeHTTP(c.Writer, c.Request)
-    }
-}
-
-// Playground handler
-func playgroundHandler() gin.HandlerFunc {
-    h := playground.Handler("GraphQL", "/query")
-
-    return func(c *gin.Context) {
-        h.ServeHTTP(c.Writer, c.Request)
-    }
-}
-
 func main() {
+    defaultPort := "8080"
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = defaultPort
+    }
 
-    r := gin.Default()
-    r.Use(
-        cors.New(cors.Config{ // Todo : cors err
-            // AllowOrigins: []string{"http://localhost:3000/", "http://localhost:4040",
-            //     "http://localhost:8080"},
-            AllowMethods:    []string{"GET", "PUT", "POST", "DELETE"},
-            AllowHeaders:    []string{"content-type"},
-            AllowAllOrigins: true,
-        }),
-        gin.Recovery(),
-        InternalMiddleware.GinContextToContextMiddleware(),
-        // this is restricting other services from accessing my endpoint
-        //  InternalMiddleware.PlaygroundAuth(),
+    Database := db.Connect()
+    Database.AddQueryHook(db.Logs{})
+    route := chi.NewRouter()
+
+    route.Use(cors.New(cors.Options{
+        //     AllowedOrigins:   []string{"http://localhost:4040"},
+        //     AllowCredentials: true,
+        //     Debug:            true,
+    }).Handler)
+    route.Use(middleware.Logger,
+        middleware.RequestID,
+        // InternalMiddleWare.AuthMiddleware(),
     )
 
-    // this endpoint is for beta testers. It accepts name && email address
-    r.GET("/beta/:name/:email", func(c *gin.Context) {
-        name, email := c.Param("name"), c.Param("email")
-        c.String(http.StatusOK, "Thank you.", name, email)
+    route.Route("/graphql", func(route chi.Router) {
+        // route.Use(dataloaders.NewMiddleware(Database)...)
 
-        if sendEmail, _ := Resolver.SendEmail(email, name, "beta-users"); !sendEmail {
-            fmt.Errorf("error registering beta tester: %v", sendEmail)
-        }
+        schema := generated.NewExecutableSchema(generated.Config{
+            Resolvers: &resolvers.Resolver{
+                DB: Database,
+            },
+            Directives: generated.DirectiveRoot{},
+            Complexity: generated.ComplexityRoot{},
+        })
 
-        user := model.BetaTester{
-            ID:          time.Now().Nanosecond(),
-            Name:        name,
-            Email:       email,
-            DateApplied: time.Now().Format("01-02-2006"),
-        }
+        var serve = handler.NewDefaultServer(schema)
 
-        if err := Database.Insert(&user); err != nil {
-            c.String(http.StatusInternalServerError, "An error occurred")
-        }
+        serve.AddTransport(&transport.POST{})
+        serve.AddTransport(&transport.Websocket{
+            KeepAlivePingInterval: 20 * time.Second,
+
+            Upgrader: socket.Upgrader{
+                CheckOrigin: func(r *http.Request) bool {
+                    return true
+                },
+                HandshakeTimeout:  20 * time.Second,
+                EnableCompression: true,
+                ReadBufferSize:    1024,
+                WriteBufferSize:   1024,
+            },
+        })
+
+        serve.Use(extension.FixedComplexityLimit(300))
+        route.Handle("/", serve)
     })
 
-    r.POST("/query",
-        InternalMiddleware.JWT(InternalMiddleware.User{Database}),
-        graphqlHandler(),
-    )
-    fmt.Printf("uuid %v" , uuid.NewV4())
-    r.GET("/", playgroundHandler())
-    r.Run(":4040")
-    fmt.Println("Playground running at http://localhost:4040")
+    graphiql := playground.Handler("api-gateway", "/graphql")
+    route.Get("/", graphiql)
+
+    log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
+    log.Fatal(http.ListenAndServe(":"+port, route))
 }

@@ -11,12 +11,14 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.6.2
+	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-pg/migrations/v7 v7.1.9 // indirect
 	github.com/go-pg/pg/v9 v9.1.6
 	github.com/golang/protobuf v1.4.0 // indirect
+	github.com/gorilla/websocket v1.4.2
 	github.com/joho/godotenv v1.3.0
 	github.com/pkg/errors v0.8.1
-	github.com/rs/cors v1.7.0 // indirect
+	github.com/rs/cors v1.7.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/softbrewery/gojoi v0.0.0-20180423202125-34d5e1054ec7
 	github.com/streadway/amqp v1.0.0 // indirect

@@ -92,10 +92,33 @@ func (r *mutationResolver) DeleteCurrentUser(user *model.User) error {
     return nil
 }
 
+func (r *mutationResolver) DeleteCurrentTeam(team *model.Team) error {
+    _, err := r.DB.Model(team).Where("id =?", team.ID).Delete()
+    if err != nil {
+        return nil
+    }
+    return nil
+}
+
+
 func (r *mutationResolver) GetEventById(id int) (*model.Event, error) {
     event := model.Event{}
     err := r.DB.Model(&event).Where("id = ?", id).First()
     return &event, err
+}
+
+func (r *mutationResolver) GetSponsorById(id int) (*model.Sponsor, error) {
+    sponsor := model.Sponsor{}
+    err := r.DB.Model(&sponsor).Where("id = ?", id).First()
+    return &sponsor, err
+}
+
+func (r *mutationResolver) DeleteCurrentSponsor(sponsor *model.Sponsor) error {
+    _, err := r.DB.Model(sponsor).Where("id =?", sponsor.ID).Delete()
+    if err != nil {
+        return nil
+    }
+    return nil
 }
 
 func (r *mutationResolver) UpdateCurrentEvent(event *model.Event) (*model.Event, error) {

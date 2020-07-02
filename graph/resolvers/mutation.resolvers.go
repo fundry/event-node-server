@@ -8,11 +8,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/softbrewery/gojoi/pkg/joi"
+	"google.golang.org/api/googleapi"
+
 	"github.com/vickywane/event-server/graph/generated"
 	"github.com/vickywane/event-server/graph/model"
 	"github.com/vickywane/event-server/graph/validators"
-	"google.golang.org/api/googleapi"
 )
 
 func (r *mutationResolver) LoginUser(ctx context.Context, input model.LoginInput) (*model.AuthResponse, error) {
@@ -74,13 +74,14 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.CreateEv
 		Website:        input.Website,
 		Venue:          input.Venue,
 		EventDate:      input.EventDate,
+		MediaLinks:     input.MediaLinks,
 		AuthorID:       userID,
 		DateCreated:    time.Now().Format("01-02-2006"),
 		TotalAttendees: 0,
-		BucketLink:     "",
 		MeetupGroups: append([]*model.MeetupGroups{}, &model.MeetupGroups{
 			ID: time.Now().Nanosecond(),
 		}),
+		BucketLink:            "",
 		BucketName:            BucketName,
 		IsVirtual:             input.IsVirtual,
 		IsAcceptingAttendees:  false,
@@ -132,6 +133,7 @@ func (r *mutationResolver) UpdateEvent(ctx context.Context, id int, input model.
 	}
 
 	event.UpdatedAt = time.Now()
+	event.MediaLinks = input.MediaLinks
 
 	if valid, err := validators.BoolRequired(*input.IsVirtual, "isVirtual"); valid && err == nil {
 		event.IsVirtual = *input.IsVirtual
@@ -167,17 +169,31 @@ func (r *mutationResolver) UpdateEvent(ctx context.Context, id int, input model.
 		event.Email = *input.Email
 	}
 
-	if valid, err := validators.DataLength(9, *input.SpeakerConduct, "SpeakerConduct"); valid && err == nil {
-		event.SpeakerConduct = input.SpeakerConduct
-	} else {
-		return nil, err
+	if valid, err := validators.DataLength(9, *input.Name, "Email"); valid && err == nil {
+		event.Name = *input.Name
 	}
+
+	fmt.Println("email \n")
+
+	// An event might be updated with having a speakerConduct specified. This makes the field null
+	// Getting null from the api panics && break the backend
+
+	// if valid, err := validators.DataLength(9, *input.SpeakerConduct, "SpeakerConduct"); valid && err == nil {
+	//     event.SpeakerConduct = input.SpeakerConduct
+	// } else {
+	//     return nil, err
+	//     return nil, err
+	// }
+	event.SpeakerConduct = input.SpeakerConduct
+
+	fmt.Println("conduct \n")
 
 	if valid, err := validators.DataLength(9, *input.Description, "Description"); valid && err == nil {
 		event.Description = *input.Description
 	} else {
 		return nil, err
 	}
+	fmt.Println("three \n")
 
 	if valid, err := validators.DataLength(9, *input.Website, "Website"); valid && err == nil {
 		event.Website = *input.Website
@@ -185,11 +201,12 @@ func (r *mutationResolver) UpdateEvent(ctx context.Context, id int, input model.
 		return nil, err
 	}
 
-	if valid, err := validators.DataLength(3, *input.Alias, "Alias"); valid && err == nil {
+	if valid, err := validators.DataLength(2, *input.Alias, "Alias"); valid && err == nil {
 		event.Alias = *input.Alias
 	} else {
 		return nil, err
 	}
+	fmt.Println("five \n")
 
 	if valid, err := validators.DataLength(9, *input.Summary, "Summary"); valid && err == nil {
 		event.Summary = *input.Summary
@@ -202,6 +219,7 @@ func (r *mutationResolver) UpdateEvent(ctx context.Context, id int, input model.
 	} else {
 		return nil, err
 	}
+	fmt.Println("six \n")
 
 	date := time.Now().Format("01-02-2006")
 	action := fmt.Sprintf("This event was updated on %v", date)
@@ -360,12 +378,13 @@ func (r *mutationResolver) CreateSponsor(ctx context.Context, input model.Create
 	}
 
 	sponsor := &model.Sponsor{
-		ID:             time.Now().Nanosecond(),
-		Name:           input.Name,
-		Type:           input.Type,
-		ImageURL:       input.ImageURL,
-		EventID:        eventID,
-		IsOrganization: input.IsOrganization,
+		ID:                time.Now().Nanosecond(),
+		Name:              input.Name,
+		Type:              input.Type,
+		ImageURL:          input.ImageURL,
+		EventID:           eventID,
+		SponsorshipStatus: "Awaiting Confirmation",
+		IsOrganization:    input.IsOrganization,
 	}
 
 	if err := r.DB.Insert(sponsor); err != nil {
@@ -375,11 +394,34 @@ func (r *mutationResolver) CreateSponsor(ctx context.Context, input model.Create
 }
 
 func (r *mutationResolver) UpdateSponsor(ctx context.Context, id *int, input model.UpdateSponsor) (*model.Sponsor, error) {
-	panic(fmt.Errorf("not implemented"))
+	sponsor, err := r.GetSponsorById(*id)
+
+	if err != nil {
+		return nil, validators.NotFound
+	}
+
+	sponsor.Name = input.Name
+	sponsor.SponsorshipStatus = input.SponsorhipStatus
+	sponsor.ImageURL = input.ImageURL
+	sponsor.Type = input.Type
+
+	if err := r.DB.Update(sponsor); err != nil {
+		return nil, validators.ErrorUpdating
+	}
+
+	return sponsor, nil
 }
 
 func (r *mutationResolver) DeleteSponsor(ctx context.Context, id int) (bool, error) {
-	panic(fmt.Errorf("not implemented"))
+	sponsor, err := r.GetSponsorById(id)
+
+	if err != nil && sponsor != nil {
+		return false, validators.NotFound
+	}
+
+	err = r.DeleteCurrentSponsor(sponsor)
+
+	return true, nil
 }
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUser) (*model.AuthResponse, error) {
@@ -482,6 +524,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id *int, input model.
 			user.ImgURI = input.ImgURI
 		}
 	}
+	user.UpdatedAt = time.Now().UTC()
 
 	if user, err = r.UpdateCurrentUser(user); err != nil {
 		return nil, validators.ErrorUpdating
@@ -525,6 +568,12 @@ func (r *mutationResolver) DeletePreference(ctx context.Context, id int) (bool, 
 	panic(fmt.Errorf("not implemented"))
 }
 
+type TeamStruct struct {
+	team map[interface{}]struct{
+		teamV chan *model.Team
+	}
+}
+
 func (r *mutationResolver) CreateTeam(ctx context.Context, input model.CreateTeam, eventID int) (*model.Team, error) {
 	event, err := r.GetEventById(eventID)
 
@@ -553,6 +602,14 @@ func (r *mutationResolver) CreateTeam(ctx context.Context, input model.CreateTea
 	if err := r.DB.Update(event); err != nil {
 		return nil, validators.ErrorUpdating
 	}
+	//
+	// teamValue := &TeamStruct{
+	// 	team: nil,
+	// }
+	//
+	// for _, team := range teamValue.team {
+	// 	 team.teamV <- &team.teamV {}
+	// }
 
 	return &team, nil
 }
@@ -579,7 +636,24 @@ func (r *mutationResolver) UpdateTeam(ctx context.Context, id *int, input model.
 }
 
 func (r *mutationResolver) DeleteTeam(ctx context.Context, id int) (bool, error) {
-	panic(fmt.Errorf("not implemented"))
+	team , err := r.GetTeamById(id)
+
+	if team != nil && err != nil {
+		return false, validators.ValueNotFound("team data")
+	}
+
+	event, err := r.GetEventById(team.EventID)
+
+	date := time.Now().Format("01-02-2006")
+	action := fmt.Sprintf("%v was deleted on %v", team.Name, date)
+
+	event.Actions = append(event.Actions, action)
+
+	if err = r.DeleteCurrentTeam(team); err != nil {
+		return false , validators.ErrorUpdating
+	}
+
+	return true, nil
 }
 
 func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTasks, teamID int, userID int) (*model.Tasks, error) {
@@ -589,7 +663,7 @@ func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTas
 		Category:  input.Category,
 		CreatedAt: time.Now().Format("01-02-2006"),
 		TeamID:    teamID,
-		// id: userID,
+		Status:    input.Status,
 	}
 
 	if err := r.DB.Insert(&task); err != nil {
@@ -776,8 +850,6 @@ func (r *mutationResolver) DeleteTrack(ctx context.Context, id int) (bool, error
 	err = r.DeleteCurrentTrack(track)
 
 	return true, nil
-
-	panic("likely err here")
 }
 
 func (r *mutationResolver) UploadSingleUserFile(ctx context.Context, req model.UploadFile, bucketName string) (*model.UserFile, error) {
@@ -1022,17 +1094,7 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.Create
 	return &comment, nil
 }
 
-// Mutation returns generated.MutationResolver implementation.
+
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 type mutationResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-var (
-	String = joi.String()
-)

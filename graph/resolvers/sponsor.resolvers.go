@@ -14,7 +14,7 @@ import (
 func (r *sponsorResolver) Event(ctx context.Context, obj *model.Sponsor) (*model.Event, error) {
 	var event *model.Event
 
-	err := r.DB.Model(&event).Where("event_id = ?", obj.ID).Order("id").Select()
+	err := r.DB.Model(event).Where("sponsor_id = ?", obj.ID).Order("id").Select()
 
 	if err != nil {
 		fmt.Println(err)

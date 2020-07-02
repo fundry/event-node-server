@@ -9,7 +9,6 @@ import (
 	"fmt"
 
 	"github.com/vickywane/event-server/graph/generated"
-	InternalMiddleware "github.com/vickywane/event-server/graph/middlewares"
 	"github.com/vickywane/event-server/graph/model"
 	CustomResponse "github.com/vickywane/event-server/graph/validators"
 )
@@ -103,14 +102,14 @@ func (r *queryResolver) User(ctx context.Context, id *int, name string) (*model.
 }
 
 func (r *queryResolver) Users(ctx context.Context, limit *int) ([]*model.User, error) {
-	gc, CtxErr := InternalMiddleware.GinContextFromContext(ctx)
+	// gc, CtxErr := InternalMiddleware.GinContextFromContext(ctx)
 
-	if CtxErr != nil {
-		fmt.Println(gc, "context resolver")
-		fmt.Println(CtxErr, "context resolver")
-	} else {
-		fmt.Println(CtxErr, "context")
-	}
+	// if CtxErr != nil {
+	// 	fmt.Println(gc, "context resolver")
+	// 	fmt.Println(CtxErr, "context resolver")
+	// } else {
+	// 	fmt.Println(CtxErr, "context")
+	// }
 
 	var Users []*model.User
 

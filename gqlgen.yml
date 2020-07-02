@@ -131,6 +131,15 @@ models:
         resolver: true
       event:
         resolver: true
+      comments:
+        resolver : true
+
+  TaskComment:
+    fields:
+      writtenBy :
+        resolver: true
+      task:
+        resolver: true
 
   Volunteer:
     fields:

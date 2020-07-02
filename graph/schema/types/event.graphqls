@@ -1,5 +1,4 @@
 #Todo : Implement default directives for BOOLEAN fields
-
 type Event {
     id : Int!
     name: String!
@@ -8,32 +7,33 @@ type Event {
     alias: String!
     Email: String!
     website: String!
-    talk:[EventTalk!]
     bucketLink : String!
     bucketName: String!
     venue: String!
     eventType: String!
-    meetupGroups : [MeetupGroups]
     meetupGroup_id : Int
-    EventDate: [String]
     createdAt: Time!
     dateCreated: String!
     updatedAt: Time!
     author_id : Int!
+    track_id: Int
+    volunteer_id: Int
+    sponsor_id : Int
+    totalAttendees: Int!
+    mediaLinks : [String!]
+    tracks: [Tracks]
+    talk: [EventTalk!]
+    meetupGroups : [MeetupGroups]
+    EventDate: [String]
     createdBy: [User]  # just for testing . This shouldnt be  a slice
     attendees: [Attendee]
-    tracks: [Tracks]
-    track_id: Int
     speakerConduct: String
     actions: [String!]
-    cart_items_category : [Category]
     teams: [Team!]
-    volunteer_id: Int
+    cart_items_category : [Category]
     volunteer: [Volunteer!]
     sponsors : [Sponsor!]
-    sponsor_id : Int
     isVirtual : Boolean!
-    totalAttendees: Int!
     confirmedEmail: Boolean!
     isAcceptingVolunteers: Boolean!
     isAcceptingAttendees: Boolean!
@@ -46,7 +46,6 @@ input CreateEvent {
     name: String!
     summary: String!
     alias: String!
-    EventDate: [String]!
     description: String!
     website: String!
     Email: String!
@@ -55,8 +54,9 @@ input CreateEvent {
     speakerConduct: String
     volunteer_id: Int
     sponsor_id : Int
+    EventDate: [String]!
     actions: [String!]
-    CreatedBy: CreateUser
+    mediaLinks : [String!]
     isVirtual : Boolean!
     isArchived: Boolean!
     isLocked: Boolean!
@@ -66,10 +66,8 @@ input CreateEvent {
 
 input UpdateEvent {
     name: String
-    type: String
     summary: String
     alias: String
-    bucketLink : String
     description: String
     eventType: String
     totalAttendees: Int
@@ -81,6 +79,7 @@ input UpdateEvent {
     EventDate: [String]
     volunteer_id: Int
     sponsor_id : Int
+    mediaLinks : [String!]
     actions: [String!]
     isAcceptingAttendees: Boolean
     isVirtual : Boolean
@@ -101,6 +100,7 @@ type EventTalk {
     event_id : Int!
     comment : String
     reviewer: [User!]
+    track : String
     draftId : Int!
     draft : [Talk!]
 }
@@ -133,5 +133,6 @@ input SubmitEventTalk {
 
 input UpdateSubmittedTalk {
     isAccepted : Boolean!
+    track : String
     comment : String
 }
