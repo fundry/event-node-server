@@ -24,6 +24,19 @@ type AuthResponse struct {
 	User      *User     `json:"user"`
 }
 
+type BugReport struct {
+	ID          int      `json:"id"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	User        []*User  `json:"user"`
+	UserID      int      `json:"user_id"`
+	Event       []*Event `json:"event"`
+	EventID     int      `json:"event_id"`
+	Status      string   `json:"status"`
+	CreatedAt   string   `json:"createdAt"`
+	UpdatedAt   string   `json:"updatedAt"`
+}
+
 type CartItem struct {
 	ID          int         `json:"id"`
 	Name        string      `json:"name"`
@@ -48,6 +61,14 @@ type Category struct {
 type CreateAttendee struct {
 	User  []*CreateUser  `json:"user"`
 	Event []*CreateEvent `json:"event"`
+}
+
+type CreateBugReport struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	UserName    string `json:"user_name"`
+	UserEmail   string `json:"user_email"`
+	Status      string `json:"status"`
 }
 
 type CreateCartItem struct {
@@ -83,6 +104,14 @@ type CreateEvent struct {
 	IsLocked              bool      `json:"isLocked"`
 	IsAcceptingVolunteers bool      `json:"isAcceptingVolunteers"`
 	IsAcceptingTalks      bool      `json:"isAcceptingTalks"`
+}
+
+type CreateFeatureRequest struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	UserName    string `json:"user_name"`
+	UserEmail   string `json:"user_email"`
+	Status      string `json:"status"`
 }
 
 type CreateMeetupGroup struct {
@@ -238,6 +267,19 @@ type EventTalk struct {
 	Draft         []*Talk  `json:"draft"`
 }
 
+type FeatureRequest struct {
+	ID          int      `json:"id"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	User        []*User  `json:"user"`
+	UserID      int      `json:"user_id"`
+	Event       []*Event `json:"event"`
+	EventID     int      `json:"event_id"`
+	Status      string   `json:"status"`
+	CreatedAt   string   `json:"createdAt"`
+	UpdatedAt   string   `json:"updatedAt"`
+}
+
 type LoginInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -383,6 +425,12 @@ type UpdateAttendee struct {
 	User []*CreateUser `json:"user"`
 }
 
+type UpdateBugReport struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Status      string `json:"status"`
+}
+
 type UpdateCartItem struct {
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
@@ -415,6 +463,12 @@ type UpdateEvent struct {
 	IsLocked              *bool     `json:"isLocked"`
 	IsAcceptingVolunteers *bool     `json:"isAcceptingVolunteers"`
 	IsAcceptingTalks      *bool     `json:"isAcceptingTalks"`
+}
+
+type UpdateFeatureRequest struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Status      string `json:"status"`
 }
 
 type UpdatePreference struct {

@@ -8,11 +8,10 @@ import (
 	"fmt"
 	"time"
 
-	"google.golang.org/api/googleapi"
-
 	"github.com/vickywane/event-server/graph/generated"
 	"github.com/vickywane/event-server/graph/model"
 	"github.com/vickywane/event-server/graph/validators"
+	"google.golang.org/api/googleapi"
 )
 
 func (r *mutationResolver) LoginUser(ctx context.Context, input model.LoginInput) (*model.AuthResponse, error) {
@@ -360,6 +359,7 @@ func (r *mutationResolver) CreateMeetupGroup(ctx context.Context, eventID int, l
 	date := time.Now().Format("01-02-2006")
 	action := fmt.Sprintf("A new Meetup Group was launched on %v", date)
 	event.Actions = append(event.Actions, action)
+
 	if err := r.DB.Update(event); err != nil {
 		return nil, validators.ErrorUpdating
 	}
@@ -373,7 +373,9 @@ func (r *mutationResolver) CreateMeetupGroup(ctx context.Context, eventID int, l
 }
 
 func (r *mutationResolver) CreateSponsor(ctx context.Context, input model.CreateSponsor, eventID int) (*model.Sponsor, error) {
-	if event, err := r.GetEventById(eventID); event != nil && err != nil {
+	event, err := r.GetEventById(eventID)
+
+	if event != nil && err != nil {
 		return nil, validators.NotFound
 	}
 
@@ -390,6 +392,14 @@ func (r *mutationResolver) CreateSponsor(ctx context.Context, input model.Create
 	if err := r.DB.Insert(sponsor); err != nil {
 		return nil, validators.InsertError(err)
 	}
+
+	date := time.Now().Format("01-02-2006")
+	action := fmt.Sprintf("%v began sponsoring this event %v", input.Name, date)
+	event.Actions = append(event.Actions, action)
+	if err := r.DB.Update(event); err != nil {
+		return nil, validators.ErrorUpdating
+	}
+
 	return sponsor, nil
 }
 
@@ -568,17 +578,14 @@ func (r *mutationResolver) DeletePreference(ctx context.Context, id int) (bool, 
 	panic(fmt.Errorf("not implemented"))
 }
 
-type TeamStruct struct {
-	team map[interface{}]struct{
-		teamV chan *model.Team
-	}
-}
-
 func (r *mutationResolver) CreateTeam(ctx context.Context, input model.CreateTeam, eventID int) (*model.Team, error) {
 	event, err := r.GetEventById(eventID)
-
 	if err != nil {
 		return nil, validators.NotFound
+	}
+
+	if !r.CheckEventTeamFieldExists("name", input.Name) {
+		return nil, validators.FieldTaken("team name")
 	}
 
 	team := model.Team{
@@ -596,21 +603,16 @@ func (r *mutationResolver) CreateTeam(ctx context.Context, input model.CreateTea
 
 	date := time.Now().Format("01-02-2006")
 	action := fmt.Sprintf("A new team was created on %v", date)
-
 	event.Actions = append(event.Actions, action)
-
 	if err := r.DB.Update(event); err != nil {
 		return nil, validators.ErrorUpdating
 	}
-	//
-	// teamValue := &TeamStruct{
-	// 	team: nil,
-	// }
-	//
-	// for _, team := range teamValue.team {
-	// 	 team.teamV <- &team.teamV {}
-	// }
 
+	// teamss := []*model.Team{ &team }
+	//
+	// for _, team := range teamss {
+	// 	TeamChan  <- team
+	// }
 	return &team, nil
 }
 
@@ -636,7 +638,7 @@ func (r *mutationResolver) UpdateTeam(ctx context.Context, id *int, input model.
 }
 
 func (r *mutationResolver) DeleteTeam(ctx context.Context, id int) (bool, error) {
-	team , err := r.GetTeamById(id)
+	team, err := r.GetTeamById(id)
 
 	if team != nil && err != nil {
 		return false, validators.ValueNotFound("team data")
@@ -650,13 +652,27 @@ func (r *mutationResolver) DeleteTeam(ctx context.Context, id int) (bool, error)
 	event.Actions = append(event.Actions, action)
 
 	if err = r.DeleteCurrentTeam(team); err != nil {
-		return false , validators.ErrorUpdating
+		return false, validators.ErrorUpdating
 	}
+
+	// teamss := []*model.Team{ team }
+	//
+	// for _, team := range teamss {
+	// 	TeamChan  <- team
+	// }
 
 	return true, nil
 }
 
 func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTasks, teamID int, userID int) (*model.Tasks, error) {
+	if team, err := r.GetTeamById(teamID); team != nil && err != nil {
+		return nil, validators.ValueNotFound("team")
+	}
+
+	if !r.CheckTaskFieldExists("name", input.Name) {
+		return nil, validators.FieldTaken("task name")
+	}
+
 	task := model.Tasks{
 		ID:        time.Now().Nanosecond(),
 		Name:      input.Name,
@@ -1052,6 +1068,12 @@ func (r *mutationResolver) DeleteCategory(ctx context.Context, id int) (bool, er
 }
 
 func (r *mutationResolver) CreateCartItem(ctx context.Context, input model.CreateCartItem, categoryID int) (*model.CartItem, error) {
+	event, err := r.GetEventById(categoryID)
+
+	if event != nil && err != nil {
+		fmt.Println("Event not found")
+	}
+
 	item := model.CartItem{
 		ID:          time.Now().Nanosecond(),
 		Name:        input.Name,
@@ -1065,6 +1087,13 @@ func (r *mutationResolver) CreateCartItem(ctx context.Context, input model.Creat
 
 	if err := r.DB.Insert(&item); err != nil {
 		return nil, err
+	}
+
+	date := time.Now().Format("01-02-2006")
+	action := fmt.Sprintf("%v was added to this event store %v", input.Name, date)
+	event.Actions = append(event.Actions, action)
+	if err := r.DB.Update(event); err != nil {
+		return nil, validators.ErrorUpdating
 	}
 
 	return &item, nil
@@ -1094,7 +1123,17 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.Create
 	return &comment, nil
 }
 
-
+// Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 type mutationResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+type TeamStruct struct {
+	teams []*model.Team
+}

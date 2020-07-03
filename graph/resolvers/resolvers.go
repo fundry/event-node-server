@@ -3,15 +3,39 @@ package resolvers
 import (
     "fmt"
     "github.com/go-pg/pg/v9"
+    "sync"
 
     "github.com/vickywane/event-server/graph/model"
 )
 
 type Resolver struct {
     DB *pg.DB
+
+    // teamChan map[interface{}]chan *model.Team // remove * if it doesn work
+
+    mutex sync.Mutex
 }
 
+// var TeamChan = make(chan *model.Team, 1)
+
+
 // my custom func
+
+func (r *mutationResolver) CheckTaskFieldExists(field string , fieldValue string) bool {
+    taskField := model.Tasks{}
+    if err := r.DB.Model(&taskField).Where(fmt.Sprintf("%v = ?", field), fieldValue).First(); err != nil {
+        return true
+    }
+    return false
+}
+
+func (r *mutationResolver) CheckEventTeamFieldExists(field string , fieldValue string) bool {
+    teamField := model.Team{}
+    if err := r.DB.Model(&teamField).Where(fmt.Sprintf("%v = ?", field), fieldValue).First(); err != nil {
+        return true
+    }
+    return false
+}
 
 func (r *mutationResolver) CheckEventTalkFieldExists(field string , fieldValue int) bool {
     talkField := model.EventTalk{}

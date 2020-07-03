@@ -1,0 +1,27 @@
+type BugReport {
+    id : ID!
+    title : String!
+    description : String!
+    user : [User!]
+    user_id : Int!
+    event: [Event]
+    event_id : Int!
+    status: String!
+    createdAt : String!
+    updatedAt : String!
+}
+
+input CreateBugReport {
+    title : String!
+    description : String!
+    user_name : String!
+    user_email: String!
+    status: String!
+}
+
+input UpdateBugReport {
+    title : String!
+    description : String!
+    status: String!
+}
+

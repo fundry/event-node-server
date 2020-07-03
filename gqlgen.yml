@@ -66,13 +66,26 @@ models:
       sponsors:
         resolver: true
 
-  MeetupGroups :
-    fields :
+  MeetupGroups:
+    fields:
       event:
         resolver: true
       lead:
         resolver: true
-      members :
+      members:
+        resolver: true
+
+  Bug:
+    fields:
+      user:
+        resolver: true
+      event:
+        resolver: true
+  Feature:
+    fields:
+      user:
+        resolver: true
+      event:
         resolver: true
 
   User:
@@ -132,11 +145,11 @@ models:
       event:
         resolver: true
       comments:
-        resolver : true
+        resolver: true
 
   TaskComment:
     fields:
-      writtenBy :
+      writtenBy:
         resolver: true
       task:
         resolver: true

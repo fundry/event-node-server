@@ -58,13 +58,13 @@ func main() {
 
         serve.AddTransport(&transport.POST{})
         serve.AddTransport(&transport.Websocket{
-            KeepAlivePingInterval: 20 * time.Second,
+            KeepAlivePingInterval: 10 * time.Second,
 
             Upgrader: socket.Upgrader{
                 CheckOrigin: func(r *http.Request) bool {
                     return true
                 },
-                HandshakeTimeout:  20 * time.Second,
+                HandshakeTimeout:  10 * time.Second,
                 EnableCompression: true,
                 ReadBufferSize:    1024,
                 WriteBufferSize:   1024,
