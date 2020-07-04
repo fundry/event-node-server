@@ -66,8 +66,6 @@ type CreateAttendee struct {
 type CreateBugReport struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
-	UserName    string `json:"user_name"`
-	UserEmail   string `json:"user_email"`
 	Status      string `json:"status"`
 }
 
@@ -109,8 +107,6 @@ type CreateEvent struct {
 type CreateFeatureRequest struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
-	UserName    string `json:"user_name"`
-	UserEmail   string `json:"user_email"`
 	Status      string `json:"status"`
 }
 
@@ -124,6 +120,12 @@ type CreatePreference struct {
 	Name  string       `json:"name"`
 	Color string       `json:"color"`
 	Event *CreateEvent `json:"Event"`
+}
+
+type CreateReminder struct {
+	Name string `json:"name"`
+	From string `json:"from"`
+	Due  string `json:"due"`
 }
 
 type CreateSponsor struct {
@@ -330,6 +332,16 @@ type Purchases struct {
 	DatePurchased string      `json:"datePurchased"`
 	Quantity      int         `json:"quantity"`
 	Price         *string     `json:"price"`
+}
+
+type Reminder struct {
+	ID        int     `json:"id"`
+	Name      string  `json:"name"`
+	From      string  `json:"from"`
+	Due       string  `json:"due"`
+	User      []*User `json:"user"`
+	UserID    int     `json:"user_id"`
+	CreatedAt string  `json:"createdAt"`
 }
 
 type Sponsor struct {

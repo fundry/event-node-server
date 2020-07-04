@@ -1,0 +1,15 @@
+type  Reminder {
+    id : ID!
+    name : String!
+    from : String!
+    due : String!
+    user: [User!]
+    user_id : Int!
+    createdAt : String!
+}
+
+input  CreateReminder {
+    name : String!
+    from : String!
+    due : String!
+}

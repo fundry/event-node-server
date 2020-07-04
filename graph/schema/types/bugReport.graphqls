@@ -14,9 +14,7 @@ type BugReport {
 input CreateBugReport {
     title : String!
     description : String!
-    user_name : String!
-    user_email: String!
-    status: String!
+     status: String!
 }
 
 input UpdateBugReport {

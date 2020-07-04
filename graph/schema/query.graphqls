@@ -47,4 +47,8 @@ type Query {
 
     taskComment(taskId: Int!) : [TaskComments]
 
+    bugReports(Limit: Int) : BugReport
+    featureRequests(Limit: Int) : BugReport
+
+    reminder(userId: Int!) : Reminder
 }

@@ -46,6 +46,7 @@ type ResolverRoot interface {
 	Mutation() MutationResolver
 	Purchases() PurchasesResolver
 	Query() QueryResolver
+	Reminder() ReminderResolver
 	Sponsor() SponsorResolver
 	Subscription() SubscriptionResolver
 	Talk() TalkResolver
@@ -214,12 +215,15 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		AttendEvent              func(childComplexity int, eventID int, userID int) int
+		CreateBugReport          func(childComplexity int, input *model.CreateBugReport, userID int, eventID int) int
 		CreateCartItem           func(childComplexity int, input model.CreateCartItem, categoryID int) int
 		CreateCategory           func(childComplexity int, input model.CreateCategory, eventID int) int
 		CreateComment            func(childComplexity int, input model.CreateTaskComment, userID int, taskID int) int
 		CreateEvent              func(childComplexity int, input model.CreateEvent, userID int) int
+		CreateFeatureRequest     func(childComplexity int, input *model.CreateFeatureRequest, userID int, eventID int) int
 		CreateMeetupGroup        func(childComplexity int, eventID int, leadID int, input *model.CreateMeetupGroup) int
 		CreatePreference         func(childComplexity int, input model.CreatePreference) int
+		CreateReminder           func(childComplexity int, input *model.CreateReminder, userID int) int
 		CreateSponsor            func(childComplexity int, input model.CreateSponsor, eventID int) int
 		CreateTalk               func(childComplexity int, input model.CreateTalk, userID int) int
 		CreateTask               func(childComplexity int, input model.CreateTasks, teamID int, userID int) int
@@ -227,12 +231,15 @@ type ComplexityRoot struct {
 		CreateTrack              func(childComplexity int, input model.CreateTrack, eventID int) int
 		CreateUser               func(childComplexity int, input model.CreateUser) int
 		CreateVolunteer          func(childComplexity int, input model.CreateVolunteer, userID int, eventID int) int
+		DeleteBugReport          func(childComplexity int, id int) int
 		DeleteCartItem           func(childComplexity int, id int) int
 		DeleteCategory           func(childComplexity int, id int) int
 		DeleteEvent              func(childComplexity int, id int) int
+		DeleteFeatureRequest     func(childComplexity int, id int) int
 		DeleteFile               func(childComplexity int, id int) int
 		DeletePreference         func(childComplexity int, id int) int
 		DeletePurchase           func(childComplexity int, id int) int
+		DeleteReminder           func(childComplexity int, id *int) int
 		DeleteSponsor            func(childComplexity int, id int) int
 		DeleteTalk               func(childComplexity int, id int) int
 		DeleteTask               func(childComplexity int, id int) int
@@ -243,9 +250,11 @@ type ComplexityRoot struct {
 		LoginUser                func(childComplexity int, input model.LoginInput) int
 		PurchaseItem             func(childComplexity int, input model.MakePurchases, itemID int, userID int, eventID int) int
 		SubmitEventTalk          func(childComplexity int, talkID int, eventID int, input *model.SubmitEventTalk) int
+		UpdateBugReport          func(childComplexity int, input *model.UpdateBugReport, userID int, eventID int) int
 		UpdateCartItem           func(childComplexity int, input model.UpdateCartItem) int
 		UpdateEvent              func(childComplexity int, id int, input model.UpdateEvent) int
 		UpdateEventAttendee      func(childComplexity int, eventID int, userID int) int
+		UpdateFeatureRequest     func(childComplexity int, input *model.UpdateFeatureRequest, userID int, eventID int) int
 		UpdatePreference         func(childComplexity int, id *int, input model.UpdatePreference) int
 		UpdateSponsor            func(childComplexity int, id *int, input model.UpdateSponsor) int
 		UpdateSubmittedTalk      func(childComplexity int, talkID int, reviewerID *int, input model.UpdateSubmittedTalk) int
@@ -284,39 +293,52 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		AllCartItems   func(childComplexity int, limit *int) int
-		AllPurchases   func(childComplexity int, limit *int) int
-		Attendees      func(childComplexity int, limit *int, eventID *int) int
-		CartItems      func(childComplexity int, categoryID int, limit *int) int
-		Category       func(childComplexity int, id int, limit *int) int
-		Event          func(childComplexity int, id *int, name string) int
-		EventFile      func(childComplexity int, id *int, name string) int
-		EventFiles     func(childComplexity int) int
-		EventTalk      func(childComplexity int, limit *int, talkID int) int
-		Events         func(childComplexity int, limit *int) int
-		GetEventTalks  func(childComplexity int, areApproved bool, limit *int, eventID *int) int
-		GetMeetupGroup func(childComplexity int, id int) int
-		MeetupGroups   func(childComplexity int, limit *int) int
-		Preference     func(childComplexity int, id *int, name string) int
-		Preferences    func(childComplexity int, limit *int) int
-		Purchases      func(childComplexity int, eventID int, limit *int) int
-		Sponsor        func(childComplexity int, id *int, name *string) int
-		Sponsors       func(childComplexity int, limit *int) int
-		Talk           func(childComplexity int, id int) int
-		Talks          func(childComplexity int, limit *int) int
-		Task           func(childComplexity int, id *int) int
-		TaskComment    func(childComplexity int, taskID int) int
-		Tasks          func(childComplexity int, limit *int) int
-		Team           func(childComplexity int, id *int, name string) int
-		Teams          func(childComplexity int, limit *int) int
-		Track          func(childComplexity int, id int) int
-		Tracks         func(childComplexity int, limit *int) int
-		User           func(childComplexity int, id *int, name string) int
-		UserFile       func(childComplexity int, id *int, name string) int
-		UserFiles      func(childComplexity int) int
-		Users          func(childComplexity int, limit *int) int
-		Volunteer      func(childComplexity int, id int) int
-		Volunteers     func(childComplexity int, limit *int, eventID int) int
+		AllCartItems    func(childComplexity int, limit *int) int
+		AllPurchases    func(childComplexity int, limit *int) int
+		Attendees       func(childComplexity int, limit *int, eventID *int) int
+		BugReports      func(childComplexity int, limit *int) int
+		CartItems       func(childComplexity int, categoryID int, limit *int) int
+		Category        func(childComplexity int, id int, limit *int) int
+		Event           func(childComplexity int, id *int, name string) int
+		EventFile       func(childComplexity int, id *int, name string) int
+		EventFiles      func(childComplexity int) int
+		EventTalk       func(childComplexity int, limit *int, talkID int) int
+		Events          func(childComplexity int, limit *int) int
+		FeatureRequests func(childComplexity int, limit *int) int
+		GetEventTalks   func(childComplexity int, areApproved bool, limit *int, eventID *int) int
+		GetMeetupGroup  func(childComplexity int, id int) int
+		MeetupGroups    func(childComplexity int, limit *int) int
+		Preference      func(childComplexity int, id *int, name string) int
+		Preferences     func(childComplexity int, limit *int) int
+		Purchases       func(childComplexity int, eventID int, limit *int) int
+		Reminder        func(childComplexity int, userID int) int
+		Sponsor         func(childComplexity int, id *int, name *string) int
+		Sponsors        func(childComplexity int, limit *int) int
+		Talk            func(childComplexity int, id int) int
+		Talks           func(childComplexity int, limit *int) int
+		Task            func(childComplexity int, id *int) int
+		TaskComment     func(childComplexity int, taskID int) int
+		Tasks           func(childComplexity int, limit *int) int
+		Team            func(childComplexity int, id *int, name string) int
+		Teams           func(childComplexity int, limit *int) int
+		Track           func(childComplexity int, id int) int
+		Tracks          func(childComplexity int, limit *int) int
+		User            func(childComplexity int, id *int, name string) int
+		UserFile        func(childComplexity int, id *int, name string) int
+		UserFiles       func(childComplexity int) int
+		Users           func(childComplexity int, limit *int) int
+		Volunteer       func(childComplexity int, id int) int
+		Volunteers      func(childComplexity int, limit *int, eventID int) int
+	}
+
+	Reminder struct {
+		CreatedAt func(childComplexity int) int
+		Due       func(childComplexity int) int
+		From      func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Name      func(childComplexity int) int
+		User      func(childComplexity int) int
+		UserID    func(childComplexity int) int
 	}
 
 	Sponsor struct {
@@ -540,6 +562,14 @@ type MutationResolver interface {
 	UpdateCartItem(ctx context.Context, input model.UpdateCartItem) (*model.CartItem, error)
 	DeleteCartItem(ctx context.Context, id int) (bool, error)
 	CreateComment(ctx context.Context, input model.CreateTaskComment, userID int, taskID int) (*model.TaskComments, error)
+	CreateBugReport(ctx context.Context, input *model.CreateBugReport, userID int, eventID int) (*model.BugReport, error)
+	UpdateBugReport(ctx context.Context, input *model.UpdateBugReport, userID int, eventID int) (*model.BugReport, error)
+	DeleteBugReport(ctx context.Context, id int) (bool, error)
+	CreateFeatureRequest(ctx context.Context, input *model.CreateFeatureRequest, userID int, eventID int) (*model.FeatureRequest, error)
+	UpdateFeatureRequest(ctx context.Context, input *model.UpdateFeatureRequest, userID int, eventID int) (*model.FeatureRequest, error)
+	DeleteFeatureRequest(ctx context.Context, id int) (bool, error)
+	CreateReminder(ctx context.Context, input *model.CreateReminder, userID int) (*model.Reminder, error)
+	DeleteReminder(ctx context.Context, id *int) (bool, error)
 }
 type PurchasesResolver interface {
 	Item(ctx context.Context, obj *model.Purchases) ([]*model.CartItem, error)
@@ -582,6 +612,12 @@ type QueryResolver interface {
 	AllPurchases(ctx context.Context, limit *int) ([]*model.Purchases, error)
 	Category(ctx context.Context, id int, limit *int) ([]*model.Category, error)
 	TaskComment(ctx context.Context, taskID int) ([]*model.TaskComments, error)
+	BugReports(ctx context.Context, limit *int) (*model.BugReport, error)
+	FeatureRequests(ctx context.Context, limit *int) (*model.BugReport, error)
+	Reminder(ctx context.Context, userID int) (*model.Reminder, error)
+}
+type ReminderResolver interface {
+	User(ctx context.Context, obj *model.Reminder) ([]*model.User, error)
 }
 type SponsorResolver interface {
 	Event(ctx context.Context, obj *model.Sponsor) (*model.Event, error)
@@ -1495,6 +1531,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.AttendEvent(childComplexity, args["EventID"].(int), args["UserID"].(int)), true
 
+	case "Mutation.createBugReport":
+		if e.complexity.Mutation.CreateBugReport == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createBugReport_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateBugReport(childComplexity, args["input"].(*model.CreateBugReport), args["userId"].(int), args["eventId"].(int)), true
+
 	case "Mutation.createCartItem":
 		if e.complexity.Mutation.CreateCartItem == nil {
 			break
@@ -1543,6 +1591,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateEvent(childComplexity, args["input"].(model.CreateEvent), args["UserID"].(int)), true
 
+	case "Mutation.createFeatureRequest":
+		if e.complexity.Mutation.CreateFeatureRequest == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createFeatureRequest_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateFeatureRequest(childComplexity, args["input"].(*model.CreateFeatureRequest), args["userId"].(int), args["eventId"].(int)), true
+
 	case "Mutation.createMeetupGroup":
 		if e.complexity.Mutation.CreateMeetupGroup == nil {
 			break
@@ -1566,6 +1626,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreatePreference(childComplexity, args["input"].(model.CreatePreference)), true
+
+	case "Mutation.createReminder":
+		if e.complexity.Mutation.CreateReminder == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createReminder_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateReminder(childComplexity, args["input"].(*model.CreateReminder), args["userId"].(int)), true
 
 	case "Mutation.createSponsor":
 		if e.complexity.Mutation.CreateSponsor == nil {
@@ -1651,6 +1723,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateVolunteer(childComplexity, args["input"].(model.CreateVolunteer), args["UserID"].(int), args["EventID"].(int)), true
 
+	case "Mutation.deleteBugReport":
+		if e.complexity.Mutation.DeleteBugReport == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteBugReport_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteBugReport(childComplexity, args["id"].(int)), true
+
 	case "Mutation.deleteCartItem":
 		if e.complexity.Mutation.DeleteCartItem == nil {
 			break
@@ -1687,6 +1771,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeleteEvent(childComplexity, args["id"].(int)), true
 
+	case "Mutation.deleteFeatureRequest":
+		if e.complexity.Mutation.DeleteFeatureRequest == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteFeatureRequest_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteFeatureRequest(childComplexity, args["id"].(int)), true
+
 	case "Mutation.deleteFile":
 		if e.complexity.Mutation.DeleteFile == nil {
 			break
@@ -1722,6 +1818,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeletePurchase(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteReminder":
+		if e.complexity.Mutation.DeleteReminder == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteReminder_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteReminder(childComplexity, args["id"].(*int)), true
 
 	case "Mutation.deleteSponsor":
 		if e.complexity.Mutation.DeleteSponsor == nil {
@@ -1843,6 +1951,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SubmitEventTalk(childComplexity, args["talkId"].(int), args["eventId"].(int), args["input"].(*model.SubmitEventTalk)), true
 
+	case "Mutation.updateBugReport":
+		if e.complexity.Mutation.UpdateBugReport == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateBugReport_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateBugReport(childComplexity, args["input"].(*model.UpdateBugReport), args["userId"].(int), args["eventId"].(int)), true
+
 	case "Mutation.updateCartItem":
 		if e.complexity.Mutation.UpdateCartItem == nil {
 			break
@@ -1878,6 +1998,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateEventAttendee(childComplexity, args["EventID"].(int), args["UserID"].(int)), true
+
+	case "Mutation.updateFeatureRequest":
+		if e.complexity.Mutation.UpdateFeatureRequest == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateFeatureRequest_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateFeatureRequest(childComplexity, args["input"].(*model.UpdateFeatureRequest), args["userId"].(int), args["eventId"].(int)), true
 
 	case "Mutation.updatePreference":
 		if e.complexity.Mutation.UpdatePreference == nil {
@@ -2183,6 +2315,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Attendees(childComplexity, args["Limit"].(*int), args["EventID"].(*int)), true
 
+	case "Query.bugReports":
+		if e.complexity.Query.BugReports == nil {
+			break
+		}
+
+		args, err := ec.field_Query_bugReports_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.BugReports(childComplexity, args["Limit"].(*int)), true
+
 	case "Query.cartItems":
 		if e.complexity.Query.CartItems == nil {
 			break
@@ -2262,6 +2406,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Events(childComplexity, args["Limit"].(*int)), true
 
+	case "Query.featureRequests":
+		if e.complexity.Query.FeatureRequests == nil {
+			break
+		}
+
+		args, err := ec.field_Query_featureRequests_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.FeatureRequests(childComplexity, args["Limit"].(*int)), true
+
 	case "Query.getEventTalks":
 		if e.complexity.Query.GetEventTalks == nil {
 			break
@@ -2333,6 +2489,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Purchases(childComplexity, args["event_id"].(int), args["Limit"].(*int)), true
+
+	case "Query.reminder":
+		if e.complexity.Query.Reminder == nil {
+			break
+		}
+
+		args, err := ec.field_Query_reminder_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Reminder(childComplexity, args["userId"].(int)), true
 
 	case "Query.sponsor":
 		if e.complexity.Query.Sponsor == nil {
@@ -2532,6 +2700,55 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Volunteers(childComplexity, args["Limit"].(*int), args["EventID"].(int)), true
+
+	case "Reminder.createdAt":
+		if e.complexity.Reminder.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Reminder.CreatedAt(childComplexity), true
+
+	case "Reminder.due":
+		if e.complexity.Reminder.Due == nil {
+			break
+		}
+
+		return e.complexity.Reminder.Due(childComplexity), true
+
+	case "Reminder.from":
+		if e.complexity.Reminder.From == nil {
+			break
+		}
+
+		return e.complexity.Reminder.From(childComplexity), true
+
+	case "Reminder.id":
+		if e.complexity.Reminder.ID == nil {
+			break
+		}
+
+		return e.complexity.Reminder.ID(childComplexity), true
+
+	case "Reminder.name":
+		if e.complexity.Reminder.Name == nil {
+			break
+		}
+
+		return e.complexity.Reminder.Name(childComplexity), true
+
+	case "Reminder.user":
+		if e.complexity.Reminder.User == nil {
+			break
+		}
+
+		return e.complexity.Reminder.User(childComplexity), true
+
+	case "Reminder.user_id":
+		if e.complexity.Reminder.UserID == nil {
+			break
+		}
+
+		return e.complexity.Reminder.UserID(childComplexity), true
 
 	case "Sponsor.event":
 		if e.complexity.Sponsor.Event == nil {
@@ -3399,8 +3616,6 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
     updateTeam(id: ID, input: UpdateTeam!): Team!
     deleteTeam(id: ID!) : Boolean!
 
-
-
     createTask(input: CreateTasks! , teamId:  Int! , userId :Int!) : Tasks!
     updateTask(id: ID! , input: UpdateTask!) : Tasks!
     deleteTask(id: ID!) : Boolean!
@@ -3436,6 +3651,17 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
     deleteCartItem(id: Int!): Boolean!
 
     createComment(input : CreateTaskComment!, userId: Int!, taskId: Int!  ): TaskComments
+
+    createBugReport(input: CreateBugReport, userId: Int!, eventId : Int!) : BugReport!
+    updateBugReport(input: UpdateBugReport, userId: Int!, eventId : Int!) : BugReport!
+    deleteBugReport(id : Int!): Boolean!
+
+    createFeatureRequest(input: CreateFeatureRequest, userId: Int!, eventId : Int!) : FeatureRequest!
+    updateFeatureRequest(input: UpdateFeatureRequest, userId: Int!, eventId : Int!) : FeatureRequest!
+    deleteFeatureRequest(id : Int!): Boolean!
+
+    createReminder(input: CreateReminder, userId: Int!) : Reminder!
+    deleteReminder(id: Int) : Boolean!
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/query.graphqls", Input: `type Query {
     event(id: Int name: String!) : Event!
@@ -3486,6 +3712,10 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
 
     taskComment(taskId: Int!) : [TaskComments]
 
+    bugReports(Limit: Int) : BugReport
+    featureRequests(Limit: Int) : BugReport
+
+    reminder(userId: Int!) : Reminder
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/scalar.graphqls", Input: `# My custom defined types https://github.com/99designs/gqlgen/blob/master/docs/content/reference/scalars.md
 
@@ -3555,9 +3785,7 @@ input LoginInput {
 input CreateBugReport {
     title : String!
     description : String!
-    user_name : String!
-    user_email: String!
-    status: String!
+     status: String!
 }
 
 input UpdateBugReport {
@@ -3721,8 +3949,6 @@ input UpdateSubmittedTalk {
 input CreateFeatureRequest {
     title : String!
     description : String!
-    user_name : String!
-    user_email: String!
     status: String!
 }
 
@@ -3787,6 +4013,21 @@ input UpdatePreference {
     color: String!
     Event: CreateEvent!
     updatedAt: Time!
+}`, BuiltIn: false},
+	&ast.Source{Name: "graph/schema/types/reminders.graphqls", Input: `type  Reminder {
+    id : ID!
+    name : String!
+    from : String!
+    due : String!
+    user: [User!]
+    user_id : Int!
+    createdAt : String!
+}
+
+input  CreateReminder {
+    name : String!
+    from : String!
+    due : String!
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/types/shop.graphqls", Input: `type Category {
     id : ID!
@@ -4145,6 +4386,36 @@ func (ec *executionContext) field_Mutation_attendEvent_args(ctx context.Context,
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createBugReport_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.CreateBugReport
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalOCreateBugReport2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateBugReport(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["userId"]; ok {
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userId"] = arg1
+	var arg2 int
+	if tmp, ok := rawArgs["eventId"]; ok {
+		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["eventId"] = arg2
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createCartItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -4241,6 +4512,36 @@ func (ec *executionContext) field_Mutation_createEvent_args(ctx context.Context,
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createFeatureRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.CreateFeatureRequest
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalOCreateFeatureRequest2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateFeatureRequest(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["userId"]; ok {
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userId"] = arg1
+	var arg2 int
+	if tmp, ok := rawArgs["eventId"]; ok {
+		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["eventId"] = arg2
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createMeetupGroup_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -4282,6 +4583,28 @@ func (ec *executionContext) field_Mutation_createPreference_args(ctx context.Con
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createReminder_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.CreateReminder
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalOCreateReminder2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateReminder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["userId"]; ok {
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userId"] = arg1
 	return args, nil
 }
 
@@ -4447,6 +4770,20 @@ func (ec *executionContext) field_Mutation_createVolunteer_args(ctx context.Cont
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_deleteBugReport_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_deleteCartItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -4489,6 +4826,20 @@ func (ec *executionContext) field_Mutation_deleteEvent_args(ctx context.Context,
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_deleteFeatureRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_deleteFile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -4523,6 +4874,20 @@ func (ec *executionContext) field_Mutation_deletePurchase_args(ctx context.Conte
 	var arg0 int
 	if tmp, ok := rawArgs["id"]; ok {
 		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteReminder_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4711,6 +5076,36 @@ func (ec *executionContext) field_Mutation_submitEventTalk_args(ctx context.Cont
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_updateBugReport_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.UpdateBugReport
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalOUpdateBugReport2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateBugReport(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["userId"]; ok {
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userId"] = arg1
+	var arg2 int
+	if tmp, ok := rawArgs["eventId"]; ok {
+		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["eventId"] = arg2
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_updateCartItem_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -4766,6 +5161,36 @@ func (ec *executionContext) field_Mutation_updateEvent_args(ctx context.Context,
 		}
 	}
 	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateFeatureRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.UpdateFeatureRequest
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalOUpdateFeatureRequest2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateFeatureRequest(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["userId"]; ok {
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userId"] = arg1
+	var arg2 int
+	if tmp, ok := rawArgs["eventId"]; ok {
+		arg2, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["eventId"] = arg2
 	return args, nil
 }
 
@@ -5125,6 +5550,20 @@ func (ec *executionContext) field_Query_attendees_args(ctx context.Context, rawA
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_bugReports_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["Limit"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["Limit"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_cartItems_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -5249,6 +5688,20 @@ func (ec *executionContext) field_Query_events_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_featureRequests_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["Limit"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["Limit"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_getEventTalks_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -5348,6 +5801,20 @@ func (ec *executionContext) field_Query_purchases_args(ctx context.Context, rawA
 		}
 	}
 	args["Limit"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_reminder_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["userId"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userId"] = arg0
 	return args, nil
 }
 
@@ -11456,6 +11923,334 @@ func (ec *executionContext) _Mutation_createComment(ctx context.Context, field g
 	return ec.marshalOTaskComments2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTaskComments(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_createBugReport(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createBugReport_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateBugReport(rctx, args["input"].(*model.CreateBugReport), args["userId"].(int), args["eventId"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.BugReport)
+	fc.Result = res
+	return ec.marshalNBugReport2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐBugReport(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateBugReport(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateBugReport_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateBugReport(rctx, args["input"].(*model.UpdateBugReport), args["userId"].(int), args["eventId"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.BugReport)
+	fc.Result = res
+	return ec.marshalNBugReport2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐBugReport(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteBugReport(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteBugReport_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteBugReport(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createFeatureRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createFeatureRequest_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateFeatureRequest(rctx, args["input"].(*model.CreateFeatureRequest), args["userId"].(int), args["eventId"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.FeatureRequest)
+	fc.Result = res
+	return ec.marshalNFeatureRequest2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐFeatureRequest(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateFeatureRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateFeatureRequest_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateFeatureRequest(rctx, args["input"].(*model.UpdateFeatureRequest), args["userId"].(int), args["eventId"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.FeatureRequest)
+	fc.Result = res
+	return ec.marshalNFeatureRequest2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐFeatureRequest(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteFeatureRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteFeatureRequest_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteFeatureRequest(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createReminder(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createReminder_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateReminder(rctx, args["input"].(*model.CreateReminder), args["userId"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Reminder)
+	fc.Result = res
+	return ec.marshalNReminder2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐReminder(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteReminder(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteReminder_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteReminder(rctx, args["id"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Preference_id(ctx context.Context, field graphql.CollectedField, obj *model.Preference) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -13297,6 +14092,120 @@ func (ec *executionContext) _Query_taskComment(ctx context.Context, field graphq
 	return ec.marshalOTaskComments2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTaskComments(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_bugReports(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_bugReports_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().BugReports(rctx, args["Limit"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.BugReport)
+	fc.Result = res
+	return ec.marshalOBugReport2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐBugReport(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_featureRequests(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_featureRequests_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().FeatureRequests(rctx, args["Limit"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.BugReport)
+	fc.Result = res
+	return ec.marshalOBugReport2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐBugReport(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_reminder(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_reminder_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Reminder(rctx, args["userId"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Reminder)
+	fc.Result = res
+	return ec.marshalOReminder2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐReminder(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -13364,6 +14273,241 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	res := resTmp.(*introspection.Schema)
 	fc.Result = res
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Reminder_id(ctx context.Context, field graphql.CollectedField, obj *model.Reminder) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Reminder",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNID2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Reminder_name(ctx context.Context, field graphql.CollectedField, obj *model.Reminder) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Reminder",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Reminder_from(ctx context.Context, field graphql.CollectedField, obj *model.Reminder) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Reminder",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.From, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Reminder_due(ctx context.Context, field graphql.CollectedField, obj *model.Reminder) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Reminder",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Due, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Reminder_user(ctx context.Context, field graphql.CollectedField, obj *model.Reminder) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Reminder",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Reminder().User(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUserᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Reminder_user_id(ctx context.Context, field graphql.CollectedField, obj *model.Reminder) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Reminder",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Reminder_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Reminder) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Reminder",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Sponsor_id(ctx context.Context, field graphql.CollectedField, obj *model.Sponsor) (ret graphql.Marshaler) {
@@ -17927,18 +19071,6 @@ func (ec *executionContext) unmarshalInputCreateBugReport(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
-		case "user_name":
-			var err error
-			it.UserName, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "user_email":
-			var err error
-			it.UserEmail, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "status":
 			var err error
 			it.Status, err = ec.unmarshalNString2string(ctx, v)
@@ -18161,18 +19293,6 @@ func (ec *executionContext) unmarshalInputCreateFeatureRequest(ctx context.Conte
 			if err != nil {
 				return it, err
 			}
-		case "user_name":
-			var err error
-			it.UserName, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "user_email":
-			var err error
-			it.UserEmail, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "status":
 			var err error
 			it.Status, err = ec.unmarshalNString2string(ctx, v)
@@ -18236,6 +19356,36 @@ func (ec *executionContext) unmarshalInputCreatePreference(ctx context.Context, 
 		case "Event":
 			var err error
 			it.Event, err = ec.unmarshalNCreateEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateReminder(ctx context.Context, obj interface{}) (model.CreateReminder, error) {
+	var it model.CreateReminder
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "from":
+			var err error
+			it.From, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "due":
+			var err error
+			it.Due, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -20522,6 +21672,46 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "createComment":
 			out.Values[i] = ec._Mutation_createComment(ctx, field)
+		case "createBugReport":
+			out.Values[i] = ec._Mutation_createBugReport(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateBugReport":
+			out.Values[i] = ec._Mutation_updateBugReport(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteBugReport":
+			out.Values[i] = ec._Mutation_deleteBugReport(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createFeatureRequest":
+			out.Values[i] = ec._Mutation_createFeatureRequest(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateFeatureRequest":
+			out.Values[i] = ec._Mutation_updateFeatureRequest(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteFeatureRequest":
+			out.Values[i] = ec._Mutation_deleteFeatureRequest(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createReminder":
+			out.Values[i] = ec._Mutation_createReminder(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteReminder":
+			out.Values[i] = ec._Mutation_deleteReminder(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -21119,10 +22309,106 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_taskComment(ctx, field)
 				return res
 			})
+		case "bugReports":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_bugReports(ctx, field)
+				return res
+			})
+		case "featureRequests":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_featureRequests(ctx, field)
+				return res
+			})
+		case "reminder":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_reminder(ctx, field)
+				return res
+			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
 			out.Values[i] = ec._Query___schema(ctx, field)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var reminderImplementors = []string{"Reminder"}
+
+func (ec *executionContext) _Reminder(ctx context.Context, sel ast.SelectionSet, obj *model.Reminder) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, reminderImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Reminder")
+		case "id":
+			out.Values[i] = ec._Reminder_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "name":
+			out.Values[i] = ec._Reminder_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "from":
+			out.Values[i] = ec._Reminder_from(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "due":
+			out.Values[i] = ec._Reminder_due(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "user":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Reminder_user(ctx, field, obj)
+				return res
+			})
+		case "user_id":
+			out.Values[i] = ec._Reminder_user_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "createdAt":
+			out.Values[i] = ec._Reminder_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -22293,6 +23579,20 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalNBugReport2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐBugReport(ctx context.Context, sel ast.SelectionSet, v model.BugReport) graphql.Marshaler {
+	return ec._BugReport(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNBugReport2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐBugReport(ctx context.Context, sel ast.SelectionSet, v *model.BugReport) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._BugReport(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNCartItem2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCartItem(ctx context.Context, sel ast.SelectionSet, v model.CartItem) graphql.Marshaler {
 	return ec._CartItem(ctx, sel, &v)
 }
@@ -22603,6 +23903,20 @@ func (ec *executionContext) marshalNEventTalk2ᚖgithubᚗcomᚋvickywaneᚋeven
 	return ec._EventTalk(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNFeatureRequest2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐFeatureRequest(ctx context.Context, sel ast.SelectionSet, v model.FeatureRequest) graphql.Marshaler {
+	return ec._FeatureRequest(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNFeatureRequest2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐFeatureRequest(ctx context.Context, sel ast.SelectionSet, v *model.FeatureRequest) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._FeatureRequest(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNID2int(ctx context.Context, v interface{}) (int, error) {
 	return graphql.UnmarshalIntID(v)
 }
@@ -22716,6 +24030,20 @@ func (ec *executionContext) marshalNPurchases2ᚖgithubᚗcomᚋvickywaneᚋeven
 		return graphql.Null
 	}
 	return ec._Purchases(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNReminder2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐReminder(ctx context.Context, sel ast.SelectionSet, v model.Reminder) graphql.Marshaler {
+	return ec._Reminder(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNReminder2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐReminder(ctx context.Context, sel ast.SelectionSet, v *model.Reminder) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Reminder(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐSponsor(ctx context.Context, sel ast.SelectionSet, v model.Sponsor) graphql.Marshaler {
@@ -23561,6 +24889,17 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return ec.marshalOBoolean2bool(ctx, sel, *v)
 }
 
+func (ec *executionContext) marshalOBugReport2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐBugReport(ctx context.Context, sel ast.SelectionSet, v model.BugReport) graphql.Marshaler {
+	return ec._BugReport(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOBugReport2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐBugReport(ctx context.Context, sel ast.SelectionSet, v *model.BugReport) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._BugReport(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOCartItem2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCartItem(ctx context.Context, sel ast.SelectionSet, v model.CartItem) graphql.Marshaler {
 	return ec._CartItem(ctx, sel, &v)
 }
@@ -23703,6 +25042,18 @@ func (ec *executionContext) marshalOCategory2ᚖgithubᚗcomᚋvickywaneᚋevent
 	return ec._Category(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalOCreateBugReport2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateBugReport(ctx context.Context, v interface{}) (model.CreateBugReport, error) {
+	return ec.unmarshalInputCreateBugReport(ctx, v)
+}
+
+func (ec *executionContext) unmarshalOCreateBugReport2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateBugReport(ctx context.Context, v interface{}) (*model.CreateBugReport, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOCreateBugReport2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateBugReport(ctx, v)
+	return &res, err
+}
+
 func (ec *executionContext) unmarshalOCreateEvent2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateEvent(ctx context.Context, v interface{}) (model.CreateEvent, error) {
 	return ec.unmarshalInputCreateEvent(ctx, v)
 }
@@ -23735,6 +25086,18 @@ func (ec *executionContext) unmarshalOCreateEvent2ᚖgithubᚗcomᚋvickywaneᚋ
 	return &res, err
 }
 
+func (ec *executionContext) unmarshalOCreateFeatureRequest2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateFeatureRequest(ctx context.Context, v interface{}) (model.CreateFeatureRequest, error) {
+	return ec.unmarshalInputCreateFeatureRequest(ctx, v)
+}
+
+func (ec *executionContext) unmarshalOCreateFeatureRequest2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateFeatureRequest(ctx context.Context, v interface{}) (*model.CreateFeatureRequest, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOCreateFeatureRequest2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateFeatureRequest(ctx, v)
+	return &res, err
+}
+
 func (ec *executionContext) unmarshalOCreateMeetupGroup2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateMeetupGroup(ctx context.Context, v interface{}) (model.CreateMeetupGroup, error) {
 	return ec.unmarshalInputCreateMeetupGroup(ctx, v)
 }
@@ -23744,6 +25107,18 @@ func (ec *executionContext) unmarshalOCreateMeetupGroup2ᚖgithubᚗcomᚋvickyw
 		return nil, nil
 	}
 	res, err := ec.unmarshalOCreateMeetupGroup2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateMeetupGroup(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) unmarshalOCreateReminder2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateReminder(ctx context.Context, v interface{}) (model.CreateReminder, error) {
+	return ec.unmarshalInputCreateReminder(ctx, v)
+}
+
+func (ec *executionContext) unmarshalOCreateReminder2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateReminder(ctx context.Context, v interface{}) (*model.CreateReminder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOCreateReminder2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateReminder(ctx, v)
 	return &res, err
 }
 
@@ -24119,6 +25494,17 @@ func (ec *executionContext) marshalOPurchases2ᚖgithubᚗcomᚋvickywaneᚋeven
 		return graphql.Null
 	}
 	return ec._Purchases(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOReminder2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐReminder(ctx context.Context, sel ast.SelectionSet, v model.Reminder) graphql.Marshaler {
+	return ec._Reminder(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOReminder2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐReminder(ctx context.Context, sel ast.SelectionSet, v *model.Reminder) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Reminder(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOSponsor2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐSponsorᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Sponsor) graphql.Marshaler {
@@ -24645,6 +26031,30 @@ func (ec *executionContext) marshalOTracks2ᚖgithubᚗcomᚋvickywaneᚋevent�
 		return graphql.Null
 	}
 	return ec._Tracks(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOUpdateBugReport2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateBugReport(ctx context.Context, v interface{}) (model.UpdateBugReport, error) {
+	return ec.unmarshalInputUpdateBugReport(ctx, v)
+}
+
+func (ec *executionContext) unmarshalOUpdateBugReport2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateBugReport(ctx context.Context, v interface{}) (*model.UpdateBugReport, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOUpdateBugReport2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateBugReport(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) unmarshalOUpdateFeatureRequest2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateFeatureRequest(ctx context.Context, v interface{}) (model.UpdateFeatureRequest, error) {
+	return ec.unmarshalInputUpdateFeatureRequest(ctx, v)
+}
+
+func (ec *executionContext) unmarshalOUpdateFeatureRequest2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateFeatureRequest(ctx context.Context, v interface{}) (*model.UpdateFeatureRequest, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOUpdateFeatureRequest2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateFeatureRequest(ctx, v)
+	return &res, err
 }
 
 func (ec *executionContext) marshalOUser2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {

@@ -22,7 +22,8 @@ func createSchema(db *pg.DB) error {
         (*model.Volunteer)(nil), (*model.BetaTester)(nil), (*model.Attendee)(nil),
         (*model.Category)(nil), (*model.CartItem)(nil), (*model.Purchases)(nil),
         (*model.TaskComments)(nil), (*model.MeetupGroups)(nil), (*model.EventTalk)(nil),
-        (*model.BugReport)(nil), (*model.FeatureRequest)(nil), (*model.Sponsor)(nil),} {
+        (*model.BugReport)(nil), (*model.FeatureRequest)(nil), (*model.Sponsor)(nil),
+        (*model.Reminder)(nil),} {
         if err := db.CreateTable(models, &orm.CreateTableOptions{
             IfNotExists: true, FKConstraints: false, // Todo: turned this off because of VOLUNTEER table. Check out later!!
         }); err != nil {

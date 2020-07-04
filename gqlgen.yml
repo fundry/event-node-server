@@ -88,6 +88,11 @@ models:
       event:
         resolver: true
 
+  Reminder:
+    fields :
+      user:
+        resolver: true
+
   User:
     fields:
       events:

@@ -398,6 +398,18 @@ func (r *queryResolver) TaskComment(ctx context.Context, taskID int) ([]*model.T
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *queryResolver) BugReports(ctx context.Context, limit *int) (*model.BugReport, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) FeatureRequests(ctx context.Context, limit *int) (*model.BugReport, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Reminder(ctx context.Context, userID int) (*model.Reminder, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 

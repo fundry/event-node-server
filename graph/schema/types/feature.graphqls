@@ -14,8 +14,6 @@ type FeatureRequest {
 input CreateFeatureRequest {
     title : String!
     description : String!
-    user_name : String!
-    user_email: String!
     status: String!
 }
 

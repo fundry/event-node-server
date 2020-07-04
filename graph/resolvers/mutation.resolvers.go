@@ -1123,17 +1123,85 @@ func (r *mutationResolver) CreateComment(ctx context.Context, input model.Create
 	return &comment, nil
 }
 
+func (r *mutationResolver) CreateBugReport(ctx context.Context, input *model.CreateBugReport, userID int, eventID int) (*model.BugReport, error) {
+	if user, err := r.GetUserById(userID); user != nil && err != nil {
+		return nil, validators.ValueNotFound("user")
+	}
+
+	if event, err := r.GetEventById(eventID); event != nil && err != nil {
+		return nil, validators.ValueNotFound("user")
+	}
+
+	bugReport := &model.BugReport{
+		ID:          time.Now().Nanosecond(),
+		Title:       input.Title,
+		Description: input.Description,
+		UserID:      userID,
+		EventID:     eventID,
+		Status:      input.Status,
+		CreatedAt:   time.Now().Format("01-02-2006"),
+		UpdatedAt:   "",
+	}
+
+	if err := r.DB.Insert(bugReport); err != nil {
+		return nil, validators.ErrorInserting
+	}
+
+	return bugReport, nil
+}
+
+func (r *mutationResolver) UpdateBugReport(ctx context.Context, input *model.UpdateBugReport, userID int, eventID int) (*model.BugReport, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) DeleteBugReport(ctx context.Context, id int) (bool, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) CreateFeatureRequest(ctx context.Context, input *model.CreateFeatureRequest, userID int, eventID int) (*model.FeatureRequest, error) {
+	if user, err := r.GetUserById(userID); user != nil && err != nil {
+		return nil, validators.ValueNotFound("user")
+	}
+
+	if event, err := r.GetEventById(eventID); event != nil && err != nil {
+		return nil, validators.ValueNotFound("user")
+	}
+
+	feature := &model.FeatureRequest{
+		ID:          time.Now().Nanosecond(),
+		Title:       input.Title,
+		Description: input.Description,
+		UserID:      userID,
+		EventID:     eventID,
+		Status:      input.Status,
+		CreatedAt:   time.Now().Format("01-02-2006"),
+		UpdatedAt:   "",
+	}
+
+	if err := r.DB.Insert(feature); err != nil {
+		return nil, validators.ErrorInserting
+	}
+
+	return feature, nil
+}
+
+func (r *mutationResolver) UpdateFeatureRequest(ctx context.Context, input *model.UpdateFeatureRequest, userID int, eventID int) (*model.FeatureRequest, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) DeleteFeatureRequest(ctx context.Context, id int) (bool, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) CreateReminder(ctx context.Context, input *model.CreateReminder, userID int) (*model.Reminder, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) DeleteReminder(ctx context.Context, id *int) (bool, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 type mutationResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-type TeamStruct struct {
-	teams []*model.Team
-}

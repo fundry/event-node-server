@@ -26,8 +26,6 @@ type Mutation {
     updateTeam(id: ID, input: UpdateTeam!): Team!
     deleteTeam(id: ID!) : Boolean!
 
-
-
     createTask(input: CreateTasks! , teamId:  Int! , userId :Int!) : Tasks!
     updateTask(id: ID! , input: UpdateTask!) : Tasks!
     deleteTask(id: ID!) : Boolean!
@@ -63,4 +61,15 @@ type Mutation {
     deleteCartItem(id: Int!): Boolean!
 
     createComment(input : CreateTaskComment!, userId: Int!, taskId: Int!  ): TaskComments
+
+    createBugReport(input: CreateBugReport, userId: Int!, eventId : Int!) : BugReport!
+    updateBugReport(input: UpdateBugReport, userId: Int!, eventId : Int!) : BugReport!
+    deleteBugReport(id : Int!): Boolean!
+
+    createFeatureRequest(input: CreateFeatureRequest, userId: Int!, eventId : Int!) : FeatureRequest!
+    updateFeatureRequest(input: UpdateFeatureRequest, userId: Int!, eventId : Int!) : FeatureRequest!
+    deleteFeatureRequest(id : Int!): Boolean!
+
+    createReminder(input: CreateReminder, userId: Int!) : Reminder!
+    deleteReminder(id: Int) : Boolean!
 }
