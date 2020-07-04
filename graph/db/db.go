@@ -40,7 +40,7 @@ func Connect() *pg.DB {
 
     db := pg.Connect(&pg.Options{
         Password:        os.Getenv("PROD_POSTGRES_DB_PASSWORD"),
-        User:            os.Getnv("PROD_POSTGRES_USER"),
+        User:            os.Getenv("PROD_POSTGRES_USER"),
         Addr:            os.Getenv("PROD_POSTGRES_DB_ADDRESS"),
         Database:        os.Getenv("PROD_POSTGRES_DB"),
         ApplicationName: os.Getenv("PROD_APPLICATION_NAME"),
@@ -56,7 +56,7 @@ func Connect() *pg.DB {
     // db := pg.Connect(opt)
 
     if schemaErr := createSchema(db); schemaErr != nil {
-        panic(err)
+        panic(schemaErr)
     }
 
     SeedDatabase(db)
