@@ -4,6 +4,7 @@ import (
     "github.com/go-pg/pg/v9"
     "github.com/go-pg/pg/v9/orm"
     "github.com/joho/godotenv"
+	"os"
 
     "github.com/vickywane/event-server/graph/model"
 )
@@ -38,11 +39,11 @@ func Connect() *pg.DB {
     Envs, err := godotenv.Read(".env")
 
     db := pg.Connect(&pg.Options{
-        Password:        Envs["PROD_POSTGRES_DB_PASSWORD"],
-        User:            Envs["PROD_POSTGRES_USER"],
-        Addr:            Envs["PROD_POSTGRES_DB_ADDRESS"],
-        Database:        Envs["PROD_POSTGRES_DB"],
-        ApplicationName: Envs["PROD_APPLICATION_NAME"],
+        Password:        os.GetEnv("PROD_POSTGRES_DB_PASSWORD"),
+        User:            os.GetEnv("PROD_POSTGRES_USER"),
+        Addr:            Envs["PROD_POSTGRES_DB_ADDRESS"),
+        Database:        Envs["PROD_POSTGRES_DB"),
+        ApplicationName: Envs["PROD_APPLICATION_NAME"),
         MaxRetries:      10,
         TLSConfig:       nil,
     })
