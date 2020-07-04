@@ -576,6 +576,7 @@ type User struct {
 	Events       []*Event     `json:"events"`
 	EventID      int          `json:"event_id"`
 	FileID       *int         `json:"file_id"`
+	Reminders    []*Reminder  `json:"reminders"`
 	ImgURI       *string      `json:"img_uri"`
 	CreatedAt    time.Time    `json:"createdAt"`
 	Files        []*UserFile  `json:"files"`

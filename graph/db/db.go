@@ -3,8 +3,7 @@ package db
 import (
     "github.com/go-pg/pg/v9"
     "github.com/go-pg/pg/v9/orm"
- //   "github.com/joho/godotenv"
-	"os"
+    "os"
 
     "github.com/vickywane/event-server/graph/model"
 )
@@ -35,9 +34,6 @@ func createSchema(db *pg.DB) error {
 }
 
 func Connect() *pg.DB {
-   // godotenv.Load(".env")
-    //Envs, err := godotenv.Read(".env")
-
     db := pg.Connect(&pg.Options{
         Password:        os.Getenv("PROD_POSTGRES_DB_PASSWORD"),
         User:            os.Getenv("PROD_POSTGRES_USER"),

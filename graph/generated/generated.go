@@ -444,6 +444,7 @@ type ComplexityRoot struct {
 		ImgURI       func(childComplexity int) int
 		Name         func(childComplexity int) int
 		Password     func(childComplexity int) int
+		Reminders    func(childComplexity int) int
 		Talks        func(childComplexity int) int
 		UpdatedAt    func(childComplexity int) int
 		VolunteerID  func(childComplexity int) int
@@ -654,6 +655,8 @@ type TracksResolver interface {
 type UserResolver interface {
 	Talks(ctx context.Context, obj *model.User) ([]*model.Talk, error)
 	Events(ctx context.Context, obj *model.User) ([]*model.Event, error)
+
+	Reminders(ctx context.Context, obj *model.User) ([]*model.Reminder, error)
 
 	Files(ctx context.Context, obj *model.User) ([]*model.UserFile, error)
 
@@ -3322,6 +3325,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.Password(childComplexity), true
 
+	case "User.reminders":
+		if e.complexity.User.Reminders == nil {
+			break
+		}
+
+		return e.complexity.User.Reminders(childComplexity), true
+
 	case "User.talks":
 		if e.complexity.User.Talks == nil {
 			break
@@ -4283,6 +4293,7 @@ input UpdateTrack {
     events: [Event!]
     event_id: Int!
     file_id: Int
+    reminders : [Reminder!]
     img_uri : String
     createdAt: Time!
     files: [UserFile!]
@@ -4309,7 +4320,8 @@ input UpdateUser {
     volunteering: [CreateVolunteer!]
     events: [CreateEvent]
     updatedAt: Time
-}`, BuiltIn: false},
+}
+`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/types/volunteer.graphqls", Input: `type Volunteer {
     id : Int!
     role : String!
@@ -17111,6 +17123,37 @@ func (ec *executionContext) _User_file_id(ctx context.Context, field graphql.Col
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _User_reminders(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.User().Reminders(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Reminder)
+	fc.Result = res
+	return ec.marshalOReminder2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐReminderᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _User_img_uri(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -23028,6 +23071,17 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "file_id":
 			out.Values[i] = ec._User_file_id(ctx, field, obj)
+		case "reminders":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_reminders(ctx, field, obj)
+				return res
+			})
 		case "img_uri":
 			out.Values[i] = ec._User_img_uri(ctx, field, obj)
 		case "createdAt":
@@ -25498,6 +25552,46 @@ func (ec *executionContext) marshalOPurchases2ᚖgithubᚗcomᚋvickywaneᚋeven
 
 func (ec *executionContext) marshalOReminder2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐReminder(ctx context.Context, sel ast.SelectionSet, v model.Reminder) graphql.Marshaler {
 	return ec._Reminder(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOReminder2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐReminderᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Reminder) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNReminder2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐReminder(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
 }
 
 func (ec *executionContext) marshalOReminder2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐReminder(ctx context.Context, sel ast.SelectionSet, v *model.Reminder) graphql.Marshaler {

@@ -79,9 +79,11 @@ models:
     fields:
       user:
         resolver: true
-      event:
+      event:      
         resolver: true
-  Feature:
+  
+
+Feature:
     fields:
       user:
         resolver: true
@@ -101,8 +103,6 @@ models:
         resolver: true
       volunteering:
         resolver: true
-      reminders:
-        resolver : true
       attending:
         resolver: true
       files:

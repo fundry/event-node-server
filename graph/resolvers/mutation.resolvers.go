@@ -1194,7 +1194,21 @@ func (r *mutationResolver) DeleteFeatureRequest(ctx context.Context, id int) (bo
 }
 
 func (r *mutationResolver) CreateReminder(ctx context.Context, input *model.CreateReminder, userID int) (*model.Reminder, error) {
-	panic(fmt.Errorf("not implemented"))
+	if user , err := r.GetUserById(userID); user != nil && err != nil { return nil , validators.NotFound }
+
+reminder := &model.Reminder{
+	ID : time.Now().Nanosecond(),
+	Name : input.Name,
+	UserID: userID,
+	From : input.From,
+	Due : input.Due,
+	} 
+
+  if err := r.DB.Insert(reminder); err != nil {
+                return nil, validators.ErrorInserting
+        }
+
+	return reminder, nil 
 }
 
 func (r *mutationResolver) DeleteReminder(ctx context.Context, id *int) (bool, error) {

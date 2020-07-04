@@ -8,6 +8,7 @@ type User {
     events: [Event!]
     event_id: Int!
     file_id: Int
+    reminders : [Reminder!]
     img_uri : String
     createdAt: Time!
     files: [UserFile!]
