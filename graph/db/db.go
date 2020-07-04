@@ -38,11 +38,11 @@ func Connect() *pg.DB {
     Envs, err := godotenv.Read(".env")
 
     db := pg.Connect(&pg.Options{
-        Password:        Envs["POSTGRES_DB_PASSWORD"],
-        User:            Envs["POSTGRES_USER"],
-        Addr:            Envs["POSTGRES_DB_ADDRESS"],
-        Database:        Envs["POSTGRES_DB"],
-        ApplicationName: Envs["APPLICATION_NAME"],
+        Password:        Envs["PROD_POSTGRES_DB_PASSWORD"],
+        User:            Envs["PROD_POSTGRES_USER"],
+        Addr:            Envs["PROD_POSTGRES_DB_ADDRESS"],
+        Database:        Envs["PROD_POSTGRES_DB"],
+        ApplicationName: Envs["PROD_APPLICATION_NAME"],
         MaxRetries:      10,
         TLSConfig:       nil,
     })
