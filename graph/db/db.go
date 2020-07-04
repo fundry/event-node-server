@@ -3,7 +3,7 @@ package db
 import (
     "github.com/go-pg/pg/v9"
     "github.com/go-pg/pg/v9/orm"
-    "github.com/joho/godotenv"
+ //   "github.com/joho/godotenv"
 	"os"
 
     "github.com/vickywane/event-server/graph/model"
@@ -35,15 +35,15 @@ func createSchema(db *pg.DB) error {
 }
 
 func Connect() *pg.DB {
-    godotenv.Load(".env")
-    Envs, err := godotenv.Read(".env")
+   // godotenv.Load(".env")
+    //Envs, err := godotenv.Read(".env")
 
     db := pg.Connect(&pg.Options{
-        Password:        os.GetEnv("PROD_POSTGRES_DB_PASSWORD"),
-        User:            os.GetEnv("PROD_POSTGRES_USER"),
-        Addr:            os.GetEnv("PROD_POSTGRES_DB_ADDRESS"),
-        Database:        os.GetEnv("PROD_POSTGRES_DB"),
-        ApplicationName: os.GetEnv"PROD_APPLICATION_NAME"),
+        Password:        os.Getenv("PROD_POSTGRES_DB_PASSWORD"),
+        User:            os.Getnv("PROD_POSTGRES_USER"),
+        Addr:            os.Getenv("PROD_POSTGRES_DB_ADDRESS"),
+        Database:        os.Getenv("PROD_POSTGRES_DB"),
+        ApplicationName: os.Getenv("PROD_APPLICATION_NAME"),
         MaxRetries:      10,
         TLSConfig:       nil,
     })
