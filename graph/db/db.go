@@ -41,9 +41,9 @@ func Connect() *pg.DB {
     db := pg.Connect(&pg.Options{
         Password:        os.GetEnv("PROD_POSTGRES_DB_PASSWORD"),
         User:            os.GetEnv("PROD_POSTGRES_USER"),
-        Addr:            Envs["PROD_POSTGRES_DB_ADDRESS"),
-        Database:        Envs["PROD_POSTGRES_DB"),
-        ApplicationName: Envs["PROD_APPLICATION_NAME"),
+        Addr:            os.GetEnv("PROD_POSTGRES_DB_ADDRESS"),
+        Database:        os.GetEnv("PROD_POSTGRES_DB"),
+        ApplicationName: os.GetEnv"PROD_APPLICATION_NAME"),
         MaxRetries:      10,
         TLSConfig:       nil,
     })
