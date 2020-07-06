@@ -7,6 +7,7 @@ type Talk {
     description: String!
     Archived: Boolean!
     tags: [String]
+    notes : [Notes!]
     createdAt: Time!
     updatedAt: Time!
     event_id : Int
@@ -23,6 +24,24 @@ input CreateTalk {
     Archived: Boolean!
     duration : String!
     tags: [String]
+}
+
+type Notes {
+    id : Int!
+    title : String!
+    content: String!
+    talk: [Talk!]
+    talk_id : Int!
+}
+
+input CreateNote {
+    title : String!
+    content: String!
+}
+
+input UpdateNote {
+    title : String!
+    content: String!
 }
 
 input UpdateTalk {

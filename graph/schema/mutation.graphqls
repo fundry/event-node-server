@@ -72,4 +72,8 @@ type Mutation {
 
     createReminder(input: CreateReminder, userId: Int!) : Reminder!
     deleteReminder(id: Int) : Boolean!
+
+    createNote(input : CreateNote, talkId : Int!) : Notes!
+    updateNote(input : UpdateNote, talkId : Int!) : Notes!
+    deleteNote(Id : Int!) : Boolean!
 }

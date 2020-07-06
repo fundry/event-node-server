@@ -116,6 +116,11 @@ type CreateMeetupGroup struct {
 	Alias    string `json:"alias"`
 }
 
+type CreateNote struct {
+	Title   string `json:"title"`
+	Content string `json:"content"`
+}
+
 type CreatePreference struct {
 	Name  string       `json:"name"`
 	Color string       `json:"color"`
@@ -312,6 +317,14 @@ type MeetupGroups struct {
 	CreatedAt string   `json:"createdAt"`
 }
 
+type Notes struct {
+	ID      int     `json:"id"`
+	Title   string  `json:"title"`
+	Content string  `json:"content"`
+	Talk    []*Talk `json:"talk"`
+	TalkID  int     `json:"talk_id"`
+}
+
 type Preference struct {
 	ID        int       `json:"id"`
 	Name      string    `json:"name"`
@@ -368,6 +381,7 @@ type Talk struct {
 	Description  string    `json:"description"`
 	Archived     bool      `json:"Archived"`
 	Tags         []*string `json:"tags"`
+	Notes        []*Notes  `json:"notes"`
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
 	EventID      *int      `json:"event_id"`
@@ -481,6 +495,11 @@ type UpdateFeatureRequest struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Status      string `json:"status"`
+}
+
+type UpdateNote struct {
+	Title   string `json:"title"`
+	Content string `json:"content"`
 }
 
 type UpdatePreference struct {

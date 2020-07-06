@@ -10,6 +10,26 @@ import (
 	"github.com/vickywane/event-server/graph/model"
 )
 
+func (r *notesResolver) Talk(ctx context.Context, obj *model.Notes) ([]*model.Talk, error) {
+	var talk []*model.Talk
+
+	if err := r.DB.Model(&talk).Order("id").Where("id = ?", obj.TalkID).Select(); err != nil {
+		return nil, err
+	}
+
+	return talk, nil
+}
+
+func (r *talkResolver) Notes(ctx context.Context, obj *model.Talk) ([]*model.Notes, error) {
+	var note []*model.Notes
+
+	if err := r.DB.Model(&note).Order("id").Where("talk_id = ?", obj.ID).Select(); err != nil {
+		return nil, err
+	}
+
+	return note, nil
+}
+
 func (r *talkResolver) Speaker(ctx context.Context, obj *model.Talk) ([]*model.User, error) {
 	var Speaker []*model.User
 
@@ -20,9 +40,13 @@ func (r *talkResolver) Speaker(ctx context.Context, obj *model.Talk) ([]*model.U
 	return Speaker, nil
 }
 
+// Notes returns generated.NotesResolver implementation.
+func (r *Resolver) Notes() generated.NotesResolver { return &notesResolver{r} }
+
 // Talk returns generated.TalkResolver implementation.
 func (r *Resolver) Talk() generated.TalkResolver { return &talkResolver{r} }
 
+type notesResolver struct{ *Resolver }
 type talkResolver struct{ *Resolver }
 
 // !!! WARNING !!!

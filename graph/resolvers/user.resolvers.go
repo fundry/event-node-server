@@ -33,8 +33,10 @@ func (r *userResolver) Events(ctx context.Context, obj *model.User) ([]*model.Ev
 
 func (r *userResolver) Reminders(ctx context.Context, obj *model.User) ([]*model.Reminder, error) {
 	var reminder []*model.Reminder
-if err := r.DB.Model(&reminder).Where("user_id = ?", obj.ID).Order("id").Select(); err != nil {return nil , err } 
-return reminder, nil
+	if err := r.DB.Model(&reminder).Where("user_id = ?", obj.ID).Order("id").Select(); err != nil {
+		return nil, err
+	}
+	return reminder, nil
 }
 
 func (r *userResolver) Files(ctx context.Context, obj *model.User) ([]*model.UserFile, error) {

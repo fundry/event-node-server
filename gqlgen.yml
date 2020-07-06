@@ -124,6 +124,13 @@ models:
         resolver: true
       reviewers:
         resolver: true
+      notes:
+        resolver  : true
+
+  Notes :
+    fields :
+      talk:
+        resolver: true
 
   Team:
     fields:

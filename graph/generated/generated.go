@@ -44,6 +44,7 @@ type ResolverRoot interface {
 	EventTalk() EventTalkResolver
 	MeetupGroups() MeetupGroupsResolver
 	Mutation() MutationResolver
+	Notes() NotesResolver
 	Purchases() PurchasesResolver
 	Query() QueryResolver
 	Reminder() ReminderResolver
@@ -222,6 +223,7 @@ type ComplexityRoot struct {
 		CreateEvent              func(childComplexity int, input model.CreateEvent, userID int) int
 		CreateFeatureRequest     func(childComplexity int, input *model.CreateFeatureRequest, userID int, eventID int) int
 		CreateMeetupGroup        func(childComplexity int, eventID int, leadID int, input *model.CreateMeetupGroup) int
+		CreateNote               func(childComplexity int, input *model.CreateNote, talkID int) int
 		CreatePreference         func(childComplexity int, input model.CreatePreference) int
 		CreateReminder           func(childComplexity int, input *model.CreateReminder, userID int) int
 		CreateSponsor            func(childComplexity int, input model.CreateSponsor, eventID int) int
@@ -237,6 +239,7 @@ type ComplexityRoot struct {
 		DeleteEvent              func(childComplexity int, id int) int
 		DeleteFeatureRequest     func(childComplexity int, id int) int
 		DeleteFile               func(childComplexity int, id int) int
+		DeleteNote               func(childComplexity int, id int) int
 		DeletePreference         func(childComplexity int, id int) int
 		DeletePurchase           func(childComplexity int, id int) int
 		DeleteReminder           func(childComplexity int, id *int) int
@@ -255,6 +258,7 @@ type ComplexityRoot struct {
 		UpdateEvent              func(childComplexity int, id int, input model.UpdateEvent) int
 		UpdateEventAttendee      func(childComplexity int, eventID int, userID int) int
 		UpdateFeatureRequest     func(childComplexity int, input *model.UpdateFeatureRequest, userID int, eventID int) int
+		UpdateNote               func(childComplexity int, input *model.UpdateNote, talkID int) int
 		UpdatePreference         func(childComplexity int, id *int, input model.UpdatePreference) int
 		UpdateSponsor            func(childComplexity int, id *int, input model.UpdateSponsor) int
 		UpdateSubmittedTalk      func(childComplexity int, talkID int, reviewerID *int, input model.UpdateSubmittedTalk) int
@@ -268,6 +272,14 @@ type ComplexityRoot struct {
 		UploadMultipleUserFiles  func(childComplexity int, req []*model.UploadFile) int
 		UploadSingleEventFile    func(childComplexity int, req model.UploadFile, bucketName string) int
 		UploadSingleUserFile     func(childComplexity int, req model.UploadFile, bucketName string) int
+	}
+
+	Notes struct {
+		Content func(childComplexity int) int
+		ID      func(childComplexity int) int
+		Talk    func(childComplexity int) int
+		TalkID  func(childComplexity int) int
+		Title   func(childComplexity int) int
 	}
 
 	Preference struct {
@@ -365,6 +377,7 @@ type ComplexityRoot struct {
 		Event        func(childComplexity int) int
 		EventID      func(childComplexity int) int
 		ID           func(childComplexity int) int
+		Notes        func(childComplexity int) int
 		Speaker      func(childComplexity int) int
 		SpeakerID    func(childComplexity int) int
 		Summary      func(childComplexity int) int
@@ -571,6 +584,12 @@ type MutationResolver interface {
 	DeleteFeatureRequest(ctx context.Context, id int) (bool, error)
 	CreateReminder(ctx context.Context, input *model.CreateReminder, userID int) (*model.Reminder, error)
 	DeleteReminder(ctx context.Context, id *int) (bool, error)
+	CreateNote(ctx context.Context, input *model.CreateNote, talkID int) (*model.Notes, error)
+	UpdateNote(ctx context.Context, input *model.UpdateNote, talkID int) (*model.Notes, error)
+	DeleteNote(ctx context.Context, id int) (bool, error)
+}
+type NotesResolver interface {
+	Talk(ctx context.Context, obj *model.Notes) ([]*model.Talk, error)
 }
 type PurchasesResolver interface {
 	Item(ctx context.Context, obj *model.Purchases) ([]*model.CartItem, error)
@@ -628,6 +647,8 @@ type SubscriptionResolver interface {
 	NewTeam(ctx context.Context) (<-chan *model.Team, error)
 }
 type TalkResolver interface {
+	Notes(ctx context.Context, obj *model.Talk) ([]*model.Notes, error)
+
 	Speaker(ctx context.Context, obj *model.Talk) ([]*model.User, error)
 }
 type TaskCommentsResolver interface {
@@ -1618,6 +1639,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateMeetupGroup(childComplexity, args["eventId"].(int), args["leadId"].(int), args["input"].(*model.CreateMeetupGroup)), true
 
+	case "Mutation.createNote":
+		if e.complexity.Mutation.CreateNote == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createNote_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateNote(childComplexity, args["input"].(*model.CreateNote), args["talkId"].(int)), true
+
 	case "Mutation.createPreference":
 		if e.complexity.Mutation.CreatePreference == nil {
 			break
@@ -1797,6 +1830,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteFile(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteNote":
+		if e.complexity.Mutation.DeleteNote == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteNote_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteNote(childComplexity, args["Id"].(int)), true
 
 	case "Mutation.deletePreference":
 		if e.complexity.Mutation.DeletePreference == nil {
@@ -2014,6 +2059,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateFeatureRequest(childComplexity, args["input"].(*model.UpdateFeatureRequest), args["userId"].(int), args["eventId"].(int)), true
 
+	case "Mutation.updateNote":
+		if e.complexity.Mutation.UpdateNote == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateNote_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateNote(childComplexity, args["input"].(*model.UpdateNote), args["talkId"].(int)), true
+
 	case "Mutation.updatePreference":
 		if e.complexity.Mutation.UpdatePreference == nil {
 			break
@@ -2169,6 +2226,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UploadSingleUserFile(childComplexity, args["req"].(model.UploadFile), args["BucketName"].(string)), true
+
+	case "Notes.content":
+		if e.complexity.Notes.Content == nil {
+			break
+		}
+
+		return e.complexity.Notes.Content(childComplexity), true
+
+	case "Notes.id":
+		if e.complexity.Notes.ID == nil {
+			break
+		}
+
+		return e.complexity.Notes.ID(childComplexity), true
+
+	case "Notes.talk":
+		if e.complexity.Notes.Talk == nil {
+			break
+		}
+
+		return e.complexity.Notes.Talk(childComplexity), true
+
+	case "Notes.talk_id":
+		if e.complexity.Notes.TalkID == nil {
+			break
+		}
+
+		return e.complexity.Notes.TalkID(childComplexity), true
+
+	case "Notes.title":
+		if e.complexity.Notes.Title == nil {
+			break
+		}
+
+		return e.complexity.Notes.Title(childComplexity), true
 
 	case "Preference.color":
 		if e.complexity.Preference.Color == nil {
@@ -2876,6 +2968,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Talk.ID(childComplexity), true
+
+	case "Talk.notes":
+		if e.complexity.Talk.Notes == nil {
+			break
+		}
+
+		return e.complexity.Talk.Notes(childComplexity), true
 
 	case "Talk.speaker":
 		if e.complexity.Talk.Speaker == nil {
@@ -3672,6 +3771,10 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
 
     createReminder(input: CreateReminder, userId: Int!) : Reminder!
     deleteReminder(id: Int) : Boolean!
+
+    createNote(input : CreateNote, talkId : Int!) : Notes!
+    updateNote(input : UpdateNote, talkId : Int!) : Notes!
+    deleteNote(Id : Int!) : Boolean!
 }`, BuiltIn: false},
 	&ast.Source{Name: "graph/schema/query.graphqls", Input: `type Query {
     event(id: Int name: String!) : Event!
@@ -4139,6 +4242,7 @@ input UpdateSponsor {
     description: String!
     Archived: Boolean!
     tags: [String]
+    notes : [Notes!]
     createdAt: Time!
     updatedAt: Time!
     event_id : Int
@@ -4155,6 +4259,24 @@ input CreateTalk {
     Archived: Boolean!
     duration : String!
     tags: [String]
+}
+
+type Notes {
+    id : Int!
+    title : String!
+    content: String!
+    talk: [Talk!]
+    talk_id : Int!
+}
+
+input CreateNote {
+    title : String!
+    content: String!
+}
+
+input UpdateNote {
+    title : String!
+    content: String!
 }
 
 input UpdateTalk {
@@ -4584,6 +4706,28 @@ func (ec *executionContext) field_Mutation_createMeetupGroup_args(ctx context.Co
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createNote_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.CreateNote
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalOCreateNote2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateNote(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["talkId"]; ok {
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["talkId"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createPreference_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -4863,6 +5007,20 @@ func (ec *executionContext) field_Mutation_deleteFile_args(ctx context.Context, 
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteNote_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["Id"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["Id"] = arg0
 	return args, nil
 }
 
@@ -5203,6 +5361,28 @@ func (ec *executionContext) field_Mutation_updateFeatureRequest_args(ctx context
 		}
 	}
 	args["eventId"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateNote_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.UpdateNote
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalOUpdateNote2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateNote(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["talkId"]; ok {
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["talkId"] = arg1
 	return args, nil
 }
 
@@ -12263,6 +12443,296 @@ func (ec *executionContext) _Mutation_deleteReminder(ctx context.Context, field 
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_createNote(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createNote_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateNote(rctx, args["input"].(*model.CreateNote), args["talkId"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Notes)
+	fc.Result = res
+	return ec.marshalNNotes2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐNotes(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateNote(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateNote_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateNote(rctx, args["input"].(*model.UpdateNote), args["talkId"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Notes)
+	fc.Result = res
+	return ec.marshalNNotes2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐNotes(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteNote(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteNote_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteNote(rctx, args["Id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Notes_id(ctx context.Context, field graphql.CollectedField, obj *model.Notes) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Notes",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Notes_title(ctx context.Context, field graphql.CollectedField, obj *model.Notes) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Notes",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Notes_content(ctx context.Context, field graphql.CollectedField, obj *model.Notes) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Notes",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Content, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Notes_talk(ctx context.Context, field graphql.CollectedField, obj *model.Notes) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Notes",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Notes().Talk(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Talk)
+	fc.Result = res
+	return ec.marshalOTalk2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalkᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Notes_talk_id(ctx context.Context, field graphql.CollectedField, obj *model.Notes) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Notes",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TalkID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Preference_id(ctx context.Context, field graphql.CollectedField, obj *model.Preference) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -15141,6 +15611,37 @@ func (ec *executionContext) _Talk_tags(ctx context.Context, field graphql.Collec
 	res := resTmp.([]*string)
 	fc.Result = res
 	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Talk_notes(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Talk",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Talk().Notes(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Notes)
+	fc.Result = res
+	return ec.marshalONotes2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐNotesᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Talk_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
@@ -19378,6 +19879,30 @@ func (ec *executionContext) unmarshalInputCreateMeetupGroup(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreateNote(ctx context.Context, obj interface{}) (model.CreateNote, error) {
+	var it model.CreateNote
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "title":
+			var err error
+			it.Title, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "content":
+			var err error
+			it.Content, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreatePreference(ctx context.Context, obj interface{}) (model.CreatePreference, error) {
 	var it model.CreatePreference
 	var asMap = obj.(map[string]interface{})
@@ -20161,6 +20686,30 @@ func (ec *executionContext) unmarshalInputUpdateFeatureRequest(ctx context.Conte
 		case "status":
 			var err error
 			it.Status, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateNote(ctx context.Context, obj interface{}) (model.UpdateNote, error) {
+	var it model.UpdateNote
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "title":
+			var err error
+			it.Title, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "content":
+			var err error
+			it.Content, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -21755,6 +22304,74 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "createNote":
+			out.Values[i] = ec._Mutation_createNote(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateNote":
+			out.Values[i] = ec._Mutation_updateNote(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteNote":
+			out.Values[i] = ec._Mutation_deleteNote(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var notesImplementors = []string{"Notes"}
+
+func (ec *executionContext) _Notes(ctx context.Context, sel ast.SelectionSet, obj *model.Notes) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, notesImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Notes")
+		case "id":
+			out.Values[i] = ec._Notes_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "title":
+			out.Values[i] = ec._Notes_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "content":
+			out.Values[i] = ec._Notes_content(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "talk":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Notes_talk(ctx, field, obj)
+				return res
+			})
+		case "talk_id":
+			out.Values[i] = ec._Notes_talk_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -22595,6 +23212,17 @@ func (ec *executionContext) _Talk(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "tags":
 			out.Values[i] = ec._Talk_tags(ctx, field, obj)
+		case "notes":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Talk_notes(ctx, field, obj)
+				return res
+			})
 		case "createdAt":
 			out.Values[i] = ec._Talk_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -24021,6 +24649,20 @@ func (ec *executionContext) marshalNMeetupGroups2ᚖgithubᚗcomᚋvickywaneᚋe
 	return ec._MeetupGroups(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNNotes2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐNotes(ctx context.Context, sel ast.SelectionSet, v model.Notes) graphql.Marshaler {
+	return ec._Notes(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNNotes2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐNotes(ctx context.Context, sel ast.SelectionSet, v *model.Notes) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Notes(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNPreference2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐPreference(ctx context.Context, sel ast.SelectionSet, v model.Preference) graphql.Marshaler {
 	return ec._Preference(ctx, sel, &v)
 }
@@ -25164,6 +25806,18 @@ func (ec *executionContext) unmarshalOCreateMeetupGroup2ᚖgithubᚗcomᚋvickyw
 	return &res, err
 }
 
+func (ec *executionContext) unmarshalOCreateNote2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateNote(ctx context.Context, v interface{}) (model.CreateNote, error) {
+	return ec.unmarshalInputCreateNote(ctx, v)
+}
+
+func (ec *executionContext) unmarshalOCreateNote2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateNote(ctx context.Context, v interface{}) (*model.CreateNote, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOCreateNote2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateNote(ctx, v)
+	return &res, err
+}
+
 func (ec *executionContext) unmarshalOCreateReminder2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateReminder(ctx context.Context, v interface{}) (model.CreateReminder, error) {
 	return ec.unmarshalInputCreateReminder(ctx, v)
 }
@@ -25497,6 +26151,46 @@ func (ec *executionContext) marshalOMeetupGroups2ᚖgithubᚗcomᚋvickywaneᚋe
 		return graphql.Null
 	}
 	return ec._MeetupGroups(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalONotes2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐNotesᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Notes) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNNotes2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐNotes(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
 }
 
 func (ec *executionContext) marshalOPurchases2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐPurchases(ctx context.Context, sel ast.SelectionSet, v model.Purchases) graphql.Marshaler {
@@ -26148,6 +26842,18 @@ func (ec *executionContext) unmarshalOUpdateFeatureRequest2ᚖgithubᚗcomᚋvic
 		return nil, nil
 	}
 	res, err := ec.unmarshalOUpdateFeatureRequest2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateFeatureRequest(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) unmarshalOUpdateNote2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateNote(ctx context.Context, v interface{}) (model.UpdateNote, error) {
+	return ec.unmarshalInputUpdateNote(ctx, v)
+}
+
+func (ec *executionContext) unmarshalOUpdateNote2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateNote(ctx context.Context, v interface{}) (*model.UpdateNote, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalOUpdateNote2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateNote(ctx, v)
 	return &res, err
 }
 

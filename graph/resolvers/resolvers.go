@@ -103,13 +103,32 @@ func (r *mutationResolver) GetUserById(id int) (*model.User, error) {
     return &user, err
 }
 
+func (r *mutationResolver) GetNoteById(id int) (*model.Notes, error) {
+    Notes := model.Notes{}
+    err := r.DB.Model(&Notes).Where("id = ?", id).First()
+    return &Notes, err
+}
+
 func (r *mutationResolver) UpdateCurrentUser(user *model.User) (*model.User, error) {
     _, err := r.DB.Model(user).Where("id = ?", user.ID).Update()
     return user, err
 }
 
+func (r *mutationResolver) UpdateCurrentNote(note *model.Notes) (*model.Notes, error) {
+    _, err := r.DB.Model(note).Where("id = ?", note.ID).Update()
+    return note, err
+}
+
 func (r *mutationResolver) DeleteCurrentUser(user *model.User) error {
     _, err := r.DB.Model(user).Where("id =?", user.ID).Delete()
+    if err != nil {
+        return nil
+    }
+    return nil
+}
+
+func (r *mutationResolver) DeleteCurrentNote(note *model.Notes) error {
+    _, err := r.DB.Model(note).Where("id =?", note.ID).Delete()
     if err != nil {
         return nil
     }
@@ -130,6 +149,7 @@ func (r *mutationResolver) GetEventById(id int) (*model.Event, error) {
     err := r.DB.Model(&event).Where("id = ?", id).First()
     return &event, err
 }
+
 
 func (r *mutationResolver) GetSponsorById(id int) (*model.Sponsor, error) {
     sponsor := model.Sponsor{}
