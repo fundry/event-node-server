@@ -76,8 +76,8 @@ func SeedDatabase(db *pg.DB) {
 		Archived:     false,
 		Duration:     "5 minutes",
 		Tags:         nil,
-		CreatedAt:    time.Time{},
-		UpdatedAt:    time.Time{},
+		CreatedAt:    time.Now().Format("01-02-2006"),
+		UpdatedAt:    time.Now().Format("01-02-2006"),
 	}
 
 	track := model.Tracks{

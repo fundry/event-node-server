@@ -241,6 +241,20 @@ func (r *mutationResolver) DeleteCurrentTrack(Track *model.Tracks) error {
     return nil
 }
 
+func (r *mutationResolver) DeleteCurrentReminder(Reminder *model.Reminder) error {
+    _, err := r.DB.Model(Reminder).Where("id =?", Reminder.ID).Delete()
+    if err != nil {
+        return nil
+    }
+    return nil
+}
+
+func (r *mutationResolver) GetReminderById(id int) (*model.Reminder, error) {
+    reminder := model.Reminder{}
+    err := r.DB.Model(&reminder).Where("id = ?", id).First()
+    return &reminder, err
+}
+
 func (r *mutationResolver) GetVolunteerById(id int) (*model.Volunteer, error) {
     Volunteer := model.Volunteer{}
     err := r.DB.Model(&Volunteer).Where("id = ?", id).First()

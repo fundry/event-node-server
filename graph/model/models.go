@@ -382,8 +382,8 @@ type Talk struct {
 	Archived     bool      `json:"Archived"`
 	Tags         []*string `json:"tags"`
 	Notes        []*Notes  `json:"notes"`
-	CreatedAt    time.Time `json:"createdAt"`
-	UpdatedAt    time.Time `json:"updatedAt"`
+	CreatedAt    string    `json:"createdAt"`
+	UpdatedAt    string    `json:"updatedAt"`
 	EventID      *int      `json:"event_id"`
 	SpeakerID    int       `json:"speaker_id"`
 	Event        []*Event  `json:"event"`

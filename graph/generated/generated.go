@@ -3673,7 +3673,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	&ast.Source{Name: "graph/schema/directive.graphqls", Input: `directive @goModel(model: String, models: [String!]) on OBJECT
+	{Name: "graph/schema/directive.graphqls", Input: `directive @goModel(model: String, models: [String!]) on OBJECT
     | INPUT_OBJECT
     | SCALAR
     | ENUM
@@ -3697,7 +3697,7 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
 #    | ENUM
 #    | INTERFACE
 #    | UNION`, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/mutation.graphqls", Input: `type Mutation {
+	{Name: "graph/schema/mutation.graphqls", Input: `type Mutation {
     loginUser(input: LoginInput!): AuthResponse!
 
     createEvent(input: CreateEvent!, UserID: Int!): Event!
@@ -3776,7 +3776,7 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
     updateNote(input : UpdateNote, talkId : Int!) : Notes!
     deleteNote(Id : Int!) : Boolean!
 }`, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/query.graphqls", Input: `type Query {
+	{Name: "graph/schema/query.graphqls", Input: `type Query {
     event(id: Int name: String!) : Event!
     events(Limit: Int): [Event!]!
     attendees(Limit: Int EventID: Int): [Attendee!]!
@@ -3830,7 +3830,7 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
 
     reminder(userId: Int!) : Reminder
 }`, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/scalar.graphqls", Input: `# My custom defined types https://github.com/99designs/gqlgen/blob/master/docs/content/reference/scalars.md
+	{Name: "graph/schema/scalar.graphqls", Input: `# My custom defined types https://github.com/99designs/gqlgen/blob/master/docs/content/reference/scalars.md
 
 # resolves to time.Time
 scalar Time
@@ -3847,13 +3847,13 @@ scalar Any
 # resolves to Upload struct
 scalar Upload
 `, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/subscription.graphqls", Input: `type Subscription {
+	{Name: "graph/schema/subscription.graphqls", Input: `type Subscription {
     volunteerCreated(role : String): Volunteer
     newTeam : Team
 }
 
 `, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/attendee.graphqls", Input: `type Attendee {
+	{Name: "graph/schema/types/attendee.graphqls", Input: `type Attendee {
     id : Int!
     dateJoined : String!
     user : [User!]
@@ -3871,7 +3871,7 @@ input UpdateAttendee {
     user : [CreateUser!]
 }
 `, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/auth.graphqls", Input: ` type AuthResponse {
+	{Name: "graph/schema/types/auth.graphqls", Input: ` type AuthResponse {
     id : Int!
     token : String!
     expiredAt : Time!
@@ -3882,7 +3882,7 @@ input LoginInput {
     email : String!
     password : String!
 }`, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/bugReport.graphqls", Input: `type BugReport {
+	{Name: "graph/schema/types/bugReport.graphqls", Input: `type BugReport {
     id : ID!
     title : String!
     description : String!
@@ -3908,7 +3908,7 @@ input UpdateBugReport {
 }
 
 `, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/event.graphqls", Input: `#Todo : Implement default directives for BOOLEAN fields
+	{Name: "graph/schema/types/event.graphqls", Input: `#Todo : Implement default directives for BOOLEAN fields
 type Event {
     id : Int!
     name: String!
@@ -4046,7 +4046,7 @@ input UpdateSubmittedTalk {
     track : String
     comment : String
 }`, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/feature.graphqls", Input: `type FeatureRequest {
+	{Name: "graph/schema/types/feature.graphqls", Input: `type FeatureRequest {
     id : ID!
     title : String!
     description : String!
@@ -4072,7 +4072,7 @@ input UpdateFeatureRequest {
 }
 
 `, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/file.graphqls", Input: `type EventFile {
+	{Name: "graph/schema/types/file.graphqls", Input: `type EventFile {
     id: ID!
     file: Upload!
     type: String!
@@ -4105,7 +4105,7 @@ input DeleteFile {
     id: ID!
     uri: String
 }`, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/preference.graphqls", Input: `type Preference {
+	{Name: "graph/schema/types/preference.graphqls", Input: `type Preference {
     id : Int!
     name: String!
     color: String!
@@ -4127,7 +4127,7 @@ input UpdatePreference {
     Event: CreateEvent!
     updatedAt: Time!
 }`, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/reminders.graphqls", Input: `type  Reminder {
+	{Name: "graph/schema/types/reminders.graphqls", Input: `type  Reminder {
     id : ID!
     name : String!
     from : String!
@@ -4142,7 +4142,7 @@ input  CreateReminder {
     from : String!
     due : String!
 }`, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/shop.graphqls", Input: `type Category {
+	{Name: "graph/schema/types/shop.graphqls", Input: `type Category {
     id : ID!
     name : String!
     event: [Event]
@@ -4208,7 +4208,7 @@ input MakePurchases {
 }
 
 `, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/sponsor.graphqls", Input: `type Sponsor {
+	{Name: "graph/schema/types/sponsor.graphqls", Input: `type Sponsor {
     id : Int!
     name : String!
     image_url : String
@@ -4233,7 +4233,7 @@ input UpdateSponsor {
     sponsorhipStatus : String!
     isOrganization : Boolean!
 }`, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/talk.graphqls", Input: `type Talk {
+	{Name: "graph/schema/types/talk.graphqls", Input: `type Talk {
     id : Int!
     title: String!
     talkCoverUri: String
@@ -4243,8 +4243,8 @@ input UpdateSponsor {
     Archived: Boolean!
     tags: [String]
     notes : [Notes!]
-    createdAt: Time!
-    updatedAt: Time!
+    createdAt: String!
+    updatedAt: String!
     event_id : Int
     speaker_id: Int!
     event: [Event]
@@ -4288,7 +4288,7 @@ input UpdateTalk {
     duration : String
     tags: [String]
 }`, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/tasks.graphqls", Input: `type Tasks {
+	{Name: "graph/schema/types/tasks.graphqls", Input: `type Tasks {
     id : Int!
     name : String!
     category: String!
@@ -4336,7 +4336,7 @@ input UpdateTask {
     status: String!
     priority : String!
 }`, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/team.graphqls", Input: `type Team {
+	{Name: "graph/schema/types/team.graphqls", Input: `type Team {
     id : Int!
     name : String!
     members: [User!]
@@ -4362,7 +4362,7 @@ input UpdateTeam {
     goal: String!
     task_id: Int
 }`, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/track.graphqls", Input: `type Tracks {
+	{Name: "graph/schema/types/track.graphqls", Input: `type Tracks {
     id : Int!
     name: String!
     trackImgUri: String!
@@ -4405,7 +4405,7 @@ input UpdateTrack {
 
 
 `, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/user.graphqls", Input: `type User {
+	{Name: "graph/schema/types/user.graphqls", Input: `type User {
     id : Int!
     name: String!
     email: String!
@@ -4444,7 +4444,7 @@ input UpdateUser {
     updatedAt: Time
 }
 `, BuiltIn: false},
-	&ast.Source{Name: "graph/schema/types/volunteer.graphqls", Input: `type Volunteer {
+	{Name: "graph/schema/types/volunteer.graphqls", Input: `type Volunteer {
     id : Int!
     role : String!
     duration : String!
@@ -15673,9 +15673,9 @@ func (ec *executionContext) _Talk_createdAt(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.(time.Time)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Talk_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {
@@ -15707,9 +15707,9 @@ func (ec *executionContext) _Talk_updatedAt(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.(time.Time)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Talk_event_id(ctx context.Context, field graphql.CollectedField, obj *model.Talk) (ret graphql.Marshaler) {

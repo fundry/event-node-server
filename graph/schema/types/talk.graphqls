@@ -8,8 +8,8 @@ type Talk {
     Archived: Boolean!
     tags: [String]
     notes : [Notes!]
-    createdAt: Time!
-    updatedAt: Time!
+    createdAt: String!
+    updatedAt: String!
     event_id : Int
     speaker_id: Int!
     event: [Event]

@@ -5,7 +5,7 @@
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5432/oasis-database</jdbc-url>
+      <jdbc-url>jdbc:postgresql://localhost:5432/oasis_db</jdbc-url>
     </data-source>
     <data-source source="LOCAL" name="oasis" uuid="7aa6bdb6-2bc3-4a99-9b1f-6cf0afa69ec5">
       <driver-ref>postgresql</driver-ref>
