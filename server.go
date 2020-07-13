@@ -50,7 +50,6 @@ func main() {
 
 	route.Post("/beta", func(writer http.ResponseWriter, request *http.Request) {
 		email := request.URL.Query().Get("email")
-		_, _ = writer.Write([]byte(fmt.Sprintf("adding %v to  beta testers", email)))
 
 		user := model.BetaTester{
 			ID:          time.Now().Nanosecond(),
@@ -59,15 +58,22 @@ func main() {
 			DateApplied: time.Now().Format("01-02-2006"),
 		}
 
-		if sendEmail, _ := Resolver.SendEmail(email, "web-beta-tester", "beta-users"); !sendEmail {
-			fmt.Errorf("error registering beta tester: %v", sendEmail)
+		err := Database.Model(&user).Where("email = ?", email).First()
+		if err != nil {
+			writer.WriteHeader(http.StatusConflict)
 		}
 
-		fmt.Printf("\n User Email : %v \n", email)
+		if sendEmail, _ := Resolver.SendEmail(email, "web-beta-tester", "beta-users"); !sendEmail {
+			writer.Write([]byte(fmt.Sprintf("Error sending beta mail to : %v", email)))
+
+			writer.WriteHeader(http.StatusInternalServerError)
+		}
 
 		if err := Database.Insert(&user); err != nil {
 			writer.WriteHeader(http.StatusInternalServerError)
 		}
+
+		writer.WriteHeader(http.StatusCreated)
 	})
 
 	route.Route("/graphql", func(route chi.Router) {
