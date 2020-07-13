@@ -9,6 +9,7 @@ type Mutation {
     submitEventTalk( talkId: Int! eventId: Int!, input: SubmitEventTalk ) : EventTalk
     updateSubmittedTalk( talkId: Int!, reviewerId: Int ,input: UpdateSubmittedTalk! ) : EventTalk
     createMeetupGroup(eventId : Int!, leadId: Int! ,input: CreateMeetupGroup): MeetupGroups
+    updateMeetupGroup(id : Int!) : MeetupGroups!
 
     createSponsor(input: CreateSponsor! eventID : Int! ): Sponsor!
     updateSponsor(id: ID, input: UpdateSponsor!):Sponsor!
@@ -18,9 +19,7 @@ type Mutation {
     updateUser(id: ID, input: UpdateUser! ): User!
     deleteUser(id: ID!) : Boolean!
 
-    createPreference(input: CreatePreference!): Preference!
-    updatePreference(id: ID, input: UpdatePreference!): Preference!
-    deletePreference(id: ID!) : Boolean!
+    updateEventSettings(id : Int! eventId: Int!, input: UpdateEventSettings!): EventSettings!
 
     createTeam(input: CreateTeam!, EventID: Int! ): Team!
     updateTeam(id: ID, input: UpdateTeam!): Team!

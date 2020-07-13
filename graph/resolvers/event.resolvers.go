@@ -11,6 +11,15 @@ import (
 	"github.com/vickywane/event-server/graph/model"
 )
 
+func (r *eventResolver) Settings(ctx context.Context, obj *model.Event) ([]*model.EventSettings, error) {
+	var eventSettings []*model.EventSettings
+
+	if err := r.DB.Model(&eventSettings).Where("event_id = ?", obj.ID).Order("id").Select(); err != nil {
+		return nil, err
+	}
+	return eventSettings, nil
+}
+
 func (r *eventResolver) Tracks(ctx context.Context, obj *model.Event) ([]*model.Tracks, error) {
 	var tracks []*model.Tracks
 
@@ -116,6 +125,10 @@ func (r *eventTalkResolver) Draft(ctx context.Context, obj *model.EventTalk) ([]
 	}
 
 	return talk, nil
+}
+
+func (r *meetupGroupsResolver) Facilitators(ctx context.Context, obj *model.MeetupGroups) ([]*model.User, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *meetupGroupsResolver) Event(ctx context.Context, obj *model.MeetupGroups) ([]*model.Event, error) {

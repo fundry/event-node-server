@@ -1,22 +1,18 @@
-type Preference {
+#check if these fields can be POSTGRES json(b)
+type EventSettings {
     id : Int!
-    name: String!
-    color: String!
-    Event: Event!
-    createdAt: Time!
-    updatedAt: Time!
+    eventId : Int!
+    showWelcomeMeetupGroup : Boolean!
+    showTeamInstruction : Boolean!
+    showInvitationInstruction : Boolean!
+    showWelcomeEventInstruction : Boolean!
+    eventThemeColour : String
 }
 
-
-input CreatePreference {
-    name: String!
-    color: String!
-    Event: CreateEvent!
-}
-
-input UpdatePreference {
-    name: String!
-    color: String!
-    Event: CreateEvent!
-    updatedAt: Time!
+input UpdateEventSettings {
+    showWelcomeMeetupGroup : Boolean
+    showTeamInstruction : Boolean
+    showInvitationInstruction : Boolean
+    showWelcomeEventInstruction : Boolean
+    eventThemeColour : String
 }

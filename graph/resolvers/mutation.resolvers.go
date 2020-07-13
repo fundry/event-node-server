@@ -94,6 +94,16 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.CreateEv
 		UpdatedAt:             time.Now(),
 	}
 
+	settings := &model.EventSettings{
+		ID:                          time.Now().Nanosecond(),
+		EventID:                     eventId,
+		ShowWelcomeMeetupGroup:      true,
+		ShowTeamInstruction:         true,
+		ShowInvitationInstruction:   true,
+		ShowWelcomeEventInstruction: true,
+		EventThemeColour:            nil,
+	}
+
 	if !r.CheckEventFieldExists("name", input.Name) {
 		return nil, validators.FieldTaken("name")
 	}
@@ -115,7 +125,12 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.CreateEv
 	}
 
 	if err := r.DB.Insert(&event); err != nil {
-		fmt.Println(err)
+		return nil, validators.ErrorInserting
+	}
+
+	if err := r.DB.Insert(settings); err != nil {
+		fmt.Printf("Error : %v", err)
+		return nil, validators.ErrorInserting
 	}
 
 	return &event, nil
@@ -334,14 +349,16 @@ func (r *mutationResolver) CreateMeetupGroup(ctx context.Context, eventID int, l
 	}
 
 	meetupGroup := &model.MeetupGroups{
-		ID:        time.Now().Nanosecond(),
-		Name:      input.Name,
-		EventID:   eventID,
-		LeadID:    leadID,
-		Summary:   fmt.Sprintf("%v meetup group for %v", event.Name, input.Location),
-		Location:  input.Location,
-		Alias:     input.Alias,
-		CreatedAt: time.Now().Format("01-02-2006"),
+		ID:          time.Now().Nanosecond(),
+		Name:        input.Name,
+		EventID:     eventID,
+		LeadID:      leadID,
+		Description: input.Description,
+		MediaLinks:  input.MediaLinks,
+		Summary:     fmt.Sprintf("%v meetup group for %v", event.Name, input.Location),
+		Location:    input.Location,
+		Alias:       input.Alias,
+		CreatedAt:   time.Now().Format("01-02-2006"),
 	}
 
 	if !r.CheckMeetupFieldExists("name", input.Name) {
@@ -370,6 +387,10 @@ func (r *mutationResolver) CreateMeetupGroup(ctx context.Context, eventID int, l
 	}
 
 	return meetupGroup, nil
+}
+
+func (r *mutationResolver) UpdateMeetupGroup(ctx context.Context, id int) (*model.MeetupGroups, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *mutationResolver) CreateSponsor(ctx context.Context, input model.CreateSponsor, eventID int) (*model.Sponsor, error) {
@@ -554,28 +575,28 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id int) (bool, error)
 	return true, nil
 }
 
-func (r *mutationResolver) CreatePreference(ctx context.Context, input model.CreatePreference) (*model.Preference, error) {
-	// testing GIN context here
-
-	preference := model.Preference{
-		ID:        time.Now().Nanosecond(),
-		Name:      input.Name,
-		CreatedAt: time.Now(),
+func (r *mutationResolver) UpdateEventSettings(ctx context.Context, id int, eventID int, input model.UpdateEventSettings) (*model.EventSettings, error) {
+	if event, err := r.GetEventById(eventID); event != nil && err != nil {
+		return nil, validators.ValueNotFound("event")
 	}
 
-	if err := r.DB.Insert(&preference); err != nil {
-		return nil, validators.ErrorInserting
+	eventSetting, err := r.GetSettingById(id)
+
+	if eventSetting != nil && err != nil {
+		return nil, validators.ErrorUpdating
 	}
 
-	return &preference, nil
-}
+	eventSetting.EventThemeColour = input.EventThemeColour
+	eventSetting.ShowInvitationInstruction = *input.ShowInvitationInstruction
+	eventSetting.ShowWelcomeEventInstruction = *input.ShowWelcomeEventInstruction
+	eventSetting.ShowWelcomeMeetupGroup = *input.ShowWelcomeMeetupGroup
+	eventSetting.ShowTeamInstruction = *input.ShowTeamInstruction
 
-func (r *mutationResolver) UpdatePreference(ctx context.Context, id *int, input model.UpdatePreference) (*model.Preference, error) {
-	panic(fmt.Errorf("not implemented"))
-}
+	if _, err := r.UpdateCurrentEventSetting(eventSetting); err != nil {
+		return nil, validators.ErrorUpdating
+	}
 
-func (r *mutationResolver) DeletePreference(ctx context.Context, id int) (bool, error) {
-	panic(fmt.Errorf("not implemented"))
+	return eventSetting, nil
 }
 
 func (r *mutationResolver) CreateTeam(ctx context.Context, input model.CreateTeam, eventID int) (*model.Team, error) {

@@ -114,6 +114,11 @@ func (r *mutationResolver) UpdateCurrentUser(user *model.User) (*model.User, err
     return user, err
 }
 
+func (r *mutationResolver) UpdateCurrentEventSetting(setting *model.EventSettings) (*model.EventSettings, error) {
+    _, err := r.DB.Model(setting).Where("id = ?", setting.ID).Update()
+    return setting, err
+}
+
 func (r *mutationResolver) UpdateCurrentNote(note *model.Notes) (*model.Notes, error) {
     _, err := r.DB.Model(note).Where("id = ?", note.ID).Update()
     return note, err
@@ -148,6 +153,12 @@ func (r *mutationResolver) GetEventById(id int) (*model.Event, error) {
     event := model.Event{}
     err := r.DB.Model(&event).Where("id = ?", id).First()
     return &event, err
+}
+
+func (r *mutationResolver) GetSettingById(id int) (*model.EventSettings, error) {
+    setting :=  model.EventSettings{}
+    err := r.DB.Model(&setting).Where("id = ?", id).First()
+    return &setting, err
 }
 
 

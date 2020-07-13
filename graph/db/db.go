@@ -16,7 +16,7 @@ import (
 
 func createSchema(db *pg.DB) error {
     for _, models := range []interface{}{(*model.User)(nil),
-        (*model.User)(nil), (*model.Event)(nil), (*model.Preference)(nil),
+        (*model.User)(nil), (*model.Event)(nil), (*model.EventSettings)(nil),
         (*model.UserFile)(nil), (*model.EventFile)(nil), (*model.Team)(nil),
         (*model.Tasks)(nil), (*model.Tracks)(nil), (*model.Talk)(nil),
         (*model.Volunteer)(nil), (*model.BetaTester)(nil), (*model.Attendee)(nil),

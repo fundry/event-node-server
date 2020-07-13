@@ -36,13 +36,6 @@ func SeedDatabase(db *pg.DB) {
 		// UserID:   nil,
 	}
 
-	preference := model.Preference{
-		ID:    rand.Int(),
-		Name:  "Preference 1",
-		Color: "Yellow",
-		Event: nil,
-	}
-
 	team := model.Team{
 		ID:        rand.Int(),
 		Name:      "Technical Team",
@@ -100,7 +93,6 @@ func SeedDatabase(db *pg.DB) {
 
 	db.Insert(&user)
 	db.Insert(&event)
-	db.Insert(&preference)
 	db.Insert(&team)
 	db.Insert(&sponsor)
 	db.Insert(&task)

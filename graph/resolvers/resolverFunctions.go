@@ -16,6 +16,7 @@ import (
     "google.golang.org/api/option"
     "io"
     "net/http"
+    "os"
     "strings"
     "time"
 )
@@ -157,7 +158,7 @@ func SendEmail(email string, eventName string, eventType string) (bool, error) {
         return false, errors.Errorf("Error in Marshalling req details %v", reqErr)
     }
 
-    resp, err := http.Post(FUNCTION_ENDPOINT, "application/json", bytes.NewBuffer(reqBody))
+    resp, err := http.Post(os.Getenv("FUNCTION_ENDPOINT"), "application/json", bytes.NewBuffer(reqBody))
     if err != nil {
         return false, errors.Errorf("couldn't send email. Error %v" , err)
     }

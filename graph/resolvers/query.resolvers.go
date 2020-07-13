@@ -126,30 +126,8 @@ func (r *queryResolver) Users(ctx context.Context, limit *int) ([]*model.User, e
 	return Users, nil
 }
 
-func (r *queryResolver) Preference(ctx context.Context, id *int, name string) (*model.Preference, error) {
-	Preference := model.Preference{ID: *id, Name: name}
-
-	if err := r.DB.Select(&Preference); err != nil {
-		return nil, err
-	}
-
-	return &Preference, nil
-}
-
-func (r *queryResolver) Preferences(ctx context.Context, limit *int) ([]*model.Preference, error) {
-	var Preferences []*model.Preference
-
-	if limit != nil {
-		QueryErr = r.DB.Model(&Preferences).Limit(*limit).Select()
-	} else {
-		QueryErr = r.DB.Model(&Preferences).Select()
-	}
-
-	if QueryErr != nil {
-		return nil, CustomResponse.QueryError
-	}
-
-	return Preferences, nil
+func (r *queryResolver) EventSettings(ctx context.Context, eventID int) (*model.EventSettings, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *queryResolver) UserFile(ctx context.Context, id *int, name string) (*model.UserFile, error) {

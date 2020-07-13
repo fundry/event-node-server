@@ -10,8 +10,7 @@ type Query {
     user(id: Int, name: String!) : User!
     users(Limit: Int) : [User!]!
 
-    preference(id: Int, name: String!) : Preference!
-    preferences(Limit: Int) : [Preference!]!
+    eventSettings(eventId: Int!) : EventSettings!
 
     userFile(id: Int, name: String!) : UserFile!
     userFiles: [UserFile!]!

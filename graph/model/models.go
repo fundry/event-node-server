@@ -111,20 +111,18 @@ type CreateFeatureRequest struct {
 }
 
 type CreateMeetupGroup struct {
-	Name     string `json:"name"`
-	Location string `json:"location"`
-	Alias    string `json:"alias"`
+	Name        string    `json:"name"`
+	Location    string    `json:"location"`
+	Alias       string    `json:"alias"`
+	Email       string    `json:"email"`
+	Website     *string   `json:"website"`
+	Description string    `json:"description"`
+	MediaLinks  []*string `json:"mediaLinks"`
 }
 
 type CreateNote struct {
 	Title   string `json:"title"`
 	Content string `json:"content"`
-}
-
-type CreatePreference struct {
-	Name  string       `json:"name"`
-	Color string       `json:"color"`
-	Event *CreateEvent `json:"Event"`
 }
 
 type CreateReminder struct {
@@ -205,46 +203,48 @@ type DeleteFile struct {
 }
 
 type Event struct {
-	ID                    int             `json:"id"`
-	Name                  string          `json:"name"`
-	Description           string          `json:"description"`
-	Summary               string          `json:"summary"`
-	Alias                 string          `json:"alias"`
-	Email                 string          `json:"Email"`
-	Website               string          `json:"website"`
-	BucketLink            string          `json:"bucketLink"`
-	BucketName            string          `json:"bucketName"`
-	Venue                 string          `json:"venue"`
-	EventType             string          `json:"eventType"`
-	MeetupGroupID         *int            `json:"meetupGroup_id"`
-	CreatedAt             time.Time       `json:"createdAt"`
-	DateCreated           string          `json:"dateCreated"`
-	UpdatedAt             time.Time       `json:"updatedAt"`
-	AuthorID              int             `json:"author_id"`
-	TrackID               *int            `json:"track_id"`
-	VolunteerID           *int            `json:"volunteer_id"`
-	SponsorID             *int            `json:"sponsor_id"`
-	TotalAttendees        int             `json:"totalAttendees"`
-	MediaLinks            []string        `json:"mediaLinks"`
-	Tracks                []*Tracks       `json:"tracks"`
-	Talk                  []*EventTalk    `json:"talk"`
-	MeetupGroups          []*MeetupGroups `json:"meetupGroups"`
-	EventDate             []*string       `json:"EventDate"`
-	CreatedBy             []*User         `json:"createdBy"`
-	Attendees             []*Attendee     `json:"attendees"`
-	SpeakerConduct        *string         `json:"speakerConduct"`
-	Actions               []string        `json:"actions"`
-	Teams                 []*Team         `json:"teams"`
-	CartItemsCategory     []*Category     `json:"cart_items_category"`
-	Volunteer             []*Volunteer    `json:"volunteer"`
-	Sponsors              []*Sponsor      `json:"sponsors"`
-	IsVirtual             bool            `json:"isVirtual"`
-	ConfirmedEmail        bool            `json:"confirmedEmail"`
-	IsAcceptingVolunteers bool            `json:"isAcceptingVolunteers"`
-	IsAcceptingAttendees  bool            `json:"isAcceptingAttendees"`
-	IsAcceptingTalks      bool            `json:"isAcceptingTalks"`
-	IsArchived            bool            `json:"isArchived"`
-	IsLocked              bool            `json:"isLocked"`
+	ID                    int              `json:"id"`
+	Name                  string           `json:"name"`
+	Description           string           `json:"description"`
+	Summary               string           `json:"summary"`
+	Alias                 string           `json:"alias"`
+	Email                 string           `json:"Email"`
+	Website               string           `json:"website"`
+	BucketLink            string           `json:"bucketLink"`
+	BucketName            string           `json:"bucketName"`
+	Venue                 string           `json:"venue"`
+	EventType             string           `json:"eventType"`
+	MeetupGroupID         *int             `json:"meetupGroup_id"`
+	CreatedAt             time.Time        `json:"createdAt"`
+	DateCreated           string           `json:"dateCreated"`
+	UpdatedAt             time.Time        `json:"updatedAt"`
+	AuthorID              int              `json:"author_id"`
+	TrackID               *int             `json:"track_id"`
+	VolunteerID           *int             `json:"volunteer_id"`
+	SponsorID             *int             `json:"sponsor_id"`
+	Settings              []*EventSettings `json:"settings"`
+	SettingsID            *int             `json:"settings_id"`
+	TotalAttendees        int              `json:"totalAttendees"`
+	MediaLinks            []string         `json:"mediaLinks"`
+	Tracks                []*Tracks        `json:"tracks"`
+	Talk                  []*EventTalk     `json:"talk"`
+	MeetupGroups          []*MeetupGroups  `json:"meetupGroups"`
+	EventDate             []*string        `json:"EventDate"`
+	CreatedBy             []*User          `json:"createdBy"`
+	Attendees             []*Attendee      `json:"attendees"`
+	SpeakerConduct        *string          `json:"speakerConduct"`
+	Actions               []string         `json:"actions"`
+	Teams                 []*Team          `json:"teams"`
+	CartItemsCategory     []*Category      `json:"cart_items_category"`
+	Volunteer             []*Volunteer     `json:"volunteer"`
+	Sponsors              []*Sponsor       `json:"sponsors"`
+	IsVirtual             bool             `json:"isVirtual"`
+	ConfirmedEmail        bool             `json:"confirmedEmail"`
+	IsAcceptingVolunteers bool             `json:"isAcceptingVolunteers"`
+	IsAcceptingAttendees  bool             `json:"isAcceptingAttendees"`
+	IsAcceptingTalks      bool             `json:"isAcceptingTalks"`
+	IsArchived            bool             `json:"isArchived"`
+	IsLocked              bool             `json:"isLocked"`
 }
 
 type EventFile struct {
@@ -257,6 +257,16 @@ type EventFile struct {
 	UploadedBy []*User        `json:"uploadedBy"`
 	FileURI    string         `json:"file_uri"`
 	Timestamp  time.Time      `json:"timestamp"`
+}
+
+type EventSettings struct {
+	ID                          int     `json:"id"`
+	EventID                     int     `json:"eventId"`
+	ShowWelcomeMeetupGroup      bool    `json:"showWelcomeMeetupGroup"`
+	ShowTeamInstruction         bool    `json:"showTeamInstruction"`
+	ShowInvitationInstruction   bool    `json:"showInvitationInstruction"`
+	ShowWelcomeEventInstruction bool    `json:"showWelcomeEventInstruction"`
+	EventThemeColour            *string `json:"eventThemeColour"`
 }
 
 type EventTalk struct {
@@ -302,19 +312,28 @@ type MakePurchases struct {
 }
 
 type MeetupGroups struct {
-	ID        int      `json:"id"`
-	ImgURI    *string  `json:"img_uri"`
-	Name      string   `json:"name"`
-	Summary   string   `json:"summary"`
-	Event     []*Event `json:"event"`
-	EventID   int      `json:"event_id"`
-	Lead      []*User  `json:"lead"`
-	Members   []*User  `json:"members"`
-	MembersID *int     `json:"members_id"`
-	LeadID    int      `json:"lead_id"`
-	Location  string   `json:"location"`
-	Alias     string   `json:"alias"`
-	CreatedAt string   `json:"createdAt"`
+	ID            int        `json:"id"`
+	ImgURI        *string    `json:"img_uri"`
+	Name          string     `json:"name"`
+	Summary       string     `json:"summary"`
+	Email         string     `json:"email"`
+	Website       *string    `json:"website"`
+	Facilitators  []*User    `json:"facilitators"`
+	FacilitatorID *int       `json:"facilitator_id"`
+	SponsorID     *int       `json:"sponsor_id"`
+	Event         []*Event   `json:"event"`
+	EventID       int        `json:"event_id"`
+	Lead          []*User    `json:"lead"`
+	Description   string     `json:"description"`
+	Sponsors      []*Sponsor `json:"sponsors"`
+	MediaLinks    []*string  `json:"mediaLinks"`
+	Actions       []*string  `json:"actions"`
+	Members       []*User    `json:"members"`
+	MembersID     *int       `json:"members_id"`
+	LeadID        int        `json:"lead_id"`
+	Location      string     `json:"location"`
+	Alias         string     `json:"alias"`
+	CreatedAt     string     `json:"createdAt"`
 }
 
 type Notes struct {
@@ -323,15 +342,6 @@ type Notes struct {
 	Content string  `json:"content"`
 	Talk    []*Talk `json:"talk"`
 	TalkID  int     `json:"talk_id"`
-}
-
-type Preference struct {
-	ID        int       `json:"id"`
-	Name      string    `json:"name"`
-	Color     string    `json:"color"`
-	Event     *Event    `json:"Event"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type Purchases struct {
@@ -491,22 +501,36 @@ type UpdateEvent struct {
 	IsAcceptingTalks      *bool     `json:"isAcceptingTalks"`
 }
 
+type UpdateEventSettings struct {
+	ShowWelcomeMeetupGroup      *bool   `json:"showWelcomeMeetupGroup"`
+	ShowTeamInstruction         *bool   `json:"showTeamInstruction"`
+	ShowInvitationInstruction   *bool   `json:"showInvitationInstruction"`
+	ShowWelcomeEventInstruction *bool   `json:"showWelcomeEventInstruction"`
+	EventThemeColour            *string `json:"eventThemeColour"`
+}
+
 type UpdateFeatureRequest struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Status      string `json:"status"`
 }
 
+type UpdateMeetupGroup struct {
+	Name          *string   `json:"name"`
+	Description   string    `json:"description"`
+	Location      *string   `json:"location"`
+	SponsorID     *int      `json:"sponsor_id"`
+	FacilitatorID *int      `json:"facilitator_id"`
+	Website       *string   `json:"website"`
+	Alias         *string   `json:"alias"`
+	MediaLinks    []*string `json:"mediaLinks"`
+	Actions       []*string `json:"actions"`
+	LeadID        int       `json:"lead_id"`
+}
+
 type UpdateNote struct {
 	Title   string `json:"title"`
 	Content string `json:"content"`
-}
-
-type UpdatePreference struct {
-	Name      string       `json:"name"`
-	Color     string       `json:"color"`
-	Event     *CreateEvent `json:"Event"`
-	UpdatedAt time.Time    `json:"updatedAt"`
 }
 
 type UpdateSponsor struct {
@@ -518,9 +542,10 @@ type UpdateSponsor struct {
 }
 
 type UpdateSubmittedTalk struct {
-	IsAccepted bool    `json:"isAccepted"`
-	Track      *string `json:"track"`
-	Comment    *string `json:"comment"`
+	IsAccepted bool      `json:"isAccepted"`
+	Track      *string   `json:"track"`
+	Comment    *string   `json:"comment"`
+	MediaLinks []*string `json:"mediaLinks"`
 }
 
 type UpdateTalk struct {

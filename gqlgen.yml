@@ -65,6 +65,8 @@ models:
         resolver:  true
       sponsors:
         resolver: true
+      settings :
+        resolver : true
 
   MeetupGroups:
     fields:
@@ -74,6 +76,11 @@ models:
         resolver: true
       members:
         resolver: true
+      facilitators :
+        resolver : true
+      sponsor :
+        resolver : true
+
 
   Bug:
     fields:

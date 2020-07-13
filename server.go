@@ -1,6 +1,9 @@
+// go ../../../../bin/gqlgen generate
+
 package main
 
 import (
+	"fmt"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
@@ -8,12 +11,14 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/rs/cors"
+	"github.com/vickywane/event-server/graph/model"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
 	socket "github.com/gorilla/websocket"
+	Resolver "github.com/vickywane/event-server/graph/resolvers"
 
 	// "github.com/vickywane/event-server/graph/dataloaders"
 	"github.com/vickywane/event-server/graph/db"
@@ -42,6 +47,28 @@ func main() {
 		middleware.RequestID,
 		// InternalMiddleWare.AuthMiddleware(),
 	)
+
+	route.Post("/beta", func(writer http.ResponseWriter, request *http.Request) {
+		email := request.URL.Query().Get("email")
+		_, _ = writer.Write([]byte(fmt.Sprintf("adding %v to  beta testers", email)))
+
+		user := model.BetaTester{
+			ID:          time.Now().Nanosecond(),
+			Name:        "web-beta-tester",
+			Email:       email,
+			DateApplied: time.Now().Format("01-02-2006"),
+		}
+
+		if sendEmail, _ := Resolver.SendEmail(email, "web-beta-tester", "beta-users"); !sendEmail {
+			fmt.Errorf("error registering beta tester: %v", sendEmail)
+		}
+
+		fmt.Printf("\n User Email : %v \n", email)
+
+		if err := Database.Insert(&user); err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+		}
+	})
 
 	route.Route("/graphql", func(route chi.Router) {
 		// route.Use(dataloaders.NewMiddleware(Database)...)

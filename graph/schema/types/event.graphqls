@@ -19,6 +19,8 @@ type Event {
     track_id: Int
     volunteer_id: Int
     sponsor_id : Int
+    settings : [EventSettings]
+    settings_id : Int
     totalAttendees: Int!
     mediaLinks : [String!]
     tracks: [Tracks]
@@ -110,9 +112,18 @@ type MeetupGroups {
     img_uri : String
     name : String!
     summary : String!
+    email : String!
+    website : String
+    facilitators : [User!]
+    facilitator_id : Int
+    sponsor_id : Int
     event: [Event]
     event_id  : Int!
     lead : [User]
+    description : String!
+    sponsors : [Sponsor]
+    mediaLinks : [String]
+    actions : [String]
     members : [User]
     members_id:  Int
     lead_id: Int!
@@ -125,6 +136,23 @@ input CreateMeetupGroup {
     name : String!
     location : String!
     alias: String!
+    email : String!
+    website : String
+    description : String!
+    mediaLinks : [String]
+}
+
+input UpdateMeetupGroup {
+    name : String
+    description : String!
+    location : String
+    sponsor_id :Int
+    facilitator_id : Int
+    website: String
+    alias: String
+    mediaLinks : [String]
+    actions : [String]
+    lead_id : Int!
 }
 
 input SubmitEventTalk {
@@ -135,4 +163,5 @@ input UpdateSubmittedTalk {
     isAccepted : Boolean!
     track : String
     comment : String
+    mediaLinks : [String]
 }
