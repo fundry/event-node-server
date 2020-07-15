@@ -11,6 +11,9 @@ type Mutation {
     createMeetupGroup(eventId : Int!, leadId: Int! ,input: CreateMeetupGroup): MeetupGroups
     updateMeetupGroup(id : Int!) : MeetupGroups!
 
+    updateEventModals(id : Int! eventId: Int!, input: UpdateEventModals!): EventSettings!
+    updateEventSettings(eventId: Int!, input: UpdateEventSettings!): Event!
+
     createSponsor(input: CreateSponsor! eventID : Int! ): Sponsor!
     updateSponsor(id: ID, input: UpdateSponsor!):Sponsor!
     deleteSponsor(id: ID!) : Boolean!
@@ -19,7 +22,6 @@ type Mutation {
     updateUser(id: ID, input: UpdateUser! ): User!
     deleteUser(id: ID!) : Boolean!
 
-    updateEventSettings(id : Int! eventId: Int!, input: UpdateEventSettings!): EventSettings!
 
     createTeam(input: CreateTeam!, EventID: Int! ): Team!
     updateTeam(id: ID, input: UpdateTeam!): Team!

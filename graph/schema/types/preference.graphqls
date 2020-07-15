@@ -9,10 +9,15 @@ type EventSettings {
     eventThemeColour : String
 }
 
-input UpdateEventSettings {
+input UpdateEventModals {
     showWelcomeMeetupGroup : Boolean
     showTeamInstruction : Boolean
     showInvitationInstruction : Boolean
     showWelcomeEventInstruction : Boolean
     eventThemeColour : String
+}
+
+input UpdateEventSettings {
+    isArchived: Boolean!
+    isLocked: Boolean!
 }

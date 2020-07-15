@@ -60,7 +60,7 @@ func main() {
 
 		err := Database.Model(&user).Where("email = ?", email).First()
 		if err != nil {
-			writer.WriteHeader(http.StatusConflict)
+			writer.WriteHeader(http.StatusOK)
 		}
 
 		if sendEmail, _ := Resolver.SendEmail(email, "web-beta-tester", "beta-users"); !sendEmail {
@@ -73,7 +73,7 @@ func main() {
 			writer.WriteHeader(http.StatusInternalServerError)
 		}
 
-		writer.WriteHeader(http.StatusCreated)
+		writer.WriteHeader(http.StatusOK)
 	})
 
 	route.Route("/graphql", func(route chi.Router) {

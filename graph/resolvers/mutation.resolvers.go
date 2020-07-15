@@ -393,6 +393,47 @@ func (r *mutationResolver) UpdateMeetupGroup(ctx context.Context, id int) (*mode
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *mutationResolver) UpdateEventModals(ctx context.Context, id int, eventID int, input model.UpdateEventModals) (*model.EventSettings, error) {
+	if event, err := r.GetEventById(eventID); event != nil && err != nil {
+		return nil, validators.ValueNotFound("event")
+	}
+
+	eventSetting, err := r.GetSettingById(id)
+
+	if eventSetting != nil && err != nil {
+		return nil, validators.ErrorUpdating
+	}
+
+	eventSetting.EventThemeColour = input.EventThemeColour
+	eventSetting.ShowInvitationInstruction = *input.ShowInvitationInstruction
+	eventSetting.ShowWelcomeEventInstruction = *input.ShowWelcomeEventInstruction
+	eventSetting.ShowWelcomeMeetupGroup = *input.ShowWelcomeMeetupGroup
+	eventSetting.ShowTeamInstruction = *input.ShowTeamInstruction
+
+	if _, err := r.UpdateCurrentEventSetting(eventSetting); err != nil {
+		return nil, validators.ErrorUpdating
+	}
+
+	return eventSetting, nil
+}
+
+func (r *mutationResolver) UpdateEventSettings(ctx context.Context, eventID int, input model.UpdateEventSettings) (*model.Event, error) {
+	event , err := r.GetEventById(eventID)
+
+	if event != nil && err != nil {
+		return nil, validators.ValueNotFound("event")
+	}
+
+	event.IsLocked = input.IsLocked
+	event.IsArchived = input.IsArchived
+	
+	if _,  err := r.UpdateCurrentEvent(event); err != nil {
+		return nil , validators.ErrorUpdating
+	}
+
+	return event, nil
+}
+
 func (r *mutationResolver) CreateSponsor(ctx context.Context, input model.CreateSponsor, eventID int) (*model.Sponsor, error) {
 	event, err := r.GetEventById(eventID)
 
@@ -573,30 +614,6 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, id int) (bool, error)
 	err = r.DeleteCurrentUser(user)
 
 	return true, nil
-}
-
-func (r *mutationResolver) UpdateEventSettings(ctx context.Context, id int, eventID int, input model.UpdateEventSettings) (*model.EventSettings, error) {
-	if event, err := r.GetEventById(eventID); event != nil && err != nil {
-		return nil, validators.ValueNotFound("event")
-	}
-
-	eventSetting, err := r.GetSettingById(id)
-
-	if eventSetting != nil && err != nil {
-		return nil, validators.ErrorUpdating
-	}
-
-	eventSetting.EventThemeColour = input.EventThemeColour
-	eventSetting.ShowInvitationInstruction = *input.ShowInvitationInstruction
-	eventSetting.ShowWelcomeEventInstruction = *input.ShowWelcomeEventInstruction
-	eventSetting.ShowWelcomeMeetupGroup = *input.ShowWelcomeMeetupGroup
-	eventSetting.ShowTeamInstruction = *input.ShowTeamInstruction
-
-	if _, err := r.UpdateCurrentEventSetting(eventSetting); err != nil {
-		return nil, validators.ErrorUpdating
-	}
-
-	return eventSetting, nil
 }
 
 func (r *mutationResolver) CreateTeam(ctx context.Context, input model.CreateTeam, eventID int) (*model.Team, error) {

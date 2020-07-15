@@ -501,12 +501,17 @@ type UpdateEvent struct {
 	IsAcceptingTalks      *bool     `json:"isAcceptingTalks"`
 }
 
-type UpdateEventSettings struct {
+type UpdateEventModals struct {
 	ShowWelcomeMeetupGroup      *bool   `json:"showWelcomeMeetupGroup"`
 	ShowTeamInstruction         *bool   `json:"showTeamInstruction"`
 	ShowInvitationInstruction   *bool   `json:"showInvitationInstruction"`
 	ShowWelcomeEventInstruction *bool   `json:"showWelcomeEventInstruction"`
 	EventThemeColour            *string `json:"eventThemeColour"`
+}
+
+type UpdateEventSettings struct {
+	IsArchived bool `json:"isArchived"`
+	IsLocked   bool `json:"isLocked"`
 }
 
 type UpdateFeatureRequest struct {

@@ -276,7 +276,8 @@ type ComplexityRoot struct {
 		UpdateCartItem           func(childComplexity int, input model.UpdateCartItem) int
 		UpdateEvent              func(childComplexity int, id int, input model.UpdateEvent) int
 		UpdateEventAttendee      func(childComplexity int, eventID int, userID int) int
-		UpdateEventSettings      func(childComplexity int, id int, eventID int, input model.UpdateEventSettings) int
+		UpdateEventModals        func(childComplexity int, id int, eventID int, input model.UpdateEventModals) int
+		UpdateEventSettings      func(childComplexity int, eventID int, input model.UpdateEventSettings) int
 		UpdateFeatureRequest     func(childComplexity int, input *model.UpdateFeatureRequest, userID int, eventID int) int
 		UpdateMeetupGroup        func(childComplexity int, id int) int
 		UpdateNote               func(childComplexity int, input *model.UpdateNote, talkID int) int
@@ -555,13 +556,14 @@ type MutationResolver interface {
 	UpdateSubmittedTalk(ctx context.Context, talkID int, reviewerID *int, input model.UpdateSubmittedTalk) (*model.EventTalk, error)
 	CreateMeetupGroup(ctx context.Context, eventID int, leadID int, input *model.CreateMeetupGroup) (*model.MeetupGroups, error)
 	UpdateMeetupGroup(ctx context.Context, id int) (*model.MeetupGroups, error)
+	UpdateEventModals(ctx context.Context, id int, eventID int, input model.UpdateEventModals) (*model.EventSettings, error)
+	UpdateEventSettings(ctx context.Context, eventID int, input model.UpdateEventSettings) (*model.Event, error)
 	CreateSponsor(ctx context.Context, input model.CreateSponsor, eventID int) (*model.Sponsor, error)
 	UpdateSponsor(ctx context.Context, id *int, input model.UpdateSponsor) (*model.Sponsor, error)
 	DeleteSponsor(ctx context.Context, id int) (bool, error)
 	CreateUser(ctx context.Context, input model.CreateUser) (*model.AuthResponse, error)
 	UpdateUser(ctx context.Context, id *int, input model.UpdateUser) (*model.User, error)
 	DeleteUser(ctx context.Context, id int) (bool, error)
-	UpdateEventSettings(ctx context.Context, id int, eventID int, input model.UpdateEventSettings) (*model.EventSettings, error)
 	CreateTeam(ctx context.Context, input model.CreateTeam, eventID int) (*model.Team, error)
 	UpdateTeam(ctx context.Context, id *int, input model.UpdateTeam) (*model.Team, error)
 	DeleteTeam(ctx context.Context, id int) (bool, error)
@@ -2162,6 +2164,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateEventAttendee(childComplexity, args["EventID"].(int), args["UserID"].(int)), true
 
+	case "Mutation.updateEventModals":
+		if e.complexity.Mutation.UpdateEventModals == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateEventModals_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateEventModals(childComplexity, args["id"].(int), args["eventId"].(int), args["input"].(model.UpdateEventModals)), true
+
 	case "Mutation.updateEventSettings":
 		if e.complexity.Mutation.UpdateEventSettings == nil {
 			break
@@ -2172,7 +2186,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateEventSettings(childComplexity, args["id"].(int), args["eventId"].(int), args["input"].(model.UpdateEventSettings)), true
+		return e.complexity.Mutation.UpdateEventSettings(childComplexity, args["eventId"].(int), args["input"].(model.UpdateEventSettings)), true
 
 	case "Mutation.updateFeatureRequest":
 		if e.complexity.Mutation.UpdateFeatureRequest == nil {
@@ -3783,6 +3797,9 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
     createMeetupGroup(eventId : Int!, leadId: Int! ,input: CreateMeetupGroup): MeetupGroups
     updateMeetupGroup(id : Int!) : MeetupGroups!
 
+    updateEventModals(id : Int! eventId: Int!, input: UpdateEventModals!): EventSettings!
+    updateEventSettings(eventId: Int!, input: UpdateEventSettings!): Event!
+    
     createSponsor(input: CreateSponsor! eventID : Int! ): Sponsor!
     updateSponsor(id: ID, input: UpdateSponsor!):Sponsor!
     deleteSponsor(id: ID!) : Boolean!
@@ -3791,7 +3808,6 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
     updateUser(id: ID, input: UpdateUser! ): User!
     deleteUser(id: ID!) : Boolean!
 
-    updateEventSettings(id : Int! eventId: Int!, input: UpdateEventSettings!): EventSettings!
 
     createTeam(input: CreateTeam!, EventID: Int! ): Team!
     updateTeam(id: ID, input: UpdateTeam!): Team!
@@ -4216,12 +4232,17 @@ type EventSettings {
     eventThemeColour : String
 }
 
-input UpdateEventSettings {
+input UpdateEventModals {
     showWelcomeMeetupGroup : Boolean
     showTeamInstruction : Boolean
     showInvitationInstruction : Boolean
     showWelcomeEventInstruction : Boolean
     eventThemeColour : String
+}
+
+input UpdateEventSettings {
+    isArchived: Boolean!
+    isLocked: Boolean!
 }`, BuiltIn: false},
 	{Name: "graph/schema/types/reminders.graphqls", Input: `type  Reminder {
     id : ID!
@@ -5380,7 +5401,7 @@ func (ec *executionContext) field_Mutation_updateEventAttendee_args(ctx context.
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_updateEventSettings_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_updateEventModals_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 int
@@ -5399,14 +5420,36 @@ func (ec *executionContext) field_Mutation_updateEventSettings_args(ctx context.
 		}
 	}
 	args["eventId"] = arg1
-	var arg2 model.UpdateEventSettings
+	var arg2 model.UpdateEventModals
 	if tmp, ok := rawArgs["input"]; ok {
-		arg2, err = ec.unmarshalNUpdateEventSettings2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateEventSettings(ctx, tmp)
+		arg2, err = ec.unmarshalNUpdateEventModals2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateEventModals(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["input"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateEventSettings_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["eventId"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["eventId"] = arg0
+	var arg1 model.UpdateEventSettings
+	if tmp, ok := rawArgs["input"]; ok {
+		arg1, err = ec.unmarshalNUpdateEventSettings2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateEventSettings(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -11295,6 +11338,88 @@ func (ec *executionContext) _Mutation_updateMeetupGroup(ctx context.Context, fie
 	return ec.marshalNMeetupGroups2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐMeetupGroups(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_updateEventModals(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateEventModals_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateEventModals(rctx, args["id"].(int), args["eventId"].(int), args["input"].(model.UpdateEventModals))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.EventSettings)
+	fc.Result = res
+	return ec.marshalNEventSettings2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventSettings(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateEventSettings(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateEventSettings_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateEventSettings(rctx, args["eventId"].(int), args["input"].(model.UpdateEventSettings))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Event)
+	fc.Result = res
+	return ec.marshalNEvent2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_createSponsor(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -11536,47 +11661,6 @@ func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field grap
 	res := resTmp.(bool)
 	fc.Result = res
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_updateEventSettings(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Mutation",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_updateEventSettings_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateEventSettings(rctx, args["id"].(int), args["eventId"].(int), args["input"].(model.UpdateEventSettings))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.EventSettings)
-	fc.Result = res
-	return ec.marshalNEventSettings2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventSettings(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createTeam(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -21023,8 +21107,8 @@ func (ec *executionContext) unmarshalInputUpdateEvent(ctx context.Context, obj i
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputUpdateEventSettings(ctx context.Context, obj interface{}) (model.UpdateEventSettings, error) {
-	var it model.UpdateEventSettings
+func (ec *executionContext) unmarshalInputUpdateEventModals(ctx context.Context, obj interface{}) (model.UpdateEventModals, error) {
+	var it model.UpdateEventModals
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
@@ -21056,6 +21140,30 @@ func (ec *executionContext) unmarshalInputUpdateEventSettings(ctx context.Contex
 		case "eventThemeColour":
 			var err error
 			it.EventThemeColour, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateEventSettings(ctx context.Context, obj interface{}) (model.UpdateEventSettings, error) {
+	var it model.UpdateEventSettings
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "isArchived":
+			var err error
+			it.IsArchived, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "isLocked":
+			var err error
+			it.IsLocked, err = ec.unmarshalNBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -22632,6 +22740,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "updateEventModals":
+			out.Values[i] = ec._Mutation_updateEventModals(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateEventSettings":
+			out.Values[i] = ec._Mutation_updateEventSettings(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createSponsor":
 			out.Values[i] = ec._Mutation_createSponsor(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -22656,11 +22774,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "deleteUser":
 			out.Values[i] = ec._Mutation_deleteUser(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "updateEventSettings":
-			out.Values[i] = ec._Mutation_updateEventSettings(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -25422,6 +25535,10 @@ func (ec *executionContext) unmarshalNUpdateCartItem2githubᚗcomᚋvickywaneᚋ
 
 func (ec *executionContext) unmarshalNUpdateEvent2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateEvent(ctx context.Context, v interface{}) (model.UpdateEvent, error) {
 	return ec.unmarshalInputUpdateEvent(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNUpdateEventModals2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateEventModals(ctx context.Context, v interface{}) (model.UpdateEventModals, error) {
+	return ec.unmarshalInputUpdateEventModals(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNUpdateEventSettings2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateEventSettings(ctx context.Context, v interface{}) (model.UpdateEventSettings, error) {
