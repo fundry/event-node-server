@@ -398,7 +398,7 @@ func (r *mutationResolver) UpdateEventModals(ctx context.Context, id int, eventI
 		return nil, validators.ValueNotFound("event")
 	}
 
-	eventSetting, err := r.GetSettingById(id)
+	eventSetting, err := r.GetSettingById(id) // set
 
 	if eventSetting != nil && err != nil {
 		return nil, validators.ErrorUpdating
