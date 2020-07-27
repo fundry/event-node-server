@@ -49,6 +49,7 @@ type ResolverRoot interface {
 	Query() QueryResolver
 	Reminder() ReminderResolver
 	Sponsor() SponsorResolver
+	Stream() StreamResolver
 	Subscription() SubscriptionResolver
 	Talk() TalkResolver
 	TaskComments() TaskCommentsResolver
@@ -247,6 +248,7 @@ type ComplexityRoot struct {
 		CreateNote               func(childComplexity int, input *model.CreateNote, talkID int) int
 		CreateReminder           func(childComplexity int, input *model.CreateReminder, userID int) int
 		CreateSponsor            func(childComplexity int, input model.CreateSponsor, eventID int) int
+		CreateStream             func(childComplexity int, input model.CreateStream, userID int) int
 		CreateTalk               func(childComplexity int, input model.CreateTalk, userID int) int
 		CreateTask               func(childComplexity int, input model.CreateTasks, teamID int, userID int) int
 		CreateTeam               func(childComplexity int, input model.CreateTeam, eventID int) int
@@ -263,6 +265,7 @@ type ComplexityRoot struct {
 		DeletePurchase           func(childComplexity int, id int) int
 		DeleteReminder           func(childComplexity int, id *int) int
 		DeleteSponsor            func(childComplexity int, id int) int
+		DeleteStream             func(childComplexity int, id int) int
 		DeleteTalk               func(childComplexity int, id int) int
 		DeleteTask               func(childComplexity int, id int) int
 		DeleteTeam               func(childComplexity int, id int) int
@@ -282,6 +285,7 @@ type ComplexityRoot struct {
 		UpdateMeetupGroup        func(childComplexity int, id int) int
 		UpdateNote               func(childComplexity int, input *model.UpdateNote, talkID int) int
 		UpdateSponsor            func(childComplexity int, id *int, input model.UpdateSponsor) int
+		UpdateStream             func(childComplexity int, id int, input model.UpdateStream) int
 		UpdateSubmittedTalk      func(childComplexity int, talkID int, reviewerID *int, input model.UpdateSubmittedTalk) int
 		UpdateTalk               func(childComplexity int, id int, input model.UpdateTalk) int
 		UpdateTask               func(childComplexity int, id int, input model.UpdateTask) int
@@ -337,6 +341,8 @@ type ComplexityRoot struct {
 		Reminder        func(childComplexity int, userID int) int
 		Sponsor         func(childComplexity int, id *int, name *string) int
 		Sponsors        func(childComplexity int, limit *int) int
+		Stream          func(childComplexity int, id int) int
+		Streams         func(childComplexity int, limit *int) int
 		Talk            func(childComplexity int, id int) int
 		Talks           func(childComplexity int, limit *int) int
 		Task            func(childComplexity int, id *int) int
@@ -373,6 +379,22 @@ type ComplexityRoot struct {
 		Name              func(childComplexity int) int
 		SponsorshipStatus func(childComplexity int) int
 		Type              func(childComplexity int) int
+	}
+
+	Stream struct {
+		Actions     func(childComplexity int) int
+		Attendees   func(childComplexity int) int
+		AttendeesID func(childComplexity int) int
+		CreatedAt   func(childComplexity int) int
+		CreatedBy   func(childComplexity int) int
+		Duration    func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Notes       func(childComplexity int) int
+		NotesID     func(childComplexity int) int
+		StreamLinks func(childComplexity int) int
+		Summary     func(childComplexity int) int
+		Title       func(childComplexity int) int
+		UserID      func(childComplexity int) int
 	}
 
 	Subscription struct {
@@ -469,6 +491,8 @@ type ComplexityRoot struct {
 		Name         func(childComplexity int) int
 		Password     func(childComplexity int) int
 		Reminders    func(childComplexity int) int
+		StreamID     func(childComplexity int) int
+		Streams      func(childComplexity int) int
 		Talks        func(childComplexity int) int
 		UpdatedAt    func(childComplexity int) int
 		VolunteerID  func(childComplexity int) int
@@ -556,6 +580,9 @@ type MutationResolver interface {
 	UpdateSubmittedTalk(ctx context.Context, talkID int, reviewerID *int, input model.UpdateSubmittedTalk) (*model.EventTalk, error)
 	CreateMeetupGroup(ctx context.Context, eventID int, leadID int, input *model.CreateMeetupGroup) (*model.MeetupGroups, error)
 	UpdateMeetupGroup(ctx context.Context, id int) (*model.MeetupGroups, error)
+	CreateStream(ctx context.Context, input model.CreateStream, userID int) (*model.Stream, error)
+	UpdateStream(ctx context.Context, id int, input model.UpdateStream) (*model.Stream, error)
+	DeleteStream(ctx context.Context, id int) (bool, error)
 	UpdateEventModals(ctx context.Context, id int, eventID int, input model.UpdateEventModals) (*model.EventSettings, error)
 	UpdateEventSettings(ctx context.Context, eventID int, input model.UpdateEventSettings) (*model.Event, error)
 	CreateSponsor(ctx context.Context, input model.CreateSponsor, eventID int) (*model.Sponsor, error)
@@ -622,6 +649,8 @@ type QueryResolver interface {
 	MeetupGroups(ctx context.Context, limit *int) ([]*model.MeetupGroups, error)
 	GetMeetupGroup(ctx context.Context, id int) (*model.MeetupGroups, error)
 	GetEventTalks(ctx context.Context, areApproved bool, limit *int, eventID *int) ([]*model.EventTalk, error)
+	Stream(ctx context.Context, id int) (*model.Stream, error)
+	Streams(ctx context.Context, limit *int) ([]*model.Stream, error)
 	User(ctx context.Context, id *int, name string) (*model.User, error)
 	Users(ctx context.Context, limit *int) ([]*model.User, error)
 	EventSettings(ctx context.Context, eventID int) (*model.EventSettings, error)
@@ -657,6 +686,13 @@ type ReminderResolver interface {
 type SponsorResolver interface {
 	Event(ctx context.Context, obj *model.Sponsor) (*model.Event, error)
 }
+type StreamResolver interface {
+	Notes(ctx context.Context, obj *model.Stream) ([]*model.Notes, error)
+
+	Attendees(ctx context.Context, obj *model.Stream) ([]*model.User, error)
+
+	CreatedBy(ctx context.Context, obj *model.Stream) ([]*model.User, error)
+}
 type SubscriptionResolver interface {
 	VolunteerCreated(ctx context.Context, role *string) (<-chan *model.Volunteer, error)
 	NewTeam(ctx context.Context) (<-chan *model.Team, error)
@@ -691,6 +727,7 @@ type TracksResolver interface {
 type UserResolver interface {
 	Talks(ctx context.Context, obj *model.User) ([]*model.Talk, error)
 	Events(ctx context.Context, obj *model.User) ([]*model.Event, error)
+	Streams(ctx context.Context, obj *model.User) ([]*model.Stream, error)
 
 	Reminders(ctx context.Context, obj *model.User) ([]*model.Reminder, error)
 
@@ -1816,6 +1853,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateSponsor(childComplexity, args["input"].(model.CreateSponsor), args["eventID"].(int)), true
 
+	case "Mutation.createStream":
+		if e.complexity.Mutation.CreateStream == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createStream_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateStream(childComplexity, args["input"].(model.CreateStream), args["userId"].(int)), true
+
 	case "Mutation.createTalk":
 		if e.complexity.Mutation.CreateTalk == nil {
 			break
@@ -2007,6 +2056,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteSponsor(childComplexity, args["id"].(int)), true
+
+	case "Mutation.deleteStream":
+		if e.complexity.Mutation.DeleteStream == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteStream_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteStream(childComplexity, args["id"].(int)), true
 
 	case "Mutation.deleteTalk":
 		if e.complexity.Mutation.DeleteTalk == nil {
@@ -2235,6 +2296,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateSponsor(childComplexity, args["id"].(*int), args["input"].(model.UpdateSponsor)), true
+
+	case "Mutation.updateStream":
+		if e.complexity.Mutation.UpdateStream == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateStream_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateStream(childComplexity, args["id"].(int), args["input"].(model.UpdateStream)), true
 
 	case "Mutation.updateSubmittedTalk":
 		if e.complexity.Mutation.UpdateSubmittedTalk == nil {
@@ -2708,6 +2781,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Sponsors(childComplexity, args["Limit"].(*int)), true
 
+	case "Query.stream":
+		if e.complexity.Query.Stream == nil {
+			break
+		}
+
+		args, err := ec.field_Query_stream_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Stream(childComplexity, args["id"].(int)), true
+
+	case "Query.streams":
+		if e.complexity.Query.Streams == nil {
+			break
+		}
+
+		args, err := ec.field_Query_streams_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Streams(childComplexity, args["Limit"].(*int)), true
+
 	case "Query.talk":
 		if e.complexity.Query.Talk == nil {
 			break
@@ -2987,6 +3084,97 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Sponsor.Type(childComplexity), true
+
+	case "Stream.actions":
+		if e.complexity.Stream.Actions == nil {
+			break
+		}
+
+		return e.complexity.Stream.Actions(childComplexity), true
+
+	case "Stream.attendees":
+		if e.complexity.Stream.Attendees == nil {
+			break
+		}
+
+		return e.complexity.Stream.Attendees(childComplexity), true
+
+	case "Stream.attendees_id":
+		if e.complexity.Stream.AttendeesID == nil {
+			break
+		}
+
+		return e.complexity.Stream.AttendeesID(childComplexity), true
+
+	case "Stream.createdAt":
+		if e.complexity.Stream.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Stream.CreatedAt(childComplexity), true
+
+	case "Stream.createdBy":
+		if e.complexity.Stream.CreatedBy == nil {
+			break
+		}
+
+		return e.complexity.Stream.CreatedBy(childComplexity), true
+
+	case "Stream.duration":
+		if e.complexity.Stream.Duration == nil {
+			break
+		}
+
+		return e.complexity.Stream.Duration(childComplexity), true
+
+	case "Stream.id":
+		if e.complexity.Stream.ID == nil {
+			break
+		}
+
+		return e.complexity.Stream.ID(childComplexity), true
+
+	case "Stream.notes":
+		if e.complexity.Stream.Notes == nil {
+			break
+		}
+
+		return e.complexity.Stream.Notes(childComplexity), true
+
+	case "Stream.notes_id":
+		if e.complexity.Stream.NotesID == nil {
+			break
+		}
+
+		return e.complexity.Stream.NotesID(childComplexity), true
+
+	case "Stream.streamLinks":
+		if e.complexity.Stream.StreamLinks == nil {
+			break
+		}
+
+		return e.complexity.Stream.StreamLinks(childComplexity), true
+
+	case "Stream.summary":
+		if e.complexity.Stream.Summary == nil {
+			break
+		}
+
+		return e.complexity.Stream.Summary(childComplexity), true
+
+	case "Stream.title":
+		if e.complexity.Stream.Title == nil {
+			break
+		}
+
+		return e.complexity.Stream.Title(childComplexity), true
+
+	case "Stream.user_id":
+		if e.complexity.Stream.UserID == nil {
+			break
+		}
+
+		return e.complexity.Stream.UserID(childComplexity), true
 
 	case "Subscription.newTeam":
 		if e.complexity.Subscription.NewTeam == nil {
@@ -3518,6 +3706,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.Reminders(childComplexity), true
 
+	case "User.stream_id":
+		if e.complexity.User.StreamID == nil {
+			break
+		}
+
+		return e.complexity.User.StreamID(childComplexity), true
+
+	case "User.streams":
+		if e.complexity.User.Streams == nil {
+			break
+		}
+
+		return e.complexity.User.Streams(childComplexity), true
+
 	case "User.talks":
 		if e.complexity.User.Talks == nil {
 			break
@@ -3797,9 +3999,13 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
     createMeetupGroup(eventId : Int!, leadId: Int! ,input: CreateMeetupGroup): MeetupGroups
     updateMeetupGroup(id : Int!) : MeetupGroups!
 
+    createStream(input: CreateStream!, userId : Int!) : Stream!
+    updateStream(id: Int!, input: UpdateStream!): Stream!
+    deleteStream(id : Int!): Boolean!
+
     updateEventModals(id : Int! eventId: Int!, input: UpdateEventModals!): EventSettings!
     updateEventSettings(eventId: Int!, input: UpdateEventSettings!): Event!
-    
+
     createSponsor(input: CreateSponsor! eventID : Int! ): Sponsor!
     updateSponsor(id: ID, input: UpdateSponsor!):Sponsor!
     deleteSponsor(id: ID!) : Boolean!
@@ -3872,6 +4078,9 @@ directive @default(value: Boolean ) on FIELD_DEFINITION
     MeetupGroups(Limit: Int) : [MeetupGroups]
     getMeetupGroup(id: Int!) : MeetupGroups!
     getEventTalks(areApproved: Boolean! Limit : Int eventId: Int): [EventTalk!]!  # Todo Try return EVENTTALK here instead
+
+    stream(id : Int!) : Stream!
+    streams(Limit: Int) : [Stream]
 
     user(id: Int, name: String!) : User!
     users(Limit: Int) : [User!]!
@@ -4061,6 +4270,40 @@ input CreateEvent {
     isLocked: Boolean!
     isAcceptingVolunteers: Boolean!
     isAcceptingTalks : Boolean!
+}
+
+type Stream {
+    id : Int!
+    title: String!
+    user_id : Int!
+    summary : String!
+    duration : String!
+    notes : [Notes]
+    notes_id : Int!
+    streamLinks : [String!]
+    attendees : [User]
+    attendees_id : Int
+    createdBy : [User]!
+    actions : [String]
+    createdAt : String!
+}
+
+input  CreateStream {
+    title: String!
+    user_id : Int!
+    summary : String!
+    duration : String!
+    streamLinks : [String!]
+}
+
+input  UpdateStream {
+    title: String!
+    notes_id : Int!
+    summary : String!
+    duration : String!
+    streamLinks : [String!]
+    attendees_id : Int
+    actions: [String!]
 }
 
 input UpdateEvent {
@@ -4530,7 +4773,9 @@ input UpdateTrack {
     bucketName: String!
     talks: [Talk]
     events: [Event!]
+    streams : [Stream!]
     event_id: Int!
+    stream_id: Int!
     file_id: Int
     reminders : [Reminder!]
     img_uri : String
@@ -4889,6 +5134,28 @@ func (ec *executionContext) field_Mutation_createSponsor_args(ctx context.Contex
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createStream_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.CreateStream
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNCreateStream2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateStream(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["userId"]; ok {
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["userId"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createTalk_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -5161,6 +5428,20 @@ func (ec *executionContext) field_Mutation_deleteSponsor_args(ctx context.Contex
 	var arg0 int
 	if tmp, ok := rawArgs["id"]; ok {
 		arg0, err = ec.unmarshalNID2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteStream_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -5555,6 +5836,28 @@ func (ec *executionContext) field_Mutation_updateSponsor_args(ctx context.Contex
 	var arg1 model.UpdateSponsor
 	if tmp, ok := rawArgs["input"]; ok {
 		arg1, err = ec.unmarshalNUpdateSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateSponsor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateStream_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 model.UpdateStream
+	if tmp, ok := rawArgs["input"]; ok {
+		arg1, err = ec.unmarshalNUpdateStream2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateStream(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -6144,6 +6447,34 @@ func (ec *executionContext) field_Query_sponsor_args(ctx context.Context, rawArg
 }
 
 func (ec *executionContext) field_Query_sponsors_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["Limit"]; ok {
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["Limit"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_stream_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_streams_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *int
@@ -11338,6 +11669,129 @@ func (ec *executionContext) _Mutation_updateMeetupGroup(ctx context.Context, fie
 	return ec.marshalNMeetupGroups2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐMeetupGroups(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_createStream(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createStream_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateStream(rctx, args["input"].(model.CreateStream), args["userId"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Stream)
+	fc.Result = res
+	return ec.marshalNStream2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐStream(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateStream(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateStream_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateStream(rctx, args["id"].(int), args["input"].(model.UpdateStream))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Stream)
+	fc.Result = res
+	return ec.marshalNStream2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐStream(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteStream(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteStream_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteStream(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_updateEventModals(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -14035,6 +14489,85 @@ func (ec *executionContext) _Query_getEventTalks(ctx context.Context, field grap
 	return ec.marshalNEventTalk2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventTalkᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_stream(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_stream_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Stream(rctx, args["id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Stream)
+	fc.Result = res
+	return ec.marshalNStream2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐStream(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_streams(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_streams_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Streams(rctx, args["Limit"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Stream)
+	fc.Result = res
+	return ec.marshalOStream2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐStream(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_user(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -15704,6 +16237,433 @@ func (ec *executionContext) _Sponsor_isOrganization(ctx context.Context, field g
 	res := resTmp.(bool)
 	fc.Result = res
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Stream_id(ctx context.Context, field graphql.CollectedField, obj *model.Stream) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Stream",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Stream_title(ctx context.Context, field graphql.CollectedField, obj *model.Stream) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Stream",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Stream_user_id(ctx context.Context, field graphql.CollectedField, obj *model.Stream) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Stream",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Stream_summary(ctx context.Context, field graphql.CollectedField, obj *model.Stream) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Stream",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Summary, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Stream_duration(ctx context.Context, field graphql.CollectedField, obj *model.Stream) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Stream",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Duration, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Stream_notes(ctx context.Context, field graphql.CollectedField, obj *model.Stream) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Stream",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Stream().Notes(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Notes)
+	fc.Result = res
+	return ec.marshalONotes2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐNotes(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Stream_notes_id(ctx context.Context, field graphql.CollectedField, obj *model.Stream) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Stream",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.NotesID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Stream_streamLinks(ctx context.Context, field graphql.CollectedField, obj *model.Stream) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Stream",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.StreamLinks, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Stream_attendees(ctx context.Context, field graphql.CollectedField, obj *model.Stream) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Stream",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Stream().Attendees(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Stream_attendees_id(ctx context.Context, field graphql.CollectedField, obj *model.Stream) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Stream",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AttendeesID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Stream_createdBy(ctx context.Context, field graphql.CollectedField, obj *model.Stream) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Stream",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Stream().CreatedBy(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Stream_actions(ctx context.Context, field graphql.CollectedField, obj *model.Stream) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Stream",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Actions, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*string)
+	fc.Result = res
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Stream_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Stream) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Stream",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Subscription_volunteerCreated(ctx context.Context, field graphql.CollectedField) (ret func() graphql.Marshaler) {
@@ -18007,6 +18967,37 @@ func (ec *executionContext) _User_events(ctx context.Context, field graphql.Coll
 	return ec.marshalOEvent2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐEventᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _User_streams(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.User().Streams(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Stream)
+	fc.Result = res
+	return ec.marshalOStream2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐStreamᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _User_event_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -18025,6 +19016,40 @@ func (ec *executionContext) _User_event_id(ctx context.Context, field graphql.Co
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.EventID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_stream_id(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "User",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.StreamID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -20441,6 +21466,48 @@ func (ec *executionContext) unmarshalInputCreateSponsor(ctx context.Context, obj
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCreateStream(ctx context.Context, obj interface{}) (model.CreateStream, error) {
+	var it model.CreateStream
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "title":
+			var err error
+			it.Title, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "user_id":
+			var err error
+			it.UserID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "summary":
+			var err error
+			it.Summary, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "duration":
+			var err error
+			it.Duration, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "streamLinks":
+			var err error
+			it.StreamLinks, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateTalk(ctx context.Context, obj interface{}) (model.CreateTalk, error) {
 	var it model.CreateTalk
 	var asMap = obj.(map[string]interface{})
@@ -21332,6 +22399,60 @@ func (ec *executionContext) unmarshalInputUpdateSponsor(ctx context.Context, obj
 		case "isOrganization":
 			var err error
 			it.IsOrganization, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateStream(ctx context.Context, obj interface{}) (model.UpdateStream, error) {
+	var it model.UpdateStream
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "title":
+			var err error
+			it.Title, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "notes_id":
+			var err error
+			it.NotesID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "summary":
+			var err error
+			it.Summary, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "duration":
+			var err error
+			it.Duration, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "streamLinks":
+			var err error
+			it.StreamLinks, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "attendees_id":
+			var err error
+			it.AttendeesID, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "actions":
+			var err error
+			it.Actions, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -22740,6 +23861,21 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "createStream":
+			out.Values[i] = ec._Mutation_createStream(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateStream":
+			out.Values[i] = ec._Mutation_updateStream(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteStream":
+			out.Values[i] = ec._Mutation_deleteStream(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "updateEventModals":
 			out.Values[i] = ec._Mutation_updateEventModals(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -23225,6 +24361,31 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
+				return res
+			})
+		case "stream":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_stream(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "streams":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_streams(ctx, field)
 				return res
 			})
 		case "user":
@@ -23715,6 +24876,105 @@ func (ec *executionContext) _Sponsor(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "isOrganization":
 			out.Values[i] = ec._Sponsor_isOrganization(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var streamImplementors = []string{"Stream"}
+
+func (ec *executionContext) _Stream(ctx context.Context, sel ast.SelectionSet, obj *model.Stream) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, streamImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Stream")
+		case "id":
+			out.Values[i] = ec._Stream_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "title":
+			out.Values[i] = ec._Stream_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "user_id":
+			out.Values[i] = ec._Stream_user_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "summary":
+			out.Values[i] = ec._Stream_summary(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "duration":
+			out.Values[i] = ec._Stream_duration(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "notes":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Stream_notes(ctx, field, obj)
+				return res
+			})
+		case "notes_id":
+			out.Values[i] = ec._Stream_notes_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "streamLinks":
+			out.Values[i] = ec._Stream_streamLinks(ctx, field, obj)
+		case "attendees":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Stream_attendees(ctx, field, obj)
+				return res
+			})
+		case "attendees_id":
+			out.Values[i] = ec._Stream_attendees_id(ctx, field, obj)
+		case "createdBy":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Stream_createdBy(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "actions":
+			out.Values[i] = ec._Stream_actions(ctx, field, obj)
+		case "createdAt":
+			out.Values[i] = ec._Stream_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
@@ -24276,8 +25536,24 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 				res = ec._User_events(ctx, field, obj)
 				return res
 			})
+		case "streams":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._User_streams(ctx, field, obj)
+				return res
+			})
 		case "event_id":
 			out.Values[i] = ec._User_event_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "stream_id":
+			out.Values[i] = ec._User_stream_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
@@ -24923,6 +26199,10 @@ func (ec *executionContext) unmarshalNCreateSponsor2githubᚗcomᚋvickywaneᚋe
 	return ec.unmarshalInputCreateSponsor(ctx, v)
 }
 
+func (ec *executionContext) unmarshalNCreateStream2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateStream(ctx context.Context, v interface{}) (model.CreateStream, error) {
+	return ec.unmarshalInputCreateStream(ctx, v)
+}
+
 func (ec *executionContext) unmarshalNCreateTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐCreateTalk(ctx context.Context, v interface{}) (model.CreateTalk, error) {
 	return ec.unmarshalInputCreateTalk(ctx, v)
 }
@@ -25291,6 +26571,20 @@ func (ec *executionContext) marshalNSponsor2ᚖgithubᚗcomᚋvickywaneᚋevent�
 	return ec._Sponsor(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNStream2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐStream(ctx context.Context, sel ast.SelectionSet, v model.Stream) graphql.Marshaler {
+	return ec._Stream(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNStream2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐStream(ctx context.Context, sel ast.SelectionSet, v *model.Stream) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Stream(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
 	return graphql.UnmarshalString(v)
 }
@@ -25547,6 +26841,10 @@ func (ec *executionContext) unmarshalNUpdateEventSettings2githubᚗcomᚋvickywa
 
 func (ec *executionContext) unmarshalNUpdateSponsor2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateSponsor(ctx context.Context, v interface{}) (model.UpdateSponsor, error) {
 	return ec.unmarshalInputUpdateSponsor(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNUpdateStream2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateStream(ctx context.Context, v interface{}) (model.UpdateStream, error) {
+	return ec.unmarshalInputUpdateStream(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNUpdateSubmittedTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐUpdateSubmittedTalk(ctx context.Context, v interface{}) (model.UpdateSubmittedTalk, error) {
@@ -26743,6 +28041,50 @@ func (ec *executionContext) marshalOMeetupGroups2ᚖgithubᚗcomᚋvickywaneᚋe
 	return ec._MeetupGroups(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalONotes2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐNotes(ctx context.Context, sel ast.SelectionSet, v model.Notes) graphql.Marshaler {
+	return ec._Notes(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalONotes2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐNotes(ctx context.Context, sel ast.SelectionSet, v []*model.Notes) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalONotes2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐNotes(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
 func (ec *executionContext) marshalONotes2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐNotesᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Notes) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -26781,6 +28123,13 @@ func (ec *executionContext) marshalONotes2ᚕᚖgithubᚗcomᚋvickywaneᚋevent
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalONotes2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐNotes(ctx context.Context, sel ast.SelectionSet, v *model.Notes) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Notes(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOPurchases2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐPurchases(ctx context.Context, sel ast.SelectionSet, v model.Purchases) graphql.Marshaler {
@@ -26974,6 +28323,97 @@ func (ec *executionContext) marshalOSponsor2ᚖgithubᚗcomᚋvickywaneᚋevent�
 		return graphql.Null
 	}
 	return ec._Sponsor(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOStream2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐStream(ctx context.Context, sel ast.SelectionSet, v model.Stream) graphql.Marshaler {
+	return ec._Stream(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalOStream2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐStream(ctx context.Context, sel ast.SelectionSet, v []*model.Stream) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOStream2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐStream(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOStream2ᚕᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐStreamᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Stream) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNStream2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐStream(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalOStream2ᚖgithubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐStream(ctx context.Context, sel ast.SelectionSet, v *model.Stream) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Stream(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

@@ -66,6 +66,40 @@ input CreateEvent {
     isAcceptingTalks : Boolean!
 }
 
+type Stream {
+    id : Int!
+    title: String!
+    user_id : Int!
+    summary : String!
+    duration : String!
+    notes : [Notes]
+    notes_id : Int!
+    streamLinks : [String!]
+    attendees : [User]
+    attendees_id : Int
+    createdBy : [User]!
+    actions : [String]
+    createdAt : String!
+}
+
+input  CreateStream {
+    title: String!
+    user_id : Int!
+    summary : String!
+    duration : String!
+    streamLinks : [String!]
+}
+
+input  UpdateStream {
+    title: String!
+    notes_id : Int!
+    summary : String!
+    duration : String!
+    streamLinks : [String!]
+    attendees_id : Int
+    actions: [String!]
+}
+
 input UpdateEvent {
     name: String
     summary: String

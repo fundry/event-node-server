@@ -11,6 +11,10 @@ type Mutation {
     createMeetupGroup(eventId : Int!, leadId: Int! ,input: CreateMeetupGroup): MeetupGroups
     updateMeetupGroup(id : Int!) : MeetupGroups!
 
+    createStream(input: CreateStream!, userId : Int!) : Stream!
+    updateStream(id: Int!, input: UpdateStream!): Stream!
+    deleteStream(id : Int!): Boolean!
+
     updateEventModals(id : Int! eventId: Int!, input: UpdateEventModals!): EventSettings!
     updateEventSettings(eventId: Int!, input: UpdateEventSettings!): Event!
 

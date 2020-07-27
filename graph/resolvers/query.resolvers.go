@@ -88,6 +88,32 @@ func (r *queryResolver) GetEventTalks(ctx context.Context, areApproved bool, lim
 	return talks, nil
 }
 
+func (r *queryResolver) Stream(ctx context.Context, id int) (*model.Stream, error) {
+	stream := model.Stream{ID: id}
+
+	if err := r.DB.Select(stream); err != nil {
+		return nil, err
+	}
+
+	return &stream, nil
+}
+
+func (r *queryResolver) Streams(ctx context.Context, limit *int) ([]*model.Stream, error) {
+	var streams []*model.Stream
+
+	if limit != nil {
+		QueryErr = r.DB.Model(&streams).Limit(*limit).Select()
+	} else {
+		QueryErr = r.DB.Model(&streams).Select()
+	}
+
+	if QueryErr != nil {
+		return nil, CustomResponse.QueryError
+	}
+
+	return streams, nil
+}
+
 func (r *queryResolver) User(ctx context.Context, id *int, name string) (*model.User, error) {
 	User := model.User{ID: *id}
 

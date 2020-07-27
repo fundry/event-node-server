@@ -68,6 +68,15 @@ models:
       settings :
         resolver : true
 
+  Stream :
+    fields :
+      createdBy :
+        resolver: true
+      notes :
+        resolver : true
+      attendees :
+        resolver : true
+
   MeetupGroups:
     fields:
       event:
@@ -104,6 +113,8 @@ models:
     fields:
       events:
         resolver: true
+      streams :
+        resolver : true
       talks:
         resolver: true
       volunteering:

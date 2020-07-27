@@ -7,6 +7,9 @@ type Query {
     getMeetupGroup(id: Int!) : MeetupGroups!
     getEventTalks(areApproved: Boolean! Limit : Int eventId: Int): [EventTalk!]!  # Todo Try return EVENTTALK here instead
 
+    stream(id : Int!) : Stream!
+    streams(Limit: Int) : [Stream]
+
     user(id: Int, name: String!) : User!
     users(Limit: Int) : [User!]!
 

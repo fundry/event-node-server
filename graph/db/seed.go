@@ -15,7 +15,7 @@ import (
 func SeedDatabase(db *pg.DB) {
 	fmt.Println("Seeding Database ....")
 	user := model.User{
-		ID:         rand.Int(),
+		ID: rand.Int(),
 	}
 
 	event := model.Event{
@@ -30,9 +30,9 @@ func SeedDatabase(db *pg.DB) {
 		Venue:       "Test, Lagos, Nigeria",
 		EventType:   "Conference",
 		// EventDate:        []*string{"12 - 12 - 12"},
-		IsArchived:  false,
-		IsLocked:    false,
-		Attendees:   nil,
+		IsArchived: false,
+		IsLocked:   false,
+		Attendees:  nil,
 		// UserID:   nil,
 	}
 
@@ -53,11 +53,11 @@ func SeedDatabase(db *pg.DB) {
 	}
 
 	task := model.Tasks{
-		ID:          rand.Int(),
-		Name:        "Sketch and Create Event Media Assets",
-		Category:        "Design",
-		Status: "COMPLETEDt",
-		Assignees:   nil,
+		ID:        rand.Int(),
+		Name:      "Sketch and Create Event Media Assets",
+		Category:  "Design",
+		Status:    "COMPLETEDt",
+		Assignees: nil,
 	}
 
 	talk := model.Talk{

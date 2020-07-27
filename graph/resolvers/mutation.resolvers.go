@@ -104,6 +104,33 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.CreateEv
 		EventThemeColour:            nil,
 	}
 
+	switch input.EventType {
+	case "Conference":
+		if err := r.DB.Insert(&event); err != nil {
+			return nil, validators.ErrorInserting
+		}
+
+		if err := r.DB.Insert(settings); err != nil {
+			fmt.Printf("Error : %v", err)
+			return nil, validators.ErrorInserting
+		}
+		break
+	case "Meetup":
+		if err := r.DB.Insert(&event); err != nil {
+			return nil, validators.ErrorInserting
+		}
+
+		if err := r.DB.Insert(settings); err != nil {
+			fmt.Printf("Error : %v", err)
+			return nil, validators.ErrorInserting
+		}
+		break
+	case "Stream":
+
+	default:
+		break
+	}
+
 	if !r.CheckEventFieldExists("name", input.Name) {
 		return nil, validators.FieldTaken("name")
 	}
@@ -122,15 +149,6 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.CreateEv
 
 	if len(input.Description) > 1500 {
 		return nil, validators.ValueExceeded(1500)
-	}
-
-	if err := r.DB.Insert(&event); err != nil {
-		return nil, validators.ErrorInserting
-	}
-
-	if err := r.DB.Insert(settings); err != nil {
-		fmt.Printf("Error : %v", err)
-		return nil, validators.ErrorInserting
 	}
 
 	return &event, nil
@@ -187,8 +205,6 @@ func (r *mutationResolver) UpdateEvent(ctx context.Context, id int, input model.
 		event.Name = *input.Name
 	}
 
-	fmt.Println("email \n")
-
 	// An event might be updated with having a speakerConduct specified. This makes the field null
 	// Getting null from the api panics && break the backend
 
@@ -199,8 +215,6 @@ func (r *mutationResolver) UpdateEvent(ctx context.Context, id int, input model.
 	//     return nil, err
 	// }
 	event.SpeakerConduct = input.SpeakerConduct
-
-	fmt.Println("conduct \n")
 
 	if valid, err := validators.DataLength(9, *input.Description, "Description"); valid && err == nil {
 		event.Description = *input.Description
@@ -228,12 +242,11 @@ func (r *mutationResolver) UpdateEvent(ctx context.Context, id int, input model.
 		return nil, err
 	}
 
-	if valid, err := validators.DataLength(9, *input.Venue, "Venue"); valid && err == nil {
+	if valid, err := validators.DataLength(6, *input.Venue, "Venue"); valid && err == nil {
 		event.Venue = *input.Venue
 	} else {
 		return nil, err
 	}
-	fmt.Println("six \n")
 
 	date := time.Now().Format("01-02-2006")
 	action := fmt.Sprintf("This event was updated on %v", date)
@@ -245,7 +258,6 @@ func (r *mutationResolver) UpdateEvent(ctx context.Context, id int, input model.
 
 	if event, err = r.UpdateCurrentEvent(event); err != nil {
 		return nil, validators.ErrorUpdating
-
 	}
 
 	return event, nil
@@ -393,6 +405,52 @@ func (r *mutationResolver) UpdateMeetupGroup(ctx context.Context, id int) (*mode
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *mutationResolver) CreateStream(ctx context.Context, input model.CreateStream, userID int) (*model.Stream, error) {
+	if user, err := r.GetUserById(userID); user != nil && err != nil {
+		return nil, validators.ValueNotFound("user field")
+	}
+
+	stream := &model.Stream{
+		ID:          time.Now().Nanosecond(),
+		Title:       input.Title,
+		UserID:      userID,
+		Summary:     input.Summary,
+		Duration:    input.Duration,
+		StreamLinks: input.StreamLinks,
+		CreatedAt:   time.Now().Format("01-02-2006"),
+	}
+
+	if err := r.DB.Insert(stream); err != nil {
+		return nil, validators.ErrorInserting
+	}
+
+	return stream, nil
+}
+
+func (r *mutationResolver) UpdateStream(ctx context.Context, id int, input model.UpdateStream) (*model.Stream, error) {
+	stream, err := r.GetStreamById(id)
+
+	if stream != nil && err != nil {
+		return nil, validators.ValueNotFound("stream")
+	}
+
+	stream.Title = input.Title
+	stream.Summary = input.Summary
+	stream.NotesID = input.NotesID
+	stream.Duration = input.Duration
+	stream.StreamLinks = input.StreamLinks
+
+	if stream, err = r.UpdateCurrentStream(stream); err != nil {
+		return nil, validators.ErrorUpdating
+	}
+
+	return stream, nil
+}
+
+func (r *mutationResolver) DeleteStream(ctx context.Context, id int) (bool, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *mutationResolver) UpdateEventModals(ctx context.Context, id int, eventID int, input model.UpdateEventModals) (*model.EventSettings, error) {
 	if event, err := r.GetEventById(eventID); event != nil && err != nil {
 		return nil, validators.ValueNotFound("event")
@@ -418,7 +476,7 @@ func (r *mutationResolver) UpdateEventModals(ctx context.Context, id int, eventI
 }
 
 func (r *mutationResolver) UpdateEventSettings(ctx context.Context, eventID int, input model.UpdateEventSettings) (*model.Event, error) {
-	event , err := r.GetEventById(eventID)
+	event, err := r.GetEventById(eventID)
 
 	if event != nil && err != nil {
 		return nil, validators.ValueNotFound("event")
@@ -426,9 +484,9 @@ func (r *mutationResolver) UpdateEventSettings(ctx context.Context, eventID int,
 
 	event.IsLocked = input.IsLocked
 	event.IsArchived = input.IsArchived
-	
-	if _,  err := r.UpdateCurrentEvent(event); err != nil {
-		return nil , validators.ErrorUpdating
+
+	if _, err := r.UpdateCurrentEvent(event); err != nil {
+		return nil, validators.ErrorUpdating
 	}
 
 	return event, nil
@@ -1285,7 +1343,8 @@ func (r *mutationResolver) CreateNote(ctx context.Context, input *model.CreateNo
 }
 
 func (r *mutationResolver) UpdateNote(ctx context.Context, input *model.UpdateNote, talkID int) (*model.Notes, error) {
-	note, err := r.GetNoteById(talkID)
+	note, err :=
+		r.GetNoteById(talkID)
 
 	if err != nil {
 		return nil, validators.NotFound

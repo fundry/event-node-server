@@ -156,6 +156,18 @@ func (r *meetupGroupsResolver) Members(ctx context.Context, obj *model.MeetupGro
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *streamResolver) Notes(ctx context.Context, obj *model.Stream) ([]*model.Notes, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *streamResolver) Attendees(ctx context.Context, obj *model.Stream) ([]*model.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *streamResolver) CreatedBy(ctx context.Context, obj *model.Stream) ([]*model.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 // Event returns generated.EventResolver implementation.
 func (r *Resolver) Event() generated.EventResolver { return &eventResolver{r} }
 
@@ -165,9 +177,13 @@ func (r *Resolver) EventTalk() generated.EventTalkResolver { return &eventTalkRe
 // MeetupGroups returns generated.MeetupGroupsResolver implementation.
 func (r *Resolver) MeetupGroups() generated.MeetupGroupsResolver { return &meetupGroupsResolver{r} }
 
+// Stream returns generated.StreamResolver implementation.
+func (r *Resolver) Stream() generated.StreamResolver { return &streamResolver{r} }
+
 type eventResolver struct{ *Resolver }
 type eventTalkResolver struct{ *Resolver }
 type meetupGroupsResolver struct{ *Resolver }
+type streamResolver struct{ *Resolver }
 
 // !!! WARNING !!!
 // The code below was going to be deleted when updating resolvers. It has been copied here so you have

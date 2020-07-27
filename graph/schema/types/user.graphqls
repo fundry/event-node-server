@@ -6,7 +6,9 @@ type User {
     bucketName: String!
     talks: [Talk]
     events: [Event!]
+    streams : [Stream!]
     event_id: Int!
+    stream_id: Int!
     file_id: Int
     reminders : [Reminder!]
     img_uri : String

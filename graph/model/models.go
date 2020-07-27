@@ -138,6 +138,14 @@ type CreateSponsor struct {
 	IsOrganization bool    `json:"isOrganization"`
 }
 
+type CreateStream struct {
+	Title       string   `json:"title"`
+	UserID      int      `json:"user_id"`
+	Summary     string   `json:"summary"`
+	Duration    string   `json:"duration"`
+	StreamLinks []string `json:"streamLinks"`
+}
+
 type CreateTalk struct {
 	Title        string    `json:"title"`
 	TalkCoverURI *string   `json:"talkCoverUri"`
@@ -378,6 +386,22 @@ type Sponsor struct {
 	IsOrganization    bool    `json:"isOrganization"`
 }
 
+type Stream struct {
+	ID          int       `json:"id"`
+	Title       string    `json:"title"`
+	UserID      int       `json:"user_id"`
+	Summary     string    `json:"summary"`
+	Duration    string    `json:"duration"`
+	Notes       []*Notes  `json:"notes"`
+	NotesID     int       `json:"notes_id"`
+	StreamLinks []string  `json:"streamLinks"`
+	Attendees   []*User   `json:"attendees"`
+	AttendeesID *int      `json:"attendees_id"`
+	CreatedBy   []*User   `json:"createdBy"`
+	Actions     []*string `json:"actions"`
+	CreatedAt   string    `json:"createdAt"`
+}
+
 type SubmitEventTalk struct {
 	IsAccepted bool `json:"isAccepted"`
 }
@@ -546,6 +570,16 @@ type UpdateSponsor struct {
 	IsOrganization   bool    `json:"isOrganization"`
 }
 
+type UpdateStream struct {
+	Title       string   `json:"title"`
+	NotesID     int      `json:"notes_id"`
+	Summary     string   `json:"summary"`
+	Duration    string   `json:"duration"`
+	StreamLinks []string `json:"streamLinks"`
+	AttendeesID *int     `json:"attendees_id"`
+	Actions     []string `json:"actions"`
+}
+
 type UpdateSubmittedTalk struct {
 	IsAccepted bool      `json:"isAccepted"`
 	Track      *string   `json:"track"`
@@ -623,7 +657,9 @@ type User struct {
 	BucketName   string       `json:"bucketName"`
 	Talks        []*Talk      `json:"talks"`
 	Events       []*Event     `json:"events"`
+	Streams      []*Stream    `json:"streams"`
 	EventID      int          `json:"event_id"`
+	StreamID     int          `json:"stream_id"`
 	FileID       *int         `json:"file_id"`
 	Reminders    []*Reminder  `json:"reminders"`
 	ImgURI       *string      `json:"img_uri"`
