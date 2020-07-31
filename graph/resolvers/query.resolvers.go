@@ -89,13 +89,13 @@ func (r *queryResolver) GetEventTalks(ctx context.Context, areApproved bool, lim
 }
 
 func (r *queryResolver) Stream(ctx context.Context, id int) (*model.Stream, error) {
-	stream := model.Stream{ID: id}
+	stream := &model.Stream{ID: id}
 
 	if err := r.DB.Select(stream); err != nil {
 		return nil, err
 	}
 
-	return &stream, nil
+	return stream, nil
 }
 
 func (r *queryResolver) Streams(ctx context.Context, limit *int) ([]*model.Stream, error) {

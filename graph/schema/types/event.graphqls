@@ -2,15 +2,16 @@
 type Event {
     id : Int!
     name: String!
-    description: String!
-    summary: String!
     alias: String!
     Email: String!
     website: String!
     bucketLink : String!
     bucketName: String!
-    venue: String!
     eventType: String!
+
+    venue: String
+    description: String
+    summary: String
     meetupGroup_id : Int
     createdAt: Time!
     dateCreated: String!
@@ -37,6 +38,13 @@ type Event {
     sponsors : [Sponsor!]
     isVirtual : Boolean!
     confirmedEmail: Boolean!
+
+    marketplaceOnboarding : Boolean!
+    mobileOnboarding : Boolean!
+    invitationsOnboarding : Boolean!
+    teamsOnboarding : Boolean!
+    scheduleOnboarding : Boolean!
+
     isAcceptingVolunteers: Boolean!
     isAcceptingAttendees: Boolean!
     isAcceptingTalks : Boolean!
@@ -44,19 +52,22 @@ type Event {
     isLocked: Boolean!
 }
 
+
+
 input CreateEvent {
     name: String!
-    summary: String!
     alias: String!
-    description: String!
     website: String!
     Email: String!
     eventType: String!
-    venue: String!
+
+    description: String
+    venue: String
+    summary: String
     speakerConduct: String
     volunteer_id: Int
     sponsor_id : Int
-    EventDate: [String]!
+    EventDate: [String]
     actions: [String!]
     mediaLinks : [String!]
     isVirtual : Boolean!
@@ -64,6 +75,7 @@ input CreateEvent {
     isLocked: Boolean!
     isAcceptingVolunteers: Boolean!
     isAcceptingTalks : Boolean!
+
 }
 
 type Stream {
@@ -84,7 +96,6 @@ type Stream {
 
 input  CreateStream {
     title: String!
-    user_id : Int!
     summary : String!
     duration : String!
     streamLinks : [String!]
@@ -124,6 +135,12 @@ input UpdateEvent {
     isLocked: Boolean
     isAcceptingVolunteers: Boolean
     isAcceptingTalks : Boolean
+
+    marketplaceOnboarding : Boolean!
+    mobileOnboarding : Boolean!
+    invitationsOnboarding : Boolean!
+    teamsOnboarding : Boolean!
+    scheduleOnboarding : Boolean!
 }
 
 type EventTalk {

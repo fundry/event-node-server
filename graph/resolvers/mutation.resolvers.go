@@ -92,6 +92,12 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.CreateEv
 		IsLocked:              false,
 		CreatedAt:             time.Now(),
 		UpdatedAt:             time.Now(),
+
+		MobileOnboarding:      false,
+		InvitationsOnboarding: false,
+		TeamsOnboarding:       false,
+		ScheduleOnboarding:    false,
+		MarketplaceOnboarding: false,
 	}
 
 	settings := &model.EventSettings{
@@ -104,33 +110,6 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.CreateEv
 		EventThemeColour:            nil,
 	}
 
-	switch input.EventType {
-	case "Conference":
-		if err := r.DB.Insert(&event); err != nil {
-			return nil, validators.ErrorInserting
-		}
-
-		if err := r.DB.Insert(settings); err != nil {
-			fmt.Printf("Error : %v", err)
-			return nil, validators.ErrorInserting
-		}
-		break
-	case "Meetup":
-		if err := r.DB.Insert(&event); err != nil {
-			return nil, validators.ErrorInserting
-		}
-
-		if err := r.DB.Insert(settings); err != nil {
-			fmt.Printf("Error : %v", err)
-			return nil, validators.ErrorInserting
-		}
-		break
-	case "Stream":
-
-	default:
-		break
-	}
-
 	if !r.CheckEventFieldExists("name", input.Name) {
 		return nil, validators.FieldTaken("name")
 	}
@@ -139,17 +118,26 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.CreateEv
 		return nil, validators.FieldTaken("email")
 	}
 
-	if !r.CheckEventFieldExists("description", input.Description) {
-		return nil, validators.FieldTaken("description")
+	if err := r.DB.Insert(&event); err != nil {
+		return nil, validators.ErrorInserting
 	}
 
-	if len(input.Summary) > 150 {
-		return nil, validators.ValueExceeded(150)
+	if err := r.DB.Insert(settings); err != nil {
+		fmt.Printf("Error : %v", err)
+		return nil, validators.ErrorInserting
 	}
 
-	if len(input.Description) > 1500 {
-		return nil, validators.ValueExceeded(1500)
-	}
+	//if !r.CheckEventFieldExists("description", *input.Description) {
+	//	return nil, validators.FieldTaken("description")
+	//}
+	//
+	//if len(*input.Summary) > 150 {
+	//	return nil, validators.ValueExceeded(150)
+	//}
+	//
+	//if len(*input.Description) > 1500 {
+	//	return nil, validators.ValueExceeded(1500)
+	//}
 
 	return &event, nil
 }
@@ -205,23 +193,13 @@ func (r *mutationResolver) UpdateEvent(ctx context.Context, id int, input model.
 		event.Name = *input.Name
 	}
 
-	// An event might be updated with having a speakerConduct specified. This makes the field null
-	// Getting null from the api panics && break the backend
-
-	// if valid, err := validators.DataLength(9, *input.SpeakerConduct, "SpeakerConduct"); valid && err == nil {
-	//     event.SpeakerConduct = input.SpeakerConduct
-	// } else {
-	//     return nil, err
-	//     return nil, err
-	// }
 	event.SpeakerConduct = input.SpeakerConduct
 
 	if valid, err := validators.DataLength(9, *input.Description, "Description"); valid && err == nil {
-		event.Description = *input.Description
+		event.Description = input.Description
 	} else {
 		return nil, err
 	}
-	fmt.Println("three \n")
 
 	if valid, err := validators.DataLength(9, *input.Website, "Website"); valid && err == nil {
 		event.Website = *input.Website
@@ -234,16 +212,15 @@ func (r *mutationResolver) UpdateEvent(ctx context.Context, id int, input model.
 	} else {
 		return nil, err
 	}
-	fmt.Println("five \n")
 
 	if valid, err := validators.DataLength(9, *input.Summary, "Summary"); valid && err == nil {
-		event.Summary = *input.Summary
+		event.Summary = input.Summary
 	} else {
 		return nil, err
 	}
 
 	if valid, err := validators.DataLength(6, *input.Venue, "Venue"); valid && err == nil {
-		event.Venue = *input.Venue
+		event.Venue = input.Venue
 	} else {
 		return nil, err
 	}

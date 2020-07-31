@@ -133,16 +133,20 @@ type ComplexityRoot struct {
 		EventDate             func(childComplexity int) int
 		EventType             func(childComplexity int) int
 		ID                    func(childComplexity int) int
+		InvitationsOnboarding func(childComplexity int) int
 		IsAcceptingAttendees  func(childComplexity int) int
 		IsAcceptingTalks      func(childComplexity int) int
 		IsAcceptingVolunteers func(childComplexity int) int
 		IsArchived            func(childComplexity int) int
 		IsLocked              func(childComplexity int) int
 		IsVirtual             func(childComplexity int) int
+		MarketplaceOnboarding func(childComplexity int) int
 		MediaLinks            func(childComplexity int) int
 		MeetupGroupID         func(childComplexity int) int
 		MeetupGroups          func(childComplexity int) int
+		MobileOnboarding      func(childComplexity int) int
 		Name                  func(childComplexity int) int
+		ScheduleOnboarding    func(childComplexity int) int
 		Settings              func(childComplexity int) int
 		SettingsID            func(childComplexity int) int
 		SpeakerConduct        func(childComplexity int) int
@@ -151,6 +155,7 @@ type ComplexityRoot struct {
 		Summary               func(childComplexity int) int
 		Talk                  func(childComplexity int) int
 		Teams                 func(childComplexity int) int
+		TeamsOnboarding       func(childComplexity int) int
 		TotalAttendees        func(childComplexity int) int
 		TrackID               func(childComplexity int) int
 		Tracks                func(childComplexity int) int
@@ -1119,6 +1124,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Event.ID(childComplexity), true
 
+	case "Event.invitationsOnboarding":
+		if e.complexity.Event.InvitationsOnboarding == nil {
+			break
+		}
+
+		return e.complexity.Event.InvitationsOnboarding(childComplexity), true
+
 	case "Event.isAcceptingAttendees":
 		if e.complexity.Event.IsAcceptingAttendees == nil {
 			break
@@ -1161,6 +1173,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Event.IsVirtual(childComplexity), true
 
+	case "Event.marketplaceOnboarding":
+		if e.complexity.Event.MarketplaceOnboarding == nil {
+			break
+		}
+
+		return e.complexity.Event.MarketplaceOnboarding(childComplexity), true
+
 	case "Event.mediaLinks":
 		if e.complexity.Event.MediaLinks == nil {
 			break
@@ -1182,12 +1201,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Event.MeetupGroups(childComplexity), true
 
+	case "Event.mobileOnboarding":
+		if e.complexity.Event.MobileOnboarding == nil {
+			break
+		}
+
+		return e.complexity.Event.MobileOnboarding(childComplexity), true
+
 	case "Event.name":
 		if e.complexity.Event.Name == nil {
 			break
 		}
 
 		return e.complexity.Event.Name(childComplexity), true
+
+	case "Event.scheduleOnboarding":
+		if e.complexity.Event.ScheduleOnboarding == nil {
+			break
+		}
+
+		return e.complexity.Event.ScheduleOnboarding(childComplexity), true
 
 	case "Event.settings":
 		if e.complexity.Event.Settings == nil {
@@ -1244,6 +1277,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Event.Teams(childComplexity), true
+
+	case "Event.teamsOnboarding":
+		if e.complexity.Event.TeamsOnboarding == nil {
+			break
+		}
+
+		return e.complexity.Event.TeamsOnboarding(childComplexity), true
 
 	case "Event.totalAttendees":
 		if e.complexity.Event.TotalAttendees == nil {
@@ -4208,15 +4248,16 @@ input UpdateBugReport {
 type Event {
     id : Int!
     name: String!
-    description: String!
-    summary: String!
     alias: String!
     Email: String!
     website: String!
     bucketLink : String!
     bucketName: String!
-    venue: String!
     eventType: String!
+
+    venue: String
+    description: String
+    summary: String
     meetupGroup_id : Int
     createdAt: Time!
     dateCreated: String!
@@ -4243,6 +4284,13 @@ type Event {
     sponsors : [Sponsor!]
     isVirtual : Boolean!
     confirmedEmail: Boolean!
+
+    marketplaceOnboarding : Boolean!
+    mobileOnboarding : Boolean!
+    invitationsOnboarding : Boolean!
+    teamsOnboarding : Boolean!
+    scheduleOnboarding : Boolean!
+
     isAcceptingVolunteers: Boolean!
     isAcceptingAttendees: Boolean!
     isAcceptingTalks : Boolean!
@@ -4250,19 +4298,22 @@ type Event {
     isLocked: Boolean!
 }
 
+
+
 input CreateEvent {
     name: String!
-    summary: String!
     alias: String!
-    description: String!
     website: String!
     Email: String!
     eventType: String!
-    venue: String!
+
+    description: String
+    venue: String
+    summary: String
     speakerConduct: String
     volunteer_id: Int
     sponsor_id : Int
-    EventDate: [String]!
+    EventDate: [String]
     actions: [String!]
     mediaLinks : [String!]
     isVirtual : Boolean!
@@ -4270,6 +4321,7 @@ input CreateEvent {
     isLocked: Boolean!
     isAcceptingVolunteers: Boolean!
     isAcceptingTalks : Boolean!
+
 }
 
 type Stream {
@@ -4290,7 +4342,6 @@ type Stream {
 
 input  CreateStream {
     title: String!
-    user_id : Int!
     summary : String!
     duration : String!
     streamLinks : [String!]
@@ -4330,6 +4381,12 @@ input UpdateEvent {
     isLocked: Boolean
     isAcceptingVolunteers: Boolean
     isAcceptingTalks : Boolean
+
+    marketplaceOnboarding : Boolean!
+    mobileOnboarding : Boolean!
+    invitationsOnboarding : Boolean!
+    teamsOnboarding : Boolean!
+    scheduleOnboarding : Boolean!
 }
 
 type EventTalk {
@@ -7997,74 +8054,6 @@ func (ec *executionContext) _Event_name(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Event_description(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Event",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Description, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Event_summary(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Event",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Summary, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Event_alias(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -8235,40 +8224,6 @@ func (ec *executionContext) _Event_bucketName(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Event_venue(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Event",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Venue, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Event_eventType(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -8301,6 +8256,99 @@ func (ec *executionContext) _Event_eventType(ctx context.Context, field graphql.
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Event_venue(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Venue, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Event_description(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Event_summary(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Summary, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Event_meetupGroup_id(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
@@ -9114,6 +9162,176 @@ func (ec *executionContext) _Event_confirmedEmail(ctx context.Context, field gra
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ConfirmedEmail, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Event_marketplaceOnboarding(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MarketplaceOnboarding, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Event_mobileOnboarding(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MobileOnboarding, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Event_invitationsOnboarding(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.InvitationsOnboarding, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Event_teamsOnboarding(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TeamsOnboarding, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Event_scheduleOnboarding(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Event",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ScheduleOnboarding, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -21178,21 +21396,9 @@ func (ec *executionContext) unmarshalInputCreateEvent(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
-		case "summary":
-			var err error
-			it.Summary, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "alias":
 			var err error
 			it.Alias, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "description":
-			var err error
-			it.Description, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -21214,9 +21420,21 @@ func (ec *executionContext) unmarshalInputCreateEvent(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
+		case "description":
+			var err error
+			it.Description, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "venue":
 			var err error
-			it.Venue, err = ec.unmarshalNString2string(ctx, v)
+			it.Venue, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "summary":
+			var err error
+			it.Summary, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -21240,7 +21458,7 @@ func (ec *executionContext) unmarshalInputCreateEvent(ctx context.Context, obj i
 			}
 		case "EventDate":
 			var err error
-			it.EventDate, err = ec.unmarshalNString2ᚕᚖstring(ctx, v)
+			it.EventDate, err = ec.unmarshalOString2ᚕᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -21475,12 +21693,6 @@ func (ec *executionContext) unmarshalInputCreateStream(ctx context.Context, obj 
 		case "title":
 			var err error
 			it.Title, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "user_id":
-			var err error
-			it.UserID, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -22165,6 +22377,36 @@ func (ec *executionContext) unmarshalInputUpdateEvent(ctx context.Context, obj i
 		case "isAcceptingTalks":
 			var err error
 			it.IsAcceptingTalks, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "marketplaceOnboarding":
+			var err error
+			it.MarketplaceOnboarding, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "mobileOnboarding":
+			var err error
+			it.MobileOnboarding, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "invitationsOnboarding":
+			var err error
+			it.InvitationsOnboarding, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "teamsOnboarding":
+			var err error
+			it.TeamsOnboarding, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "scheduleOnboarding":
+			var err error
+			it.ScheduleOnboarding, err = ec.unmarshalNBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -23151,16 +23393,6 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "description":
-			out.Values[i] = ec._Event_description(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
-		case "summary":
-			out.Values[i] = ec._Event_summary(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "alias":
 			out.Values[i] = ec._Event_alias(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -23186,16 +23418,17 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "venue":
-			out.Values[i] = ec._Event_venue(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "eventType":
 			out.Values[i] = ec._Event_eventType(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "venue":
+			out.Values[i] = ec._Event_venue(ctx, field, obj)
+		case "description":
+			out.Values[i] = ec._Event_description(ctx, field, obj)
+		case "summary":
+			out.Values[i] = ec._Event_summary(ctx, field, obj)
 		case "meetupGroup_id":
 			out.Values[i] = ec._Event_meetupGroup_id(ctx, field, obj)
 		case "createdAt":
@@ -23356,6 +23589,31 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 			}
 		case "confirmedEmail":
 			out.Values[i] = ec._Event_confirmedEmail(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "marketplaceOnboarding":
+			out.Values[i] = ec._Event_marketplaceOnboarding(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "mobileOnboarding":
+			out.Values[i] = ec._Event_mobileOnboarding(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "invitationsOnboarding":
+			out.Values[i] = ec._Event_invitationsOnboarding(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "teamsOnboarding":
+			out.Values[i] = ec._Event_teamsOnboarding(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "scheduleOnboarding":
+			out.Values[i] = ec._Event_scheduleOnboarding(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
@@ -26597,35 +26855,6 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) unmarshalNString2ᚕᚖstring(ctx context.Context, v interface{}) ([]*string, error) {
-	var vSlice []interface{}
-	if v != nil {
-		if tmp1, ok := v.([]interface{}); ok {
-			vSlice = tmp1
-		} else {
-			vSlice = []interface{}{v}
-		}
-	}
-	var err error
-	res := make([]*string, len(vSlice))
-	for i := range vSlice {
-		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalNString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
-	}
-
-	return ret
 }
 
 func (ec *executionContext) marshalNTalk2githubᚗcomᚋvickywaneᚋeventᚑserverᚋgraphᚋmodelᚐTalk(ctx context.Context, sel ast.SelectionSet, v model.Talk) graphql.Marshaler {

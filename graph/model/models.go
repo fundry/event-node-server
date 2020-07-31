@@ -84,13 +84,13 @@ type CreateCategory struct {
 
 type CreateEvent struct {
 	Name                  string    `json:"name"`
-	Summary               string    `json:"summary"`
 	Alias                 string    `json:"alias"`
-	Description           string    `json:"description"`
 	Website               string    `json:"website"`
 	Email                 string    `json:"Email"`
 	EventType             string    `json:"eventType"`
-	Venue                 string    `json:"venue"`
+	Description           *string   `json:"description"`
+	Venue                 *string   `json:"venue"`
+	Summary               *string   `json:"summary"`
 	SpeakerConduct        *string   `json:"speakerConduct"`
 	VolunteerID           *int      `json:"volunteer_id"`
 	SponsorID             *int      `json:"sponsor_id"`
@@ -140,7 +140,6 @@ type CreateSponsor struct {
 
 type CreateStream struct {
 	Title       string   `json:"title"`
-	UserID      int      `json:"user_id"`
 	Summary     string   `json:"summary"`
 	Duration    string   `json:"duration"`
 	StreamLinks []string `json:"streamLinks"`
@@ -213,15 +212,15 @@ type DeleteFile struct {
 type Event struct {
 	ID                    int              `json:"id"`
 	Name                  string           `json:"name"`
-	Description           string           `json:"description"`
-	Summary               string           `json:"summary"`
 	Alias                 string           `json:"alias"`
 	Email                 string           `json:"Email"`
 	Website               string           `json:"website"`
 	BucketLink            string           `json:"bucketLink"`
 	BucketName            string           `json:"bucketName"`
-	Venue                 string           `json:"venue"`
 	EventType             string           `json:"eventType"`
+	Venue                 *string          `json:"venue"`
+	Description           *string          `json:"description"`
+	Summary               *string          `json:"summary"`
 	MeetupGroupID         *int             `json:"meetupGroup_id"`
 	CreatedAt             time.Time        `json:"createdAt"`
 	DateCreated           string           `json:"dateCreated"`
@@ -248,6 +247,11 @@ type Event struct {
 	Sponsors              []*Sponsor       `json:"sponsors"`
 	IsVirtual             bool             `json:"isVirtual"`
 	ConfirmedEmail        bool             `json:"confirmedEmail"`
+	MarketplaceOnboarding bool             `json:"marketplaceOnboarding"`
+	MobileOnboarding      bool             `json:"mobileOnboarding"`
+	InvitationsOnboarding bool             `json:"invitationsOnboarding"`
+	TeamsOnboarding       bool             `json:"teamsOnboarding"`
+	ScheduleOnboarding    bool             `json:"scheduleOnboarding"`
 	IsAcceptingVolunteers bool             `json:"isAcceptingVolunteers"`
 	IsAcceptingAttendees  bool             `json:"isAcceptingAttendees"`
 	IsAcceptingTalks      bool             `json:"isAcceptingTalks"`
@@ -523,6 +527,11 @@ type UpdateEvent struct {
 	IsLocked              *bool     `json:"isLocked"`
 	IsAcceptingVolunteers *bool     `json:"isAcceptingVolunteers"`
 	IsAcceptingTalks      *bool     `json:"isAcceptingTalks"`
+	MarketplaceOnboarding bool      `json:"marketplaceOnboarding"`
+	MobileOnboarding      bool      `json:"mobileOnboarding"`
+	InvitationsOnboarding bool      `json:"invitationsOnboarding"`
+	TeamsOnboarding       bool      `json:"teamsOnboarding"`
+	ScheduleOnboarding    bool      `json:"scheduleOnboarding"`
 }
 
 type UpdateEventModals struct {

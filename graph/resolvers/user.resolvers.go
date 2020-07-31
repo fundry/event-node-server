@@ -5,7 +5,6 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/vickywane/event-server/graph/generated"
 	"github.com/vickywane/event-server/graph/model"
@@ -33,7 +32,14 @@ func (r *userResolver) Events(ctx context.Context, obj *model.User) ([]*model.Ev
 }
 
 func (r *userResolver) Streams(ctx context.Context, obj *model.User) ([]*model.Stream, error) {
-	panic(fmt.Errorf("not implemented"))
+	var streams []*model.Stream
+
+	err := r.DB.Model(&streams).Where("user_id = ?", obj.ID).Order("id").Select()
+
+	if err != nil {
+		return nil, err
+	}
+	return streams, nil
 }
 
 func (r *userResolver) Reminders(ctx context.Context, obj *model.User) ([]*model.Reminder, error) {

@@ -165,7 +165,14 @@ func (r *streamResolver) Attendees(ctx context.Context, obj *model.Stream) ([]*m
 }
 
 func (r *streamResolver) CreatedBy(ctx context.Context, obj *model.Stream) ([]*model.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	var createdBy []*model.User
+	err := r.DB.Model(&createdBy).Where("id = ?", obj.UserID).Order("id").Select()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return createdBy, nil
 }
 
 // Event returns generated.EventResolver implementation.
